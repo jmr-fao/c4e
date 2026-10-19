@@ -11,7 +11,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 1 | `c4e_tbl` class | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-1`; needs push and a PR into `v2` |
 | 2 | Defaults, messages, history, chunking | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-2` (cut from `v2-chunk-1`); needs push and a PR into `v2` after chunk 1 |
 | 3 | Units | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-3` (cut from `v2-chunk-2`); needs push and a PR into `v2` after chunk 2 |
-| 4 | Raster readers | ☐ | | | | |
+| 4 | Raster readers | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-4` (cut from `v2-chunk-3`); needs push and a PR into `v2` after chunk 3 |
 | 5 | Extraction | ☐ | | | | |
 | 6 | Matrix kernel | ☐ | | | | |
 | 7 | Daily indicators | ☐ | | | | |
@@ -28,22 +28,22 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 1, 2 and 3 are done locally and waiting for
-review. Each branch was cut from the previous one (`v2-chunk-1` →
-`v2-chunk-2` → `v2-chunk-3`), so each contains the chunks before it.
+**Current chunk:** chunks 1 to 4 are done locally and waiting for review.
+Each branch was cut from the previous one (`v2-chunk-1` → `v2-chunk-2` →
+`v2-chunk-3` → `v2-chunk-4`), so each contains the chunks before it.
 
 **Next steps (in order):**
-1. Jan: push `v2-chunk-1`, `v2-chunk-2` and `v2-chunk-3`. Open the pull
-   requests into `v2` one at a time, in order, merging each once
-   R-CMD-check is green, so each shows only its own commits. Mark each chunk
-   done here once merged.
-2. Next chunk: 4, raster readers (plan §2, §8 row 4): `read_climate()`
-   storing the variable in `terra::metags()` (see the varnames decision),
-   time-step inference with `infer_time_step()` from `R/units.R`,
-   `aggregate_time()`, raster methods for `select_by_dates()` /
-   `select_by_season()`, `read_boundaries()`. Chunk 6 (matrix kernel) and
-   the `prepare_coord` / `georef_coord` / window-object part of chunk 9 can
-   also start now (plan §8 tracks B and C).
+1. Jan: push `v2-chunk-1` to `v2-chunk-4`. Open the pull requests into `v2`
+   one at a time, in order, merging each once R-CMD-check is green, so each
+   shows only its own commits. Mark each chunk done here once merged.
+2. Next chunk: 5, extraction (plan §8 row 5): `extract_by_coord()`,
+   `extract_by_poly()`, `extract_cell_by_poly()`, `extract_weighted_by_poly()`
+   return `c4e_tbl` with metadata from `raster_meta()` (variable, unit,
+   time_step, date_range, crs, key, unit_cols, spatial_agg); CRS mismatch
+   errors; `exactextractr` on terra directly (drop `raster::brick()`);
+   real `ID_adm_div` in `extract_cell_by_poly()`. Chunk 6 (matrix kernel)
+   and the `prepare_coord` / `georef_coord` / window-object part of chunk 9
+   can also start (plan §8 tracks B and C).
 3. Indicator functions (chunk 7) call `resolve_unit(unit, meta)` from
    `R/units.R` to label thresholds and refuse a unit that contradicts the
    data.
@@ -55,7 +55,7 @@ review. Each branch was cut from the previous one (`v2-chunk-1` →
    started))`.
 
 **Blocked / needs Jan:**
-- Pushes and pull requests of `v2-chunk-1`, `v2-chunk-2` and `v2-chunk-3`
+- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-4`
   (outward-facing, left to Jan).
 - This laptop runs R 4.5.0 while its packages were built for R 4.5.3, so
   every fresh worker or namespace load warns "package ... was built under R
@@ -93,6 +93,16 @@ review. Each branch was cut from the previous one (`v2-chunk-1` →
 | 2026-10-19 | §2 | `convert_unit()` gains `cols` (tidy-select) for tables whose series is not in date columns or `value` | lets a plain table with `tmax`, `tmin` columns convert without renaming |
 | 2026-10-19 | §2, §11.7 | Exported in chunk 3: `convert_unit()` (SpatRaster, c4e_tbl, data.frame methods), `register_unit()`, `list_units()`. Internal: `canonical_unit()`, `unit_conversion()`, `rate_factor()`, `infer_time_step()`, `resolve_unit()`, `reset_units()` | `list_units()` makes the registry discoverable |
 | 2026-10-19 | §2 | The degree sign in the alias table is built with `intToUtf8(176)` | R CMD check requires ASCII R code; the editing tools turned `\u00b0` escapes into the literal character |
+| 2026-10-19 | §8 | Chunk 4 branched from `v2-chunk-3` | Jan asked to start it before the earlier chunks were pushed |
+| 2026-10-19 | §2, §13 | Raster context is stored twice: `terra::metags()` for files and `varnames()`/`longnames()` for memory; `raster_meta()` reads either. Plan §2 edited | probed on terra 1.9.46: metags survive GeoTIFF but not `r[[i]]`, arithmetic or `rotate()`; longnames survive in-memory steps but not file reads, and arithmetic on multi-file rasters |
+| 2026-10-19 | §2 | `longnames()` is set to one string, which terra applies to every data source | terra rejects one value per layer (longnames belong to sources) |
+| 2026-10-19 | §2, §11.7 | `register_source(name, detect, variable, unit, kind, time)` instead of `register_source(name, time_from, unit, variable_from)`: each convention is a fixed value or a function of the raster and its files | covers ERA5 layer names, CHIRPS file-name dates and fixed GAEZ kinds with one shape |
+| 2026-10-19 | §2 | `read_boundaries()` attaches no metadata to the SpatVector | terra 1.9.46 has no `metags()` for vectors; level and iso stay in the attribute columns |
+| 2026-10-19 | §3, §9.8 | `select_by_dates()` and `select_by_season()` are S3 generics with an anchored date pattern; the first argument is now `x` (was `df`) | raster methods needed; the unanchored `[0-9]{4}` took columns such as `MAX_2020` for dates (bug listed in §9.8) |
+| 2026-10-19 | §2 | `aggregate_time()` names layers by the full ISO start date of each period, also for months and years | one date format for every step; `lubridate`/`clock` parse it everywhere |
+| 2026-10-19 | §8 chunk 0 | Fixtures now carry package metadata (`c4e_*` metags); values, dates and geometry unchanged (checked against the committed files); `adm_div.gpkg` left as committed | lets the tests read the fixtures the way users will read package-written files |
+| 2026-10-19 | tests | `make_gaul_tree()` and `make_boundary_tree()` moved from their test files to `tests/testthat/helper-boundaries.R` | `read_boundaries()` tests reuse them |
+| 2026-10-19 | §2 | Exported in chunk 4: `read_climate()`, `raster_meta()`, `aggregate_time()`, `register_source()`, `list_sources()`, `read_boundaries()`, and the `select_by_dates()`/`select_by_season()` methods | |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -123,6 +133,24 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-19 — chunk 4 (laptop: FAO-Win, session: Claude)
+- Did: branch `v2-chunk-4` from `v2-chunk-3`. Probed terra 1.9.46 metadata
+  (see decisions), then `R/raster_meta.R` (`set_raster_meta()`,
+  `raster_meta()`, `keep_raster_meta()`), `R/read_climate.R`
+  (`read_climate()`, variable aliases, source registry with ERA5, CHIRPS,
+  WFDE5, GAEZ, date detection from layer and file names, `na_value`,
+  0-360 rotation), `R/aggregate_time.R`, `R/read_boundaries.R`, and
+  `select_by_dates()` / `select_by_season()` as generics with raster
+  methods. Fixtures regenerated with package metadata. Plan §2 updated.
+- Found: terra keeps `longnames()` per data source and refuses one per
+  layer; a one-cell tolerance in the 0-360 check was 180 degrees on a coarse
+  grid (now a direct longitude test).
+- Tests: 31 files, 423 tests, 1011 expectations, 0 failures; new
+  `test-read-climate.R` (19 tests, 68 expectations). Existing selection,
+  GAUL and geoBoundaries tests pass unchanged. Local `rcmdcheck` with CI's
+  arguments: 0 errors, 0 warnings, 5 notes.
+- Next: see Next steps above.
 
 ### 2026-10-19 — chunk 3 (laptop: FAO-Win, session: Claude)
 - Did: branch `v2-chunk-3` from `v2-chunk-2`. `R/units.R`: alias table

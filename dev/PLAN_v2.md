@@ -217,6 +217,22 @@ deprecated argument that only emits its label; docs recommend
   logic), CHIRPS, WFDE5 layer naming; infers `time_step` from the time spacing.
   Replaces the `names(r) <- terra::time(r)` / `second_to_date()` boilerplate in
   every vignette.
+  *As built in chunk 4:* signature `read_climate(path, variable, unit,
+  time_step, kind, source, na_value, label, rotate = TRUE)`. Raster context
+  (variable, kind, source, label, time step) is written by
+  `set_raster_meta()` to **both** `terra::metags()` (survives GeoTIFF, lost
+  by subsetting/arithmetic/rotate) and `varnames()`/`longnames()` (survive
+  subsetting, arithmetic, crop, subst; lost on file read and on arithmetic of
+  multi-file rasters); `raster_meta()` (exported) reads whichever is present
+  and adds unit, dates and inferred step. Package raster steps reapply it
+  with `keep_raster_meta()`. Dates: source rule, then stored time, then
+  layer names, then one date per file name (CHIRPS). Variables are
+  standardised (`t2m`→`tmean`, `tp`/`precip`→`pre`). Sources: built-in
+  `era5`, `chirps`, `wfde5`, `gaez`; `register_source(name, detect,
+  variable, unit, kind, time)` and `list_sources()` exported. A declared
+  `unit` differing from the file's is recorded with a message pointing at
+  `convert_unit()`. SpatVector has no metags, so `read_boundaries()` only
+  unifies `read_GAUL()`/`read_geoBoundaries()` behind `source =`.
 - `convert_unit(x, to, from = NULL)`: S3 generic with methods for SpatRaster
   (reads/sets `terra::units()`), `c4e_tbl` (meta; converts date columns when
   wide, `value` plus `excess`/`pct` registry columns and their numeric thresholds
@@ -243,6 +259,14 @@ deprecated argument that only emits its label; docs recommend
   `aggregate_frequency()`): `fn` defaults from `variable` kind (precipitation
   → sum, temperature → mean) with override; updates `terra::time()` and the
   `time_step` meta; fixes the monthly `as_date(format="%Y-%m")` NA bug.
+  *As built in chunk 4:* layers are named by the ISO date the period starts
+  (`"2021-02-01"`); the default `fn` is announced (sum for amounts and
+  counts, modal for categorical, mean otherwise); summing a rate per step
+  turns it into a rate per period (`mm/day` → `mm/month`), and summing a
+  rate per another step warns. `select_by_dates()` and
+  `select_by_season()` became S3 generics with `data.frame` (anchored date
+  pattern; a `c4e_tbl` records its new `date_range` and the step) and
+  `SpatRaster` methods.
 - `crop_with_buffer()`, `fill_missing_rast()`, `split_raster()`,
   `align_count_rast()` keep their behaviour; `fill_missing_rast(fun)` defaults to
   "modal" for categorical variables declared in `read_climate(kind = "categorical")`.

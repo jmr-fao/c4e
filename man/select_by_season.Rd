@@ -2,54 +2,60 @@
 % Please edit documentation in R/select_by_season.R
 \name{select_by_season}
 \alias{select_by_season}
+\alias{select_by_season.data.frame}
+\alias{select_by_season.SpatRaster}
 \title{Select Columns of a Data Frame Corresponding to a Seasonal Period}
 \usage{
-select_by_season(df, start_month, end_month)
+select_by_season(x, start_month, end_month, ...)
+
+\method{select_by_season}{data.frame}(x, start_month, end_month, ...)
+
+\method{select_by_season}{SpatRaster}(x, start_month, end_month, ...)
 }
 \arguments{
-\item{df}{A \code{data.frame} or \code{tibble} with identifier columns and date-labeled
-columns.}
+\item{x}{A \code{data.frame} or \code{tibble} with identifier columns and date-labeled
+columns (e.g. "2021-04-01", "X2022.07.15"), or a \code{SpatRaster} with dates.}
 
 \item{start_month}{The starting month of the seasonal window. Can be provided
-as an integer (1–12), a month abbreviation (e.g., \code{"Apr"}), or a full month
-name (e.g., \code{"April"}).}
+as an integer (1 to 12), a month abbreviation (e.g., \code{"Apr"}), or a full
+month name (e.g., \code{"April"}).}
 
 \item{end_month}{The ending month of the seasonal window. Same format as
 \code{start_month}.}
+
+\item{...}{Unused.}
 }
 \value{
-A \code{data.frame} containing identifier columns and date columns that
-fall within the specified seasonal period.
+\code{x} restricted to the months of the season. A raster keeps its
+context.
 }
 \description{
-This function extracts only the columns of a data frame that fall within a
-user-specified seasonal range. The data frame is assumed to contain identifier
-columns (non-date) and time-series columns whose names contain years (e.g.,
-"2021-04-01", "2022.07.15").
+Keeps the observations that fall within a seasonal range of months: the
+date columns of a wide table, or the layers of a raster. Identifier
+columns are kept.
 }
 \details{
-If \code{start_month <= end_month}, the function returns all columns between those
-two months (inclusive). If \code{start_month > end_month}, the function assumes the
-season crosses the year boundary (e.g., November–February).
+If \code{start_month <= end_month}, the function returns all observations
+between those two months (inclusive). If \code{start_month > end_month}, the
+season crosses the year boundary (e.g., November to February).
 
-Identifier columns are automatically preserved. Seasonal selection is applied
-only to columns matching a date pattern (containing a 4-digit year).
+Date columns are those whose name starts with a year, optionally after an
+\code{X}.
 }
 \examples{
-\dontrun{
 df <- data.frame(
   ID = 1,
   "2021-01-01" = 10,
   "2021-04-01" = 15,
   "2021-07-01" = 20,
-  "2021-11-01" = 25
+  "2021-11-01" = 25,
+  check.names = FALSE
 )
 
-# Select April–July
+# Select April to July
 select_by_season(df, "Apr", "Jul")
 
-# Select November–February (crosses year boundary)
+# Select November to February (crosses year boundary)
 select_by_season(df, 11, 2)
-}
 
 }

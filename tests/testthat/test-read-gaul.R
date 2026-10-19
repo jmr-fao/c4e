@@ -1,23 +1,3 @@
-# GAUL files sit one level deeper than geoBoundaries and use different field
-# names:  root/<ISO>/<folder matching ADM{lvl}>/<file matching ADM[012].geojson>
-# with iso3_code, gaul1_name and gaul2_name attributes.
-make_gaul_tree <- function(root, iso = "KEN", lvl = 2, n = 3) {
-    dir <- file.path(root, iso, paste0(iso, "_ADM", lvl))
-    dir.create(dir, recursive = TRUE, showWarnings = FALSE)
-
-    v <- do.call(rbind, lapply(seq_len(n), \(i) {
-        terra::vect(terra::ext((i - 1) * 2, (i - 1) * 2 + 2, 0, 2),
-                    crs = "epsg:4326")
-    }))
-    v$iso3_code <- iso
-    v$gaul1_name <- paste0("Region_", seq_len(n))
-    if (lvl == 2) v$gaul2_name <- paste0("District_", seq_len(n))
-
-    terra::writeVector(v, file.path(dir, paste0(iso, "_ADM", lvl, ".geojson")),
-                       filetype = "GeoJSON", overwrite = TRUE)
-    root
-}
-
 test_that("read_GAUL reads ADM2 and renames the GAUL fields", {
     root <- withr::local_tempdir()
     make_gaul_tree(root, "KEN", lvl = 2, n = 3)

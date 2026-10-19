@@ -113,6 +113,23 @@ adm_div$ID_adm_div <- c("1", "2", "3")
 adm_div$adm_div_1  <- c("West", "East", "East")
 adm_div$adm_div_2  <- c("West A", "East South", "East North")
 
+# ==== Package metadata ==================== ----
+# the tags read_climate() and raster_meta() look for (R/raster_meta.R);
+# empty values mark unset fields
+tag_fixture <- function(r, variable, time_step, label) {
+    terra::metags(r) <- c(
+        c4e_variable  = variable,
+        c4e_kind      = "continuous",
+        c4e_source    = "synthetic",
+        c4e_label     = label,
+        c4e_time_step = time_step
+    )
+    r
+}
+tmax      <- tag_fixture(tmax, "tmax", "day", "tmax_daily")
+pre       <- tag_fixture(pre, "pre", "day", "pre_daily")
+pre_month <- tag_fixture(pre_month, "pre", "month", "pre_monthly")
+
 # ==== Write =============================== ----
 wopt <- list(gdal = c("COMPRESS=ZSTD", "PREDICTOR=3"), datatype = "FLT4S")
 

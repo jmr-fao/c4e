@@ -2,33 +2,53 @@
 % Please edit documentation in R/select_by_dates.R
 \name{select_by_dates}
 \alias{select_by_dates}
+\alias{select_by_dates.data.frame}
+\alias{select_by_dates.SpatRaster}
 \title{Select time observations based on date range}
 \usage{
-select_by_dates(df, from = NULL, to = NULL)
+select_by_dates(x, from = NULL, to = NULL, ...)
+
+\method{select_by_dates}{data.frame}(x, from = NULL, to = NULL, ...)
+
+\method{select_by_dates}{SpatRaster}(x, from = NULL, to = NULL, ...)
 }
 \arguments{
-\item{df}{A data frame with time-series data in wide format.}
+\item{x}{A data frame with time-series data in wide format (one column
+per date), a \code{c4e_tbl}, or a \code{SpatRaster} with dates.}
 
 \item{from}{character. A string representing the start date (optional).}
 
 \item{to}{character. A string representing the end date (optional).}
+
+\item{...}{Unused.}
 }
 \value{
-A data frame filtered based on the specified date range.
+\code{x} restricted to the dates between \code{from} and \code{to}. Columns that
+are not dates are kept. A \code{c4e_tbl} records the new date range, and a
+raster keeps its context.
 }
 \description{
-This function selects columns based on a specified date range.
+Keeps the observations between two dates: the date columns of a wide
+table, or the layers of a raster.
 }
 \details{
 The function requires both or just one between the starting date,
 \code{from}, and the end date \code{to}. If both are provide the the function select
 between the two dates. If only \code{from} is provided the function selects all
 date after. If only \code{to} is provided the function selects all date
-before. If none are provided returns the data frame unchanged.
+before. If none are provided returns the data unchanged.
+
+Dates may be truncated, e.g. \code{"2022"} or \code{"2022-06"}. Date columns are
+those whose name starts with a year, optionally after an \code{X}, so a column
+such as \code{MAX_2020} is not taken for a date.
 }
 \examples{
 df <- data.frame(X2022.12 = c(100, 200),
                  X2022.06 = c(150, 250))
 
 select_by_dates(df, from = "2022-06-01", to = "2022-12-31")
+
+tmax <- read_climate(
+  system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
+select_by_dates(tmax, from = "2023-06-01", to = "2023-06-30")
 }
