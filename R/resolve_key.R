@@ -14,7 +14,8 @@
 #' @param x A data frame, or anything else with `names()`, such as a
 #'   [terra::SpatVector].
 #' @param id Optional character string naming the key column. When `NULL`, the
-#'   first of `candidates` present in `x` is used.
+#'   key recorded in the metadata of a `c4e_tbl` is used, and otherwise the
+#'   first of `candidates` present in `x`.
 #' @param candidates Character vector of column names to look for, in order of
 #'   preference.
 #' @param arg Name of the calling function's argument, used in error messages so
@@ -37,6 +38,12 @@ resolve_key <- function(x, id = NULL, candidates = c("ID", "ID_adm_div"),
                  call. = FALSE)
         }
         return(id)
+    }
+
+    # a c4e_tbl records its key, which may not be one of the candidates
+    recorded <- attr(x, "c4e_meta", exact = TRUE)$key
+    if (!is.null(recorded) && recorded %in% names(x)) {
+        return(recorded)
     }
 
     found <- intersect(candidates, names(x))

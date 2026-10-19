@@ -190,7 +190,7 @@ calc_spell <- function(x, min_spell = NULL, id = NULL) {
 }
 ```
 
-`c4e_default(arg, from, arg_name, default = NULL, required = TRUE)`: explicit
+`c4e_default(arg, from, arg_name, field = arg_name, default = NULL, required = TRUE)`: explicit
 value wins; else the meta value, **announced** with `cli::cli_inform("Using
 {.arg min_spell} = 2 from upstream")`; else the hard default; else
 `cli::cli_abort()` naming the argument and suggesting a v2 reader/extractor.
@@ -369,7 +369,7 @@ nothing depends on data outside the repo.
 | 8 | **Standardised indices and parameters** | M | 2, 5 | `calc_std_index()` (matrix `SPEI::spi()`/`spei()`, internal water balance by key+date), `calc_std_threshold()` (minus sign kept, pivots wide input), `calc_par()` (`prefix` from meta, `period`); tests migrated from `test-compute-spi.R`, `test-compute-spei.R`, `test-calc-par.R` | SPI equals v1 per-unit result; scale recorded in `transform`; `calc_par` refuses a daily table asked for monthly aggregation with a clear message |
 | 9 | **Survey side** | L | 2, 7 | `prepare_coord()` (stable ID, survey meta), `georef_coord()` (lon/lat/crs from meta), window objects (`window_lag()`, `window_season()`, `window_fixed()`, `window_since()`), `summarise_by_interview()` (one implementation, `stats`, `min_coverage`, dropped-interview report, memory estimate + `with_chunks()` by location), `summarise_by_period()`, `merge_with_survey()` explosion warning, `merge_with_survey()`, `aggregate_to_adm()` (registry-driven `cols`), `get_poly_attr_for_point()` meta; tests migrated from `test-extr-index.R`, `test-extr-by-interview.R`, `test-lag-and-interval.R`, `test-merge.R`, `test-aggregation.R` | the §7.1 chain runs on the fixtures with `interval` typed once; results equal v1 `extr_day_by_interview()` on every date except the documented leap-day case |
 | 10 | **Export and inspection** | S | 9 | `write_stata()` (labels, 32-char check, `codebook = TRUE` sidecar), `indicator_label()`, `summary.c4e_tbl()`/`validate_c4e()`; `test-write-stata.R` | `haven::read_dta()` of the output shows the labels; sidecar lists every indicator and the history |
-| 11 | **Wrappers and presets** | L | 8, 9, 10 | `R/wrappers.R`: `weather_extremes()`, `climate_indices()`, `static_controls()`, `time_varying_controls()`, each as `cli_progress_step()` stages with timings into history, `dry_run`, list-of-surveys mapping with `label` from names; `R/presets.R` + `list_presets()`; `extremes_control()`, `indices_control()`, `controls_control()` (incl. `chunk`, `dry_run`, `verbose`); `test-wrappers.R` | each wrapper equals its step-by-step chain on the fixtures; every preset runs on a matching fixture and errors cleanly on a mismatched one; `c4e_history()` output re-evaluates to the same table |
+| 11 | **Wrappers and presets** | L | 8, 9, 10 | `R/wrappers.R`: `weather_extremes()`, `climate_indices()`, `static_controls()`, `time_varying_controls()`, each as `cli_progress_step()` stages with timings into history, `dry_run`, list-of-surveys mapping with `label` from names; `R/presets.R` + `list_presets()`; `extremes_control()`, `indices_control()`, `controls_control()` (incl. `chunk`, `dry_run`, `verbose`); `test-wrappers.R` | each wrapper equals its step-by-step chain on the fixtures; every preset runs on a matching fixture and errors cleanly on a mismatched one; `c4e_history()` output, with the data arguments supplied, re-evaluates to the same table |
 | 12 | **Grid methods and wrappers** | L | 6, 7, 8 | `SpatRaster` methods for `calc_threshold_day()`, `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`, `calc_par()`, `calc_std_index()` using `tapp()`/`quantile()`/`focal()` where a built-in exists and the kernel via `app()` otherwise; `period` argument; `metags()` writer/reader (`set_raster_meta()`, `raster_meta()`), `extract_*()` restore meta from `metags()`; `grid_indicators()`, `grid_controls()` (surrounding-cell density, normals, optional `aggregate()`); `grid_first` option in `weather_extremes()`; `inst/bench/bench-grid.R`; `test-grid.R` | grid days-above per year equals `calc_threshold_day()` + yearly sum on the extracted table at the same cells; a `grid_indicators()` GeoTIFF read back with `terra::rast()` restores the registry through `extract_by_coord()`; a stack larger than `mem_info()` allows runs with `filename =` |
 | 13 | **Deprecations and removals** | M | 7–12 | `R/deprecated.R`: every v1 name as a `lifecycle::deprecate_warn()` wrapper mapping old arguments (`u_thresh` → `above`, `l_thrshld` → `below`, `time_scale` → `scale`, `iteration` → message); delete `ave_dist_2shp*`, `ave_point_density_2shp`, `substitute_*`, `is_above`/`is_below`/`*_threshold`, `*_na_check` from exports; remove `data.table` from Imports; `test-deprecated.R` | every v1 example runs with exactly one lifecycle warning and the v1 values; `NAMESPACE` lists only v2 names plus wrappers |
 | 14 | **Package hygiene** | M | 13 | `DESCRIPTION` (title, description, email, Imports pruned: `raster`, `sf`, `data.table`, `stringi`, `tidyterra` out; `exactextractr` to Suggests with `check_installed()`), `LICENSE`, `_pkgdown.yml` (reference grouped by prefix, wrappers first), `pkgdown.yaml` workflow, `globalVariables`/`.data`, `@family`/`@inheritParams`, all examples runnable on `inst/extdata` | `devtools::check()` 0 errors 0 warnings; CI and pkgdown green |
@@ -420,8 +420,8 @@ Recommended for 2.0 (each is small once the meta layer exists):
    (extent xmax > 180) and rotates them, replacing the manual `terra::rotate()`
    in `afr_spei_spi.qmd`. `extract_cell_by_poly()` keys cells by the polygon's
    real `ID_adm_div` instead of its row position.
-6. **Provenance.** Each package call appends `list(fn, args, time)` to
-   `meta$history`; `c4e_history(x)` prints the pipeline as runnable code, and
+6. **Provenance.** Each package call appends `list(fn, args, time, elapsed)` to
+   `meta$history` (`c4e_record()`, chunk 2). Only arguments that can be written as code are kept, after defaults are resolved; data arguments (raster, survey, tables, functions) are not, so `c4e_history(x)` prints the pipeline as code with the data arguments left for the user to supply, and
    `write_stata(codebook = TRUE)` writes a sidecar `.md` with the labels and the
    history next to the `.dta`. Cheap to add once every function rebuilds meta,
    and what a team reviewer needs when a `.dta` lands on their desk.
@@ -812,7 +812,7 @@ Behaviour when splitting occurs:
 
 The message states the size, the budget, what is being split and into how many
 pieces; the bar is `cli::cli_progress_bar()` updated per chunk, with elapsed
-time and ETA. Results are bound with `bind_rows()` (meta merged) and are
+time and ETA. Results are bound with `vctrs::vec_rbind()` (meta merged, shared history kept once) and are
 identical to the unsplit result, which is what the test checks. Every heavy
 function exposes `chunk =` so a user can force or forbid splitting; the
 `control()` lists of the wrappers pass it through. `with_chunks()` also accepts
@@ -968,7 +968,7 @@ reserve for explicit requests; approval of this plan is that request.
 - Deprecation test: every v1 name still runs its old example with a single
   `lifecycle` warning and returns the same values as the v2 call.
 - Wrappers: `weather_extremes(preset = "heat")` on the synthetic data equals the
-  step-by-step chain column for column; `c4e_history()` of its output, evaluated,
+  step-by-step chain column for column; `c4e_history()` of its output, with the data arguments supplied and evaluated,
   reproduces it; every preset runs against a matching synthetic raster and errors
   cleanly against a mismatched one (wrong variable or unit).
 - Memory and progress: with `options(climatic4economist.mem_limit = "1MB")`

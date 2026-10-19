@@ -400,7 +400,8 @@ merge_meta <- function(a, b, strict = FALSE, call = rlang::caller_env()) {
     }
     out$indicators <- c(a$indicators,
                         b$indicators[setdiff(names(b$indicators), names(a$indicators))])
-    out$history <- c(a$history, b$history)
+    # pieces of one split computation share their earlier steps: keep them once
+    out$history <- unique(c(a$history, b$history))
     out$schema  <- max(a$schema %||% 1L, b$schema %||% 1L)
     out
 }
