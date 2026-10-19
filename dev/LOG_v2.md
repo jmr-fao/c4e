@@ -14,7 +14,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 4 | Raster readers | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-4` (cut from `v2-chunk-3`); needs push and a PR into `v2` after chunk 3 |
 | 5 | Extraction | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-5` (cut from `v2-chunk-4`); needs push and a PR into `v2` after chunk 4 |
 | 6 | Matrix kernel | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-6` (cut from `v2-chunk-5`); needs push and a PR into `v2` after chunk 5 |
-| 7 | Daily indicators | ☐ | | | | |
+| 7 | Daily indicators | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-7` (cut from `v2-chunk-6`); needs push and a PR into `v2` after chunk 6 |
 | 8 | Standardised indices and parameters | ☐ | | | | |
 | 9 | Survey side | ☐ | | | | |
 | 10 | Export and inspection | ☐ | | | | |
@@ -28,28 +28,24 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 1 to 6 are done locally and waiting for review.
+**Current chunk:** chunks 1 to 7 are done locally and waiting for review.
 Each branch was cut from the previous one (`v2-chunk-1` → ... →
-`v2-chunk-6`), so each contains the chunks before it.
+`v2-chunk-7`), so each contains the chunks before it.
 
 **Next steps (in order):**
-1. Jan: push `v2-chunk-1` to `v2-chunk-6`. Open the pull requests into `v2`
+1. Jan: push `v2-chunk-1` to `v2-chunk-7`. Open the pull requests into `v2`
    one at a time, in order, merging each once R-CMD-check is green, so each
    shows only its own commits. Mark each chunk done here once merged.
-2. Next chunk: 7, daily indicators (plan §8 row 7): `calc_threshold_day()`,
-   `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`,
-   `calc_spell_percentile()`, `calc_spell_excess()`, `calc_heatwave()`,
-   `calc_condition()` built on `R/kernel.R` (`as_matrix_wide()`,
-   `flag_threshold()`, `excess_threshold()`, `run_length_rows()`,
-   `quantile_by_month()`, `lookup_by_month()`, `matrix_to_long()`), writing
-   the indicator registry; v1 functions must give identical tables. Decide
-   there what an all-missing unit-month percentile becomes: v1 returns the
-   exclusion threshold (`replace = c(l_thresh, u_thresh)`), the kernel
-   takes `replace` as an argument. Chunk 8 (SPI/SPEI, `calc_par`) can use
-   `spi_matrix()`.
-3. Indicator functions (chunk 7) call `resolve_unit(unit, meta)` from
-   `R/units.R` to label thresholds and refuse a unit that contradicts the
-   data.
+2. Next chunk: 8, standardised indices and parameters (plan §8 row 8):
+   `calc_std_index()` on `spi_matrix()` (SPI/SPEI, the water balance matched
+   by key and date), `calc_std_threshold()` (keeps the minus sign, reads wide
+   or long input through `indicator_frame()`), `calc_par()` with `prefix`
+   from the variable. Then chunk 9 (survey side) can use the registry the
+   indicator functions now write.
+3. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`
+   (wide or long input onto a units-by-dates grid), `frame_matrix()`,
+   `finish_frame()` and `run_indicator()` (splitting by unit, history
+   recorded once).
 4. Step functions written from chunk 3 on follow this pattern:
    `meta <- c4e_meta(x) %||% empty_meta()`, `started <- Sys.time()`,
    resolve each argument with `c4e_default()`, announce with
@@ -59,7 +55,7 @@ Each branch was cut from the previous one (`v2-chunk-1` → ... →
    started))`.
 
 **Blocked / needs Jan:**
-- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-6`
+- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-7`
   (outward-facing, left to Jan).
 - This laptop runs R 4.5.0 while its packages were built for R 4.5.3, so
   every fresh worker or namespace load warns "package ... was built under R
@@ -119,6 +115,15 @@ Each branch was cut from the previous one (`v2-chunk-1` → ... →
 | 2026-10-19 | §10.2 | `spi_matrix()` fits each series on its own, with optional `furrr`; plan §10.2 edited | probed on SPEI 1.8.1: one call on a matrix gives the same numbers but took 9.2 s against 3.6 s for 300 series |
 | 2026-10-19 | §10.1 | `row_quantiles()` reproduces R's type-7 interpolation code exactly, vectorised over rows | v1 equality must hold, not just closeness |
 | 2026-10-19 | §10.7 | Benchmark at 1,000 units × 1,095 days and 10,000 units × 365 days rather than 10,000 × 1,095; results in `inst/bench/results.md`; `inst/bench` is build-ignored | v1 monthly percentiles alone took an hour at 10,000 × 365; the scripts are development tools |
+| 2026-10-19 | §8 | Chunk 7 branched from `v2-chunk-6` | Jan asked to start it before the earlier chunks were pushed |
+| 2026-10-19 | §3 | Indicator steps add their columns to the long table they receive; `calc_spell()` keeps the flags, unlike v1 `find_spell()` | one table accumulates indicators, so `bind_indicators()` is only needed across variables |
+| 2026-10-19 | §1 | History records the arguments a step used, including values taken from upstream (e.g. `unit = "K"`) | the record must reproduce the step without the earlier context |
+| 2026-10-19 | §3 | `calc_percentile(replace = NA)`: a unit and month with no value left gets `NA`; v1 returned the exclusion threshold (`replace = c(l_thresh, u_thresh)`) and errored without one | the v1 value made every wet day "extreme" in a dry month; `NA` flags nothing |
+| 2026-10-19 | §3 | `calc_spell_excess()` registers its columns as `kind = "excess"` with `unit = "days"` | an excess in days must never be touched by `convert_unit()` |
+| 2026-10-19 | §3 | `calc_heatwave()` requires temperatures in C or K (from upstream or `unit`) | the WMO excess is in degrees; it is the same in C and K |
+| 2026-10-19 | §11.1, §11.2, §11.5 | Done in chunk 7: thresholds from a table by unit (and month), `calc_condition()`, flag prefixes by time step (`day_`, `hr_`, `mo_`, `yr_`) | they share the same code path as numeric thresholds |
+| 2026-10-19 | §8 | The v1 indicator tests (`test-thresholds.R`, `test-spells.R`, `test-find-extr-rel-day.R`, `test-invariants.R`) are kept unchanged instead of migrated | the v1 functions still exist; they become wrappers, and their tests move, in chunk 13 |
+| 2026-10-19 | §3 | Exported in chunk 7: `calc_threshold_day()`, `calc_condition()`, `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`, `calc_spell_percentile()`, `calc_spell_excess()`, `calc_heatwave()` | |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -149,6 +154,23 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-19 — chunk 7 (laptop: FAO-Win, session: Claude)
+- Did: branch `v2-chunk-7` from `v2-chunk-6`. `R/indicator_helpers.R`
+  (indicator frame on a units-by-dates grid, column naming, registry
+  lookups, `run_indicator()` with splitting by unit), `R/calc_threshold_day.R`
+  (`calc_threshold_day()` with numeric or table thresholds,
+  `calc_condition()`), `R/calc_percentile.R` (`calc_percentile()` with
+  `baseline` and `yearly`, `calc_percentile_day()` with tail inference and
+  variable/unit checks), `R/calc_spell.R` (`calc_spell()`,
+  `calc_spell_percentile()`, `calc_spell_excess()`, `calc_heatwave()`).
+- Found: every v2 function equals its v1 counterpart on the fixtures at the
+  first run; the decisions above record where v2 deliberately differs.
+- Tests: 34 files, 464 tests, 1136 expectations, 0 failures; new
+  `test-indicators.R` (16 tests, including a pipeline that types no context
+  after extraction, and splitting under a 4 KB budget). Local `rcmdcheck`
+  with CI's arguments: 0 errors, 0 warnings, 5 notes, none from the new code.
+- Next: see Next steps above.
 
 ### 2026-10-19 — chunk 6 (laptop: FAO-Win, session: Claude)
 - Did: branch `v2-chunk-6` from `v2-chunk-5`. Probed `terra::app()` and
