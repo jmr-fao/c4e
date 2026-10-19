@@ -10,7 +10,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 0 | Scaffold | ✔ done | | 2026-10-16 | 2026-10-19 | pushed; CI fixed on 2026-10-19 (examples, `withr`) |
 | 1 | `c4e_tbl` class | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-1`; needs push and a PR into `v2` |
 | 2 | Defaults, messages, history, chunking | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-2` (cut from `v2-chunk-1`); needs push and a PR into `v2` after chunk 1 |
-| 3 | Units | ☐ | | | | |
+| 3 | Units | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-3` (cut from `v2-chunk-2`); needs push and a PR into `v2` after chunk 2 |
 | 4 | Raster readers | ☐ | | | | |
 | 5 | Extraction | ☐ | | | | |
 | 6 | Matrix kernel | ☐ | | | | |
@@ -28,20 +28,25 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 1 and 2 are both done locally and waiting for
-review. `v2-chunk-2` was cut from `v2-chunk-1`, so it contains chunk 1 too.
+**Current chunk:** chunks 1, 2 and 3 are done locally and waiting for
+review. Each branch was cut from the previous one (`v2-chunk-1` →
+`v2-chunk-2` → `v2-chunk-3`), so each contains the chunks before it.
 
 **Next steps (in order):**
-1. Jan: push `v2-chunk-1` and open a pull request into `v2`; merge it once
-   R-CMD-check is green, then mark chunk 1 done here.
-2. Jan: push `v2-chunk-2` and open its pull request into `v2` after the
-   chunk 1 merge, so it shows only the chunk 2 commits. Mark chunk 2 done
-   once merged.
-3. Then chunks 3 (units), 6 (matrix kernel) and the `prepare_coord` /
-   `georef_coord` / window-object part of 9 can start in parallel (plan §8
-   tracks A, B, C). Chunk 3 is the natural next one: `R/units.R` and
-   `convert_unit()` for tables, using `check_meta_agrees()` from chunk 2 for
-   the unit conflict.
+1. Jan: push `v2-chunk-1`, `v2-chunk-2` and `v2-chunk-3`. Open the pull
+   requests into `v2` one at a time, in order, merging each once
+   R-CMD-check is green, so each shows only its own commits. Mark each chunk
+   done here once merged.
+2. Next chunk: 4, raster readers (plan §2, §8 row 4): `read_climate()`
+   storing the variable in `terra::metags()` (see the varnames decision),
+   time-step inference with `infer_time_step()` from `R/units.R`,
+   `aggregate_time()`, raster methods for `select_by_dates()` /
+   `select_by_season()`, `read_boundaries()`. Chunk 6 (matrix kernel) and
+   the `prepare_coord` / `georef_coord` / window-object part of chunk 9 can
+   also start now (plan §8 tracks B and C).
+3. Indicator functions (chunk 7) call `resolve_unit(unit, meta)` from
+   `R/units.R` to label thresholds and refuse a unit that contradicts the
+   data.
 4. Step functions written from chunk 3 on follow this pattern:
    `meta <- c4e_meta(x) %||% empty_meta()`, `started <- Sys.time()`,
    resolve each argument with `c4e_default()`, announce with
@@ -50,8 +55,8 @@ review. `v2-chunk-2` was cut from `v2-chunk-1`, so it contains chunk 1 too.
    started))`.
 
 **Blocked / needs Jan:**
-- Pushes and pull requests of `v2-chunk-1` and `v2-chunk-2` (outward-facing,
-  left to Jan).
+- Pushes and pull requests of `v2-chunk-1`, `v2-chunk-2` and `v2-chunk-3`
+  (outward-facing, left to Jan).
 - This laptop runs R 4.5.0 while its packages were built for R 4.5.3, so
   every fresh worker or namespace load warns "package ... was built under R
   version 4.5.3". It inflates the test-warning count (e.g. the furrr test) but
@@ -82,6 +87,12 @@ review. `v2-chunk-2` was cut from `v2-chunk-1`, so it contains chunk 1 too.
 | 2026-10-19 | §14 | `with_chunks(.parallel = TRUE)` calls `furrr::future_map()` under whatever `future::plan()` the user set, without a progress bar | `future` is not imported, and a bar cannot follow workers without `progressr` |
 | 2026-10-19 | §14 | `with_chunks()` accepts a named list of tables split on the same units, for `summarise_by_interview()` (survey + indicators) | chunk 9 needs both sides of the join cut on the same locations |
 | 2026-10-19 | §14 | Exported in chunk 2: `c4e_history()` (with a print method). Internal: `c4e_default()`, `check_meta_agrees()`, `c4e_inform()`, `c4e_progress_step()`, `resolve_label()`, `c4e_record()`, `mem_budget()`, `parse_bytes()`, `format_bytes()`, `estimate_bytes()`, `with_chunks()`. Options `climatic4economist.verbose` and `climatic4economist.mem_limit` are documented in `?climatic4economist` | users see the history; the rest is plumbing for the step functions |
+| 2026-10-19 | §8 | Chunk 3 branched from `v2-chunk-2` | Jan asked to start it before chunks 1 and 2 were pushed |
+| 2026-10-19 | §2 | Rates are converted generically (quantity through the simple table, time denominator by its length) instead of listing each rate conversion; plan §2 edited | covers kg/m2/s, mm/day, m/s and project units without one row per pair |
+| 2026-10-19 | §2 | Registry columns convert by role: `pct` and level `par` stats as levels, `excess`, spread `par` stats and `agg` of excess as differences (factor only), counts never; numeric thresholds as levels | a K to C conversion must leave "5 degrees above the threshold" at 5 |
+| 2026-10-19 | §2 | `convert_unit()` gains `cols` (tidy-select) for tables whose series is not in date columns or `value` | lets a plain table with `tmax`, `tmin` columns convert without renaming |
+| 2026-10-19 | §2, §11.7 | Exported in chunk 3: `convert_unit()` (SpatRaster, c4e_tbl, data.frame methods), `register_unit()`, `list_units()`. Internal: `canonical_unit()`, `unit_conversion()`, `rate_factor()`, `infer_time_step()`, `resolve_unit()`, `reset_units()` | `list_units()` makes the registry discoverable |
+| 2026-10-19 | §2 | The degree sign in the alias table is built with `intToUtf8(176)` | R CMD check requires ASCII R code; the editing tools turned `\u00b0` escapes into the literal character |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -112,6 +123,25 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-19 — chunk 3 (laptop: FAO-Win, session: Claude)
+- Did: branch `v2-chunk-3` from `v2-chunk-2`. `R/units.R`: alias table
+  (spellings such as `degC`, `kg m-2 s-1`, `mm d-1`), conversion table of
+  simple units used in both directions, generic rate conversion with
+  per-date factors for months and years, `infer_time_step()`,
+  `resolve_unit()` for thresholds, and `convert_unit()` for rasters
+  (`terra::units()`, names and dates kept), `c4e_tbl` (series, registry
+  columns by role, thresholds, history) and plain data frames.
+  `register_unit()` and `list_units()` exported. Plan §2 updated.
+- Found: the earlier "extra warnings" on first test runs were testthat's
+  notices for newly created snapshots; reruns show none. Literal degree signs
+  in R code fail R CMD check (see decisions).
+- Tests: 30 files, 404 tests, 943 expectations, 0 failures; new
+  `test-units.R` (19 tests, 75 expectations, snapshots for every error and
+  announcement). K to C on the fixture raster and on the extracted wide
+  table give equal values. Local `rcmdcheck` with CI's arguments: 0 errors,
+  0 warnings, 5 notes.
+- Next: see Next steps above.
 
 ### 2026-10-19 — chunk 2 (laptop: FAO-Win, session: Claude)
 - Did: branch `v2-chunk-2` from `v2-chunk-1`. `R/c4e_meta.R`: messages

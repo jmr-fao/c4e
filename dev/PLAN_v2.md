@@ -223,8 +223,21 @@ deprecated argument that only emits its label; docs recommend
   when long; offsets apply to levels only, never to differences) and plain
   data.frame (`from` required). `R/units.R` holds an alias table (`degC`,
   `celsius`, `°C` → `C`; `kg m-2 s-1` → `kg/m2/s`) and a conversion table
-  (K↔C, m→mm, kg/m2/s→mm/day, m/s→km/h); mm/day→mm/month needs `time_step`, so
-  it errors unless the step is known. Replaces the eight hand-written
+  of simple units (K↔C, C↔F, m→mm/cm/km, kg/m2→mm), each usable in reverse.
+  *As built in chunk 3:* rates are not listed one by one; a unit `a/t` with
+  `t` in s, min, h, day, month, year converts `a` through the simple table
+  and `t` by its length, so kg/m2/s→mm/day (×86400), m/s→km/h (×3.6) and
+  m/day→mm/day all follow. Months and years have varying lengths:
+  mm/day↔mm/month multiplies by the days in each value's month and requires
+  monthly data (`time_step` from meta, or inferred from the raster's dates),
+  otherwise it errors. ERA5 monthly means of daily totals are declared with
+  `from = "m/day"`. Registry columns convert by role: `pct` and level
+  `par` stats as levels, `excess` and spread `par` stats as differences
+  (factor only), counts never; numeric thresholds as levels. A `cols`
+  argument converts chosen columns instead of the base series.
+  `register_unit()` and `list_units()` are exported. `resolve_unit()`
+  (internal) is what indicator functions call to refuse thresholds in another
+  unit than the data. Replaces the eight hand-written
   `- 273.15` / `* 1000` / `* 86400` blocks.
 - `aggregate_time(x, to = c("day","month","year"), fn)` (renames
   `aggregate_frequency()`): `fn` defaults from `variable` kind (precipitation
