@@ -6,4 +6,5 @@
 #' @author Jan Martin Rossi
 #'
 #' @name climatic4economist
+#' @importFrom rlang %||%
 "_PACKAGE"

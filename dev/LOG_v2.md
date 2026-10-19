@@ -8,7 +8,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | # | Chunk | State | PR | Started | Done | Notes |
 |---|---|---|---|---|---|---|
 | 0 | Scaffold | ✔ done | | 2026-10-16 | 2026-10-19 | pushed; CI fixed on 2026-10-19 (examples, `withr`) |
-| 1 | `c4e_tbl` class | ☐ | | | | |
+| 1 | `c4e_tbl` class | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-1`; needs push and a PR into `v2` |
 | 2 | Defaults, messages, history, chunking | ☐ | | | | |
 | 3 | Units | ☐ | | | | |
 | 4 | Raster readers | ☐ | | | | |
@@ -28,15 +28,23 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** none in progress; chunk 1 is next.
+**Current chunk:** 1 — code and tests done on branch `v2-chunk-1`
+(`R/c4e_tbl.R`, `tests/testthat/test-c4e-tbl.R`), waiting for review.
 
 **Next steps (in order):**
-1. Jan: push the CI fix on `v2` and confirm R-CMD-check goes green on
-   GitHub (it now fails on any ERROR or WARNING).
-2. Start chunk 1 (`R/c4e_tbl.R`, plan §1), with `test-c4e-tbl.R` first.
+1. Jan: push `v2-chunk-1` (`git push -u origin v2-chunk-1`) and open a pull
+   request into `v2` (not `main`). Merge it once R-CMD-check is green, then
+   mark chunk 1 done here.
+2. Start chunk 2 (plan §1 "Default-from-upstream idiom", §14) on a
+   `v2-chunk-2` branch cut from `v2` after the merge: `c4e_default()`,
+   `c4e_inform()`, the `verbose` option, `history`, `resolve_key()` reading
+   `meta$key`, then `R/chunks.R`.
+3. Chunk 2 can build on `modify_meta()`, `merge_meta()` and
+   `new_indicator()` in `R/c4e_tbl.R`; stacking per-chunk results in
+   `with_chunks()` must use `vctrs::vec_rbind()` (see decisions).
 
 **Blocked / needs Jan:**
-- Push of the CI-fix commit on `v2` (outward-facing, left to Jan).
+- Push of `v2-chunk-1` and its pull request (outward-facing, left to Jan).
 - Pull request 3 merges `v2` into `main`. The plan merges `main` only at
   release (chunk 17). Keep it open as a draft tracking PR, or close it; don't
   merge it yet.
@@ -51,12 +59,17 @@ States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ d
 | 2026-10-16 | §8 chunk 0 | `.gitignore` keeps ignoring every `.tif`/`.gpkg` but re-includes `inst/extdata/*.tif` and `*.gpkg` | protect real data while tracking the synthetic fixtures |
 | 2026-10-19 | §8 chunks 0, 14 | R-CMD-check is a real gate from now on, not "allowed to fail until chunk 14". Every chunk must leave 0 ERRORs and 0 WARNINGs; NOTEs stay for chunk 14. | Jan asked for the check to pass for real |
 | 2026-10-19 | §3 | `merge_by_common()` list form fixed now (reduce over the list) instead of in chunk 9 | its example exposed the bug |
+| 2026-10-19 | §1, §11.5 | Indicator `kind` for threshold flags is `"flag"`, not `"day"`; plan §1 edited | §11.5 already planned the rename so hourly and monthly flags fit; doing it now avoids a later migration |
+| 2026-10-19 | §1 | Grouped operations need explicit `group_by()`, `ungroup()`, `dplyr_col_modify()` and `dplyr_row_slice()` methods, and `names<-` must rebuild through the constructor; plan §1 table rewritten | probed on dplyr 1.2.1: without them `group_by()` drops the subclass and grouped `mutate`/`filter`/`select` lose the metadata |
+| 2026-10-19 | §1, §12, §14 | `dplyr::bind_rows()` keeps only the first table's metadata; `vctrs::vec_rbind()` merges. Package code that stacks results uses `vec_rbind()`; plan §12 edited | dplyr strips attributes before `dplyr_reconstruct()`, so no method can merge there |
+| 2026-10-19 | §1 | Conflicting `window`/`spatial_agg`/`survey` fields are cleared on merge, like every other single-valued field, instead of "keep the first with a warning" | one rule for all single-valued fields; the per-indicator registry keeps what matters |
+| 2026-10-19 | §1 | Exported in chunk 1: `c4e_meta()`, `is_c4e_tbl()`, `update_meta()`, `bind_indicators()`. Internal: `new_c4e_tbl()`, `new_indicator()`, `add_indicator()`, `modify_meta()`, `merge_meta()`, `prune_meta()`, `rename_meta()` | keep the public surface small until the step functions exist |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
 - Title not in title case; Description not complete sentences; maintainer email `fao.com`.
 - Tarball is about 19.8 MB: vignette HTML and images are not build-ignored.
-- `cli`, `lifecycle`, `vctrs` declared but not yet used (go away in chunks 1–2).
+- `lifecycle` declared but not yet used (goes away in chunk 13); `cli` and `vctrs` are used since chunk 1.
 - Many "no visible binding for global variable" notes (NSE columns) and unqualified sf/sp/raster calls in `ave_*` (removed in chunk 13).
 - `AGENTS.md` and `figures/` at top level (`AGENTS.md` is now build-ignored).
 - `extract_cell_by_poly()` example takes about 6 s because of the `raster::brick()` conversion (removed in chunk 5).
@@ -81,6 +94,25 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-19 — chunk 1 (laptop: FAO-Win, session: Claude)
+- Did: confirmed the CI fix is green on GitHub (pull request run
+  39225784839). Branch `v2-chunk-1` from `v2`. Probed how dplyr 1.2.1,
+  tidyr and vctrs treat a tibble subclass, then wrote
+  `tests/testthat/test-c4e-tbl.R` and `R/c4e_tbl.R`: constructor,
+  validator, accessors, indicator registry, pruning and renaming, merge
+  policy, `bind_indicators()`, and methods for `dplyr_reconstruct`,
+  `dplyr_col_modify`, `dplyr_row_slice`, `group_by`, `ungroup`,
+  `as_tibble`, `tbl_sum` (context line in `print()`), `[`, `[<-`, `$<-`,
+  `[[<-`, `names<-`, and vctrs `vec_ptype2`/`vec_cast`. Plan §1 updated
+  (see decisions).
+- Found: grouped verbs and `dplyr::bind_rows()` behave differently from
+  what the plan assumed (see decisions). The remaining "possible problems"
+  NOTE has no entries from the new code.
+- Tests: 27 files, 357 tests, 782 expectations, 0 failures; `test-c4e-tbl.R` has 103
+  expectations and one snapshot (`_snaps/c4e-tbl.md`). Local `rcmdcheck`
+  with CI's arguments: 0 errors, 0 warnings, 6 notes.
+- Next: see Next steps above.
 
 ### 2026-10-19 — CI fix after chunk 0 (laptop: FAO-Win, session: Claude)
 - Did: installed `roxygen2` 8.1.1 and `devtools` 2.5.2. Fixed the 16 help

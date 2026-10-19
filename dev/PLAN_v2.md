@@ -96,30 +96,35 @@ vec_ptype2.c4e_tbl.tbl_df / vec_ptype2.tbl_df.c4e_tbl / vec_cast.* analogously
 Registered with `@exportS3Method dplyr::dplyr_reconstruct` etc.; `vctrs` and
 `cli` added to Imports.
 
-What survives between package calls:
+What survives between package calls (verified in chunk 1 on dplyr 1.2.1,
+tibble 3.3.1, vctrs 0.7.3; pinned by `tests/testthat/test-c4e-tbl.R`):
 
 | Mechanism | Verbs | Result |
 |---|---|---|
-| `dplyr_row_slice()` | `filter`, `arrange`, `distinct`, `slice*` | kept, registry pruned |
-| `dplyr_col_modify()` | `mutate`, `transmute`, `relocate` | kept; new columns are unregistered |
-| `dplyr_reconstruct()` | `select`, `rename`, `rename_with`, `*_join` (x's meta), `bind_rows` (merged meta), `bind_cols` | kept |
-| none | `summarise`, `reframe`, `count`, `tidyr::pivot_*`, `nest/unnest`, `as.data.frame`, `base::merge`, `data.table::*`, `arrow`/`fst` | lost → plain tibble; inside the package every such site is wrapped |
+| `dplyr_reconstruct()`, `[`, `names<-` | `mutate`, `filter`, `arrange`, `select`, `rename`, `rename_with`, `relocate`, `distinct`, `slice*`, `count`, `*_join` (x's meta), `bind_cols`, `[`, `$<-`, `[[<-` | kept; registry pruned on drop, renamed on rename |
+| `group_by()` / `ungroup()` methods + `dplyr_col_modify()` / `dplyr_row_slice()` methods | grouped `mutate`, `filter`, `arrange`, `slice*`, `select`, then `ungroup()` | kept (dplyr's grouped internals drop the subclass without these methods) |
+| vctrs `vec_ptype2` / `vec_cast` methods | `vctrs::vec_rbind()` | kept, registries **merged** |
+| `dplyr_reconstruct()` after attributes are stripped | `dplyr::bind_rows()` | kept, but **first table's** meta only |
+| none | `summarise`, `reframe`, `tidyr::pivot_*`, `nest/unnest`, `as.data.frame`, `base::merge`, `data.table::*`, `arrow`/`fst` | lost → plain tibble; inside the package every such site is wrapped |
 
-`group_by |> mutate |> ungroup` keeps meta (dplyr copies attributes into
-`grouped_df` and `ungroup()` reconstructs); `group_by |> summarise` loses it,
-which is fine because every package summariser rebuilds. `saveRDS()` keeps
-attributes; `.dta` does not (§6). `c4e_meta()` checks a `schema` field so older
-saved objects can be upgraded.
+`group_by |> summarise` loses meta, which is fine because every package
+summariser rebuilds. Package code that stacks per-survey or per-chunk results
+(§12, §14) uses `vctrs::vec_rbind()`, not `dplyr::bind_rows()`, so registries
+merge. `saveRDS()` keeps attributes; `.dta` does not (§6). `c4e_meta()` checks
+a `schema` field so older saved objects can be upgraded.
 
-**Merge policy** (`merge_meta(a, b)`, used by joins inside the package,
-`bind_rows`, and an exported `bind_indicators(...)` that replaces the
-`purrr::reduce(full_join)` idiom in the vignettes): `key` must match (abort);
-`indicators` union, same name with different entry → warn and keep `a`;
-`variable`/`unit`/`time_step`/`transform` equal or one `NULL` → keep, otherwise
-`NULL` with one message ("base series differ; per-indicator units retained");
-`date_range` union; `source` union; `window`/`spatial_agg` equal or `a`'s with a
-warning; `survey_cols` union. A bare user-level `full_join()` of two `c4e_tbl`
-keeps only x's registry; documented, not an error.
+**Merge policy** (`merge_meta(a, b, strict)`, used by `vec_rbind` (not
+strict) and by the exported `bind_indicators(...)` (strict), which replaces the
+`purrr::reduce(full_join)` idiom in the vignettes): different `key` → abort
+when strict, cleared otherwise; `indicators` union, same name with a different
+entry → keep `a` (warning when strict); every single-valued field
+(`variable`, `unit`, `time_step`, `shape`, `date_col`, `crs`, `transform`,
+`spatial_agg`, `window`, `survey`, `label`, `id_rule`, `preset`) equal or one
+`NULL` → keep, otherwise cleared (one message when strict: "each indicator
+keeps its own variable and unit"); `date_range` union; `unit_cols`,
+`survey_cols`, `source` union; `history` concatenated. A bare user-level
+`full_join()` of two `c4e_tbl` keeps only x's registry; documented, not an
+error.
 
 **Fallback.** Every v2 function accepts a plain data.frame: `meta <-
 c4e_meta(x) %||% empty_meta()`, `resolve_key()` runs its candidate lookup,
@@ -156,17 +161,17 @@ standardised indices; `survey_cols` records which columns came from the survey
 An `indicators` entry, keyed by column name:
 
 ```r
-day_abv_30   = list(kind = "day",   base = "value",      direction = "above", threshold = 30,  variable = "tmax", unit = "C")
+day_abv_30   = list(kind = "flag",  base = "value",      direction = "above", threshold = 30,  variable = "tmax", unit = "C")
 C_abv_30     = list(kind = "excess", base = "value",     direction = "above", threshold = 30,  unit = "C")
 spell_abv_30 = list(kind = "spell", base = "day_abv_30", direction = "above", threshold = 30,  min_spell = 2)
 day_90p      = list(kind = "pct",   base = "value",      p = 0.9, exclude_below = 0.1)
-day_abv_90p  = list(kind = "day",   base = "value",      direction = "above", threshold = "day_90p", p = 0.9)  # chr = lookup column
+day_abv_90p  = list(kind = "flag",  base = "value",      direction = "above", threshold = "day_90p", p = 0.9)  # chr = lookup column
 spi3_blw_-1  = list(kind = "std",   direction = "below", threshold = -1, scale = 3)
 pre_mean     = list(kind = "par",   stat = "mean", period = "year")
 day_abv_30_sum = list(kind = "agg", base = "day_abv_30", stat = "sum")
 ```
 
-`kind` is the closed set `day | excess | spell | pct | std | par | agg`. Each
+`kind` is the closed set `flag | excess | spell | pct | std | par | agg` (`flag` rather than `day`, so hourly and monthly flags fit, §11.5). Each
 entry carries its own `variable`/`unit`, so tables of different variables can be
 merged without losing per-column meaning. Column names are the registry key
 because that is what downstream selects on; the registry replaces the `^day`,
@@ -248,7 +253,7 @@ survey-window summaries, `aggregate_` spatial/time aggregation, `merge_`,
 | `find_extr_abs_day` | `calc_threshold_day(x, above = NULL, below = NULL, unit = NULL)` | long output; `unit` from meta; registry entries `day_abv_30`, `<unit>_abv_30` |
 | `calc_pct_day` | `calc_percentile(x, p, exclude_below = NULL, yearly = FALSE)` | renames the misleading `l_thresh`; output `c4e_tbl` with `kind = "pct"`, `p`, baseline `date_range` |
 | `find_extr_rel_day` | `calc_percentile_day(x, pct, tail = NULL)` | `tail` inferred from `p` (≥ 0.5 upper) with override; checks `pct` and `x` share variable/unit/key |
-| `find_spell` | `calc_spell(x, min_spell = NULL)` | iterates the registry (`kind == "day"`) instead of the `^day_abv_-?[0-9]{1,2}…` regex that skips thresholds ≥ 100 |
+| `find_spell` | `calc_spell(x, min_spell = NULL)` | iterates the registry (`kind == "flag"`) instead of the `^day_abv_-?[0-9]{1,2}…` regex that skips thresholds ≥ 100 |
 | `calc_pct_spell` | `calc_spell_percentile(x, p, min_spell = NULL)` | `min_spell` from meta |
 | `find_extr_spell_rel` | `calc_spell_excess(x, pct)` | pairs each `kind == "pct"` entry of `pct` (whose `base` names the spell column) with the matching `kind == "spell"` entry of `x`; replaces the regex block at `R/find_extr_spell_rel.R:26-81`; aborts if no pair matches |
 | `find_wmo_heatwave` | `calc_heatwave(x, excess = 5, min_spell = 2)` | checks `unit == "C"`; `na.rm` fix |
@@ -493,7 +498,7 @@ tidy interface:
    thresholds, or crop-specific limits through the same code path (registry
    `threshold = "<lookup col>"`).
 2. **User-defined conditions.** `calc_condition(x, hot_humid = value > 30 &
-   rh > 60, frost = value < 0)` registers `kind = "day"` columns from arbitrary
+   rh > 60, frost = value < 0)` registers `kind = "flag"` columns from arbitrary
    data-masked expressions, so `calc_spell()`, `summarise_by_interview()`,
    `aggregate_to_adm()` and `write_stata()` treat them exactly like built-ins.
 3. **Window specifications beyond relative lags.** `summarise_by_interview()`
@@ -510,7 +515,7 @@ tidy interface:
    parameters.
 5. **Counting unit follows the time step.** On hourly data the flag columns are
    `hr_abv_30` and labels say "hours above"; on monthly data `mo_abv_…`; the
-   registry `kind = "day"` becomes `kind = "flag"` with `step` recorded, so heat
+   registry `kind = "flag"` (chosen over `"day"` in chunk 1) records `step`, so heat
    stress hours or dry months need no new functions.
 6. **Buffers around points.** `extract_by_coord(buffer = 10000, fn = "mean")`
    extracts the neighbourhood of each location (done by hand with
@@ -691,7 +696,7 @@ the raster carries t2m_min in K").
   through `c4e_inform()`; `verbose = FALSE` silences both.
 - `survey` may be a list of surveys (the afr multi-country pattern); the wrapper
   maps over it with `purrr::map(.progress = TRUE)` and binds with
-  `bind_rows(.id = "survey")`, merging meta.
+  `vctrs::vec_rbind(.names_to = "survey")`, merging meta (`dplyr::bind_rows()` would keep only the first survey's registry).
 - Wrappers never write files; `write_stata()` is the explicit last call.
 
 ## 13. Pixel-level computation (grid outputs, no survey)
