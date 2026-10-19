@@ -4,27 +4,53 @@
 \alias{extract_cell_by_poly}
 \title{Extract Raster Values by Polygon}
 \usage{
-extract_cell_by_poly(raster, poly, ...)
+extract_cell_by_poly(
+  raster,
+  poly,
+  id = NULL,
+  label = NULL,
+  chunk = "auto",
+  ...
+)
 }
 \arguments{
-\item{raster}{A \code{SpatRaster} or \code{RasterLayer} object representing the raster
-data to extract.}
+\item{raster}{A \code{SpatRaster} representing the raster data to extract.}
 
 \item{poly}{A \code{SpatVector} or \code{sf} object representing the polygon(s) for
 extraction.}
 
+\item{id}{Optional name of the column of \code{poly} identifying the polygons.
+The result's identifier column takes this name. Default \code{ID_adm_div}.}
+
+\item{label}{Optional name shown in progress messages.}
+
+\item{chunk}{\code{"auto"} extracts in blocks of layers only when needed; a
+whole number forces that many layers per block; \code{FALSE} never splits.}
+
 \item{...}{additional arguments to pass to \link[exactextractr:exact_extract]{exactextractr::exact_extract}.}
 }
 \value{
-A data frame containing extracted values, along with coordinates
-(\code{x}, \code{y}) and coverage fraction.
+A \code{c4e_tbl} with the polygon identifier, the cell coordinates
+(\code{x_cell}, \code{y_cell}), the \code{coverage_fraction} and one column per layer.
 }
 \description{
-This function extracts raster values within a given polygon using the
-\code{exactextractr} package.
+This function extracts the values of every raster cell within each
+polygon, with the fraction of the cell inside the polygon, using the
+\code{exactextractr} package on the \code{terra} raster directly.
+}
+\details{
+Each cell is identified by the polygon it belongs to and its centre. The
+polygon identifier is the polygon's own \code{ID_adm_div} (or the column named
+by \code{id}) when it has one, else its row number. The result is a \code{c4e_tbl}
+carrying the raster's context, ready for cell-level indicators that are
+later aggregated with the coverage fractions.
+
+When the result would exceed the memory budget (see
+\code{?climatic4economist}), the layers are extracted in blocks and bound
+together.
 }
 \examples{
-tmax <- terra::rast(
+tmax <- read_climate(
   system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
 adm_div <- terra::vect(
   system.file("extdata", "adm_div.gpkg", package = "climatic4economist"))
@@ -33,5 +59,5 @@ adm_div <- terra::vect(
 extract_cell_by_poly(tmax[[1:3]], adm_div)
 }
 \seealso{
-\code{\link[exactextractr]{exact_extract}}
+\code{\link[exactextractr]{exact_extract}}, \code{\link[=extract_by_poly]{extract_by_poly()}}
 }

@@ -26,7 +26,6 @@ Imports:
     lifecycle,
     lubridate,
     purrr,
-    raster,
     rlang,
     sf,
     SPEI,
@@ -39,6 +38,7 @@ Imports:
     vctrs
 Suggests:
     haven,
+    raster,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3

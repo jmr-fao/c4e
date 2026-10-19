@@ -29,12 +29,13 @@
 #' @param stat `"mean"` (default) or `"mode"`.
 #' @param weights `NULL` (default) for area weights, or a single-layer
 #'   `SpatRaster` of weights.
-#' @param iteration optional character to be print before computation. Usually,
-#'  it is the name of the object on which the function is applied. This is useful
-#'  when the function is used inside an apply family function to keep track of the
-#'  iterations.
+#' @param iteration Deprecated; use `label`.
+#' @param id Optional name of the column of `poly` identifying the polygons.
+#'   When `NULL`, `ID` or `ID_adm_div` is used when present.
+#' @param label Optional name shown in progress messages.
 #'
-#' @return A `tibble` with one row per polygon: the attributes of `poly`, then
+#' @return A `c4e_tbl` carrying the raster's context, with one row per
+#'   polygon: the attributes of `poly`, then
 #'   one column per layer of `raster`, named after it.
 #'
 #' @seealso [extract_by_poly()] for unweighted statistics,
@@ -52,13 +53,19 @@
 #' extract_weighted_by_poly(r, p)                 # area: about 15
 #' extract_weighted_by_poly(r, p, weights = pop)  # people: 17.5
 extract_weighted_by_poly <- function(raster, poly, stat = c("mean", "mode"),
-                                     weights = NULL, iteration = NULL) {
-    if (!is.null(iteration)) cat("Extracting:", iteration, "\n")
-
+                                     weights = NULL, iteration = NULL,
+                                     id = NULL, label = NULL) {
+    started <- Sys.time()
     stat <- match.arg(stat)
     checkmate::assert_class(raster, "SpatRaster")
     checkmate::assert_multi_class(poly, c("SpatVector", "sf"))
     checkmate::assert_class(weights, "SpatRaster", null.ok = TRUE)
+    check_same_crs(raster, as_spat_vector(poly), arg = "poly")
+    label <- resolve_label(label, iteration)
+    if (!is.null(label)) {
+        c4e_progress_step("Extracting {label}")
+    }
+    weight_kind <- if (is.null(weights)) "area" else "raster"
 
     if (is.null(weights)) {
         weights <- terra::cellSize(raster[[1]], unit = "km")
@@ -75,10 +82,19 @@ extract_weighted_by_poly <- function(raster, poly, stat = c("mean", "mode"),
         \(layer) summarise_weighted(raster[[layer]], poly_sf, weights, stat)
     )
 
-    dplyr::bind_cols(
+    out <- dplyr::bind_cols(
         tibble::as_tibble(sf::st_drop_geometry(poly_sf)),
         tibble::as_tibble(values)
     )
+
+    key <- key_or_null(out, id)
+    meta <- extraction_meta(raster, out, key, NULL,
+                            spatial_agg = list(level = "poly", fn = stat,
+                                               weights = weight_kind),
+                            fn_name = "extract_weighted_by_poly",
+                            args = list(stat = stat, id = id),
+                            started = started)
+    new_c4e_tbl(out, meta)
 }
 
 ## One layer, one statistic: a numeric vector, one value per polygon

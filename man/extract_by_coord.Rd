@@ -4,7 +4,17 @@
 \alias{extract_by_coord}
 \title{Extract values from a SpatRaster}
 \usage{
-extract_by_coord(raster, coord, iteration = NULL, id = NULL, ...)
+extract_by_coord(
+  raster,
+  coord,
+  iteration = NULL,
+  id = NULL,
+  buffer = NULL,
+  fn = NULL,
+  label = NULL,
+  chunk = "auto",
+  ...
+)
 }
 \arguments{
 \item{raster}{A \link[terra]{SpatRaster}. Each layer becomes one column of
@@ -13,28 +23,54 @@ the result.}
 \item{coord}{A point \link[terra]{SpatVector} carrying the unit identifier,
 typically created with \code{\link[=georef_coord]{georef_coord()}}.}
 
-\item{iteration}{optional character to be print before computation. Usually,
-it is the name of the object on which the function is applied. This is useful
-when the function is used inside an apply family function to keep track of the
-iterations.}
+\item{iteration}{Deprecated; use \code{label}.}
 
 \item{id}{Optional character string naming the column that identifies the
 units. When \code{NULL}, \code{ID} is used, or \code{ID_adm_div} when that is the only
 one present.}
 
+\item{buffer}{Optional distance in metres around each location to
+summarise.}
+
+\item{fn}{Summary over a buffer: \code{"mean"}, \code{"sum"}, \code{"mode"}, \code{"min"},
+\code{"max"} or a function. Defaults from the kind of variable.}
+
+\item{label}{Optional name shown in progress messages.}
+
+\item{chunk}{\code{"auto"} extracts in blocks of layers only when needed; a
+whole number forces that many layers per block; \code{FALSE} never splits.}
+
 \item{...}{additional arguments to pass to \link[terra:extract]{terra::extract}.}
 }
 \value{
-A  \link[tibble]{tbl_df}, which the extracted values for each
-location and the coordinates of the locations. If the raster has multiple
+A \code{c4e_tbl} with the extracted values for each location and the
+coordinates of its cell (\code{x_cell}, \code{y_cell}). If the raster has multiple
 layers, the values of the layer will be split by columns.
 }
 \description{
 Extract values from a \link[terra]{SpatRaster} for a set of locations.
 The locations must be a point \link[terra]{SpatVector}.
 }
+\details{
+The result is a \code{c4e_tbl} that carries the raster's context: variable,
+unit, time step, dates, CRS and data source, as recorded by
+\code{\link[=read_climate]{read_climate()}}. Later steps read their defaults from it.
+
+The raster and the locations must share a CRS. Locations outside the
+raster, or on cells that are missing in every layer, are reported with
+their identifiers.
+
+With \code{buffer}, each location gets a summary of the cells within that
+distance instead of the value of its own cell: the mean for continuous
+variables, the sum for counts (population) and the most frequent value
+for categories, unless \code{fn} says otherwise.
+
+When the result would exceed the memory budget (see
+\code{?climatic4economist}), the layers are extracted in blocks and bound
+together, with a progress bar.
+}
 \examples{
-tmax <- terra::rast(
+tmax <- read_climate(
   system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
 survey <- read.csv(
   system.file("extdata", "survey.csv", package = "climatic4economist"))
@@ -42,7 +78,11 @@ coord <- prepare_coord(survey, lat_var = lat, lon_var = lon)
 points <- georef_coord(coord, geom = c("lon", "lat"), crs = "EPSG:4326")
 
 extract_by_coord(tmax[[1:5]], points)
+
+# the mean of the cells within 20 km of each location
+extract_by_coord(tmax[[1:5]], points, buffer = 20000)
 }
 \seealso{
-\code{\link[terra]{extract}}
+\code{\link[terra]{extract}}, \code{\link[=extract_by_poly]{extract_by_poly()}},
+\code{\link[=extract_cell_by_poly]{extract_cell_by_poly()}}
 }

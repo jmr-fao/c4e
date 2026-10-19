@@ -12,7 +12,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 2 | Defaults, messages, history, chunking | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-2` (cut from `v2-chunk-1`); needs push and a PR into `v2` after chunk 1 |
 | 3 | Units | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-3` (cut from `v2-chunk-2`); needs push and a PR into `v2` after chunk 2 |
 | 4 | Raster readers | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-4` (cut from `v2-chunk-3`); needs push and a PR into `v2` after chunk 3 |
-| 5 | Extraction | ☐ | | | | |
+| 5 | Extraction | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-5` (cut from `v2-chunk-4`); needs push and a PR into `v2` after chunk 4 |
 | 6 | Matrix kernel | ☐ | | | | |
 | 7 | Daily indicators | ☐ | | | | |
 | 8 | Standardised indices and parameters | ☐ | | | | |
@@ -28,34 +28,34 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 1 to 4 are done locally and waiting for review.
-Each branch was cut from the previous one (`v2-chunk-1` → `v2-chunk-2` →
-`v2-chunk-3` → `v2-chunk-4`), so each contains the chunks before it.
+**Current chunk:** chunks 1 to 5 are done locally and waiting for review.
+Each branch was cut from the previous one (`v2-chunk-1` → ... →
+`v2-chunk-5`), so each contains the chunks before it.
 
 **Next steps (in order):**
-1. Jan: push `v2-chunk-1` to `v2-chunk-4`. Open the pull requests into `v2`
+1. Jan: push `v2-chunk-1` to `v2-chunk-5`. Open the pull requests into `v2`
    one at a time, in order, merging each once R-CMD-check is green, so each
    shows only its own commits. Mark each chunk done here once merged.
-2. Next chunk: 5, extraction (plan §8 row 5): `extract_by_coord()`,
-   `extract_by_poly()`, `extract_cell_by_poly()`, `extract_weighted_by_poly()`
-   return `c4e_tbl` with metadata from `raster_meta()` (variable, unit,
-   time_step, date_range, crs, key, unit_cols, spatial_agg); CRS mismatch
-   errors; `exactextractr` on terra directly (drop `raster::brick()`);
-   real `ID_adm_div` in `extract_cell_by_poly()`. Chunk 6 (matrix kernel)
-   and the `prepare_coord` / `georef_coord` / window-object part of chunk 9
-   can also start (plan §8 tracks B and C).
+2. Next chunk: 6, matrix kernel (plan §8 row 6, §10.1-10.2, §13): internal
+   `R/kernel.R` with `matrix -> matrix` functions (one row per unit or cell,
+   dates as columns) usable by both `calc_*` table methods and
+   `terra::app()`; exact equality with the v1 long-format functions on the
+   fixtures; `inst/bench/bench-kernel.R`. After it, chunk 7 (daily
+   indicators) has everything it needs. The `prepare_coord` /
+   `georef_coord` / window-object part of chunk 9 can also start.
 3. Indicator functions (chunk 7) call `resolve_unit(unit, meta)` from
    `R/units.R` to label thresholds and refuse a unit that contradicts the
    data.
 4. Step functions written from chunk 3 on follow this pattern:
    `meta <- c4e_meta(x) %||% empty_meta()`, `started <- Sys.time()`,
    resolve each argument with `c4e_default()`, announce with
-   `c4e_progress_step()`, wrap heavy work in `with_chunks()` with a
+   `c4e_progress_step()` only when a `label` (or the deprecated `iteration`)
+   is given, wrap heavy work in `with_chunks()` with a
    `mem_estimate`, and return `new_c4e_tbl(out, c4e_record(meta, fn, args,
    started))`.
 
 **Blocked / needs Jan:**
-- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-4`
+- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-5`
   (outward-facing, left to Jan).
 - This laptop runs R 4.5.0 while its packages were built for R 4.5.3, so
   every fresh worker or namespace load warns "package ... was built under R
@@ -103,6 +103,13 @@ Each branch was cut from the previous one (`v2-chunk-1` → `v2-chunk-2` →
 | 2026-10-19 | §8 chunk 0 | Fixtures now carry package metadata (`c4e_*` metags); values, dates and geometry unchanged (checked against the committed files); `adm_div.gpkg` left as committed | lets the tests read the fixtures the way users will read package-written files |
 | 2026-10-19 | tests | `make_gaul_tree()` and `make_boundary_tree()` moved from their test files to `tests/testthat/helper-boundaries.R` | `read_boundaries()` tests reuse them |
 | 2026-10-19 | §2 | Exported in chunk 4: `read_climate()`, `raster_meta()`, `aggregate_time()`, `register_source()`, `list_sources()`, `read_boundaries()`, and the `select_by_dates()`/`select_by_season()` methods | |
+| 2026-10-19 | §8 | Chunk 5 branched from `v2-chunk-4` | Jan asked to start it before the earlier chunks were pushed |
+| 2026-10-19 | §14 | Steps show a progress step only when given a `label` (or `iteration`), not by default from `meta$label` | a step on every extraction is noise in pipelines, and the printed durations make snapshots unstable; the wrappers (chunk 11) drive their own steps |
+| 2026-10-19 | §3 | Extracted value columns are named after the layers (`2021-01-01`) instead of terra's sanitised `X2021_01_01` | one name throughout; `date_pattern()` and `to_date()` accept both, so v1 functions still work |
+| 2026-10-19 | §2 | `read_climate()` ignores the stored context when an explicit `variable` differs from the stored one | a raster built on another's template (`terra::rast(template, vals =)`) inherits its longnames, which describe the template's variable |
+| 2026-10-19 | §14 | `extract_by_coord()` and `extract_cell_by_poly()` split by layers (`extract_in_blocks()`), not by units; their `chunk` counts layers per block | the result grows with the number of layers; every block keeps the same rows, so blocks bind side by side |
+| 2026-10-19 | §3, §10.4 | `raster` moved from Imports to Suggests | only the legacy `ave_point_density_2shp()` still calls `raster::`; it is removed in chunk 13 |
+| 2026-10-19 | §2 | `fill_missing_rast(fun)` defaulting from the kind is not done yet | not part of chunk 5; left for chunk 14 or whichever chunk touches it first |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -133,6 +140,24 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-19 — chunk 5 (laptop: FAO-Win, session: Claude)
+- Did: branch `v2-chunk-5` from `v2-chunk-4`. `R/extract_helpers.R`
+  (CRS check and label, missing-location report, default summary by kind,
+  extraction metadata, `extract_in_blocks()`). The four extractors return
+  `c4e_tbl` with the raster's context, refuse a different CRS, and record
+  `spatial_agg`; `extract_by_coord()` gained `buffer`/`fn`,
+  `extract_by_poly()` gained `id`, `weights = "coverage"` and a kind-based
+  default, `extract_cell_by_poly()` uses exactextractr on terra and the
+  divisions' own `ID_adm_div`. `raster` moved to Suggests. One v1 test
+  updated: `iteration` now gives a message, not printed output.
+- Found: terra sanitises attribute names when binding values, so value
+  columns are now named from the layers; a template-built raster carried its
+  template's context (see decisions).
+- Tests: 32 files, 437 tests, 1059 expectations, 0 failures; new
+  `test-extract.R` (14 tests). Local `rcmdcheck` with CI's arguments: 0
+  errors, 0 warnings, 5 notes, none from the new code.
+- Next: see Next steps above.
 
 ### 2026-10-19 — chunk 4 (laptop: FAO-Win, session: Claude)
 - Did: branch `v2-chunk-4` from `v2-chunk-3`. Probed terra 1.9.46 metadata

@@ -4,7 +4,16 @@
 \alias{extract_by_poly}
 \title{Extract and Aggregate Raster Values by Polygons}
 \usage{
-extract_by_poly(raster, poly, fn_agg = "mean", na_rm = TRUE, pkg = "terra")
+extract_by_poly(
+  raster,
+  poly,
+  fn_agg = NULL,
+  na_rm = TRUE,
+  pkg = "terra",
+  id = NULL,
+  weights = NULL,
+  label = NULL
+)
 }
 \arguments{
 \item{raster}{A \code{SpatRaster} object from the \code{terra} package.}
@@ -12,7 +21,8 @@ extract_by_poly(raster, poly, fn_agg = "mean", na_rm = TRUE, pkg = "terra")
 \item{poly}{A \code{SpatVector} or \code{sf} object representing polygon features.}
 
 \item{fn_agg}{A function or character string specifying how to aggregate
-raster values within each polygon. Default is \code{mean}.}
+raster values within each polygon, e.g. \code{"mean"}, \code{"sum"}, \code{"mode"}.
+Defaults from the kind of variable, else \code{"mean"}.}
 
 \item{na_rm}{Logical. If \code{TRUE}, \code{NA} values in the raster are
 ignored during aggregation. Default is \code{TRUE}.}
@@ -20,29 +30,48 @@ ignored during aggregation. Default is \code{TRUE}.}
 \item{pkg}{Optional character string. The package to use: \code{"terra"} or
 \code{"exactextractr"}. If \code{NULL}, a package is chosen based on polygon count.
 Default is \code{"terra"}.}
+
+\item{id}{Optional name of the column of \code{poly} identifying the polygons.
+When \code{NULL}, \code{ID} or \code{ID_adm_div} is used when present.}
+
+\item{weights}{\code{NULL}, or \code{"coverage"} to weight each cell by the fraction
+of it inside the polygon (uses \code{exactextractr}).}
+
+\item{label}{Optional name shown in progress messages.}
 }
 \value{
-A \code{tibble} with aggregated raster values, one row per polygon.
+A \code{c4e_tbl} with the attributes of \code{poly} and the aggregated raster
+values, one row per polygon.
 }
 \description{
 This function extracts raster values within polygon features and aggregates them
-using a specified summary function (e.g., "mean", "sum", "median"). It returns
-the extracted values as a tibble.
+using a specified summary function (e.g., "mean", "sum", "mode"). It returns
+the extracted values as a \code{c4e_tbl} carrying the raster's context.
 }
 \details{
-The function automatically selects the processing engine based on the number
-of features to balance speed and precision. For more than 1,000 polygons,
-it defaults to \code{exactextractr}, which is faster for large datasets and
-accounts for partial pixel coverage. For smaller datasets, it uses \code{terra}.
+With \code{pkg = "terra"}, cells whose centre lies in a polygon count fully.
+With \code{pkg = "exactextractr"}, or \code{weights = "coverage"}, each cell counts
+by the fraction of it inside the polygon, which matters for small
+polygons and coarse rasters; the computation runs in C++. For other
+weights, such as population, see \code{\link[=extract_weighted_by_poly]{extract_weighted_by_poly()}}.
+
+When \code{fn_agg} is not given it follows from the kind of variable recorded
+by \code{\link[=read_climate]{read_climate()}}: the mean for continuous variables, the sum for
+counts (population) and the most frequent value for categories. The
+choice is announced.
+
+The raster and the polygons must share a CRS.
 }
 \examples{
-tmax <- terra::rast(
+tmax <- read_climate(
   system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
 adm_div <- terra::vect(
   system.file("extdata", "adm_div.gpkg", package = "climatic4economist"))
 
 extract_by_poly(tmax[[1:5]], adm_div)
+extract_by_poly(tmax[[1:5]], adm_div, weights = "coverage")
 }
 \seealso{
-\code{\link[terra]{extract}}, \code{\link[exactextractr]{exact_extract}}
+\code{\link[terra]{extract}}, \code{\link[exactextractr]{exact_extract}},
+\code{\link[=extract_weighted_by_poly]{extract_weighted_by_poly()}}, \code{\link[=extract_cell_by_poly]{extract_cell_by_poly()}}
 }

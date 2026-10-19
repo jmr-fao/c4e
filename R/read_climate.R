@@ -297,6 +297,12 @@ read_climate <- function(path, variable = NULL, unit = NULL, time_step = NULL,
     }
     files <- files[!is.na(files) & nzchar(files)]
     stored <- stored_raster_meta(x)
+    # context stored for another variable (e.g. a raster built on a template
+    # with terra::rast(template, vals = ...)) does not describe this one
+    if (!is.null(variable) && !is.null(stored$variable) &&
+        !identical(standard_variable(variable), stored$variable)) {
+        stored <- lapply(stored, \(value) NULL)
+    }
 
     # which dataset the files come from
     sources <- all_sources()

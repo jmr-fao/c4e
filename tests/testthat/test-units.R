@@ -103,7 +103,7 @@ test_that("converting the raster or the extracted table gives the same values", 
                     unit_cols = c("x_cell", "y_cell"))
 
     from_table <- suppressMessages(convert_unit(wide, "C"))
-    expect_equal(tibble::as_tibble(from_table), from_raster)
+    expect_equal(tibble::as_tibble(from_table), tibble::as_tibble(from_raster))
     expect_equal(c4e_meta(from_table, "unit"), "C")
     # coordinates are not data and stay untouched
     expect_equal(from_table$x_cell, wide$x_cell)

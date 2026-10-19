@@ -9,7 +9,9 @@ extract_weighted_by_poly(
   poly,
   stat = c("mean", "mode"),
   weights = NULL,
-  iteration = NULL
+  iteration = NULL,
+  id = NULL,
+  label = NULL
 )
 }
 \arguments{
@@ -23,13 +25,16 @@ extract_weighted_by_poly(
 \item{weights}{\code{NULL} (default) for area weights, or a single-layer
 \code{SpatRaster} of weights.}
 
-\item{iteration}{optional character to be print before computation. Usually,
-it is the name of the object on which the function is applied. This is useful
-when the function is used inside an apply family function to keep track of the
-iterations.}
+\item{iteration}{Deprecated; use \code{label}.}
+
+\item{id}{Optional name of the column of \code{poly} identifying the polygons.
+When \code{NULL}, \code{ID} or \code{ID_adm_div} is used when present.}
+
+\item{label}{Optional name shown in progress messages.}
 }
 \value{
-A \code{tibble} with one row per polygon: the attributes of \code{poly}, then
+A \code{c4e_tbl} carrying the raster's context, with one row per
+polygon: the attributes of \code{poly}, then
 one column per layer of \code{raster}, named after it.
 }
 \description{

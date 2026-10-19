@@ -249,9 +249,6 @@ test_that("find_year_file errors when no file matches", {
 test_that("the extraction helpers print the iteration label when given one", {
     expect_output(align_count_rast(two_cells(), two_cells(), iteration = "BEN"),
                   "Aligning: BEN")
-    expect_output(extract_weighted_by_poly(two_cells(), whole_poly(),
-                                           iteration = "BEN"),
-                  "Extracting: BEN")
     expect_output(erase_water_bodies(whole_poly(), water_mask(),
                                      iteration = "BEN"),
                   "Erasing water bodies: BEN")
@@ -260,6 +257,14 @@ test_that("the extraction helpers print the iteration label when given one", {
     expect_output(find_year_file(dir, 2015, year_regex = "(?<=pop_)\\d{4}",
                                  iteration = "BEN"),
                   "Finding year file: BEN")
+})
+
+test_that("extract_weighted_by_poly announces its label as a message", {
+    # since v2 the label is a message; `iteration` still works but is deprecated
+    expect_message(extract_weighted_by_poly(two_cells(), whole_poly(), label = "BEN"),
+                   "Extracting BEN")
+    lifecycle::expect_deprecated(suppressMessages(
+        extract_weighted_by_poly(two_cells(), whole_poly(), iteration = "BEN")))
 })
 
 test_that("the extraction helpers print nothing without an iteration label", {
