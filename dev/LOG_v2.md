@@ -13,7 +13,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 3 | Units | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-3` (cut from `v2-chunk-2`); needs push and a PR into `v2` after chunk 2 |
 | 4 | Raster readers | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-4` (cut from `v2-chunk-3`); needs push and a PR into `v2` after chunk 3 |
 | 5 | Extraction | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-5` (cut from `v2-chunk-4`); needs push and a PR into `v2` after chunk 4 |
-| 6 | Matrix kernel | ☐ | | | | |
+| 6 | Matrix kernel | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-6` (cut from `v2-chunk-5`); needs push and a PR into `v2` after chunk 5 |
 | 7 | Daily indicators | ☐ | | | | |
 | 8 | Standardised indices and parameters | ☐ | | | | |
 | 9 | Survey side | ☐ | | | | |
@@ -28,21 +28,25 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 1 to 5 are done locally and waiting for review.
+**Current chunk:** chunks 1 to 6 are done locally and waiting for review.
 Each branch was cut from the previous one (`v2-chunk-1` → ... →
-`v2-chunk-5`), so each contains the chunks before it.
+`v2-chunk-6`), so each contains the chunks before it.
 
 **Next steps (in order):**
-1. Jan: push `v2-chunk-1` to `v2-chunk-5`. Open the pull requests into `v2`
+1. Jan: push `v2-chunk-1` to `v2-chunk-6`. Open the pull requests into `v2`
    one at a time, in order, merging each once R-CMD-check is green, so each
    shows only its own commits. Mark each chunk done here once merged.
-2. Next chunk: 6, matrix kernel (plan §8 row 6, §10.1-10.2, §13): internal
-   `R/kernel.R` with `matrix -> matrix` functions (one row per unit or cell,
-   dates as columns) usable by both `calc_*` table methods and
-   `terra::app()`; exact equality with the v1 long-format functions on the
-   fixtures; `inst/bench/bench-kernel.R`. After it, chunk 7 (daily
-   indicators) has everything it needs. The `prepare_coord` /
-   `georef_coord` / window-object part of chunk 9 can also start.
+2. Next chunk: 7, daily indicators (plan §8 row 7): `calc_threshold_day()`,
+   `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`,
+   `calc_spell_percentile()`, `calc_spell_excess()`, `calc_heatwave()`,
+   `calc_condition()` built on `R/kernel.R` (`as_matrix_wide()`,
+   `flag_threshold()`, `excess_threshold()`, `run_length_rows()`,
+   `quantile_by_month()`, `lookup_by_month()`, `matrix_to_long()`), writing
+   the indicator registry; v1 functions must give identical tables. Decide
+   there what an all-missing unit-month percentile becomes: v1 returns the
+   exclusion threshold (`replace = c(l_thresh, u_thresh)`), the kernel
+   takes `replace` as an argument. Chunk 8 (SPI/SPEI, `calc_par`) can use
+   `spi_matrix()`.
 3. Indicator functions (chunk 7) call `resolve_unit(unit, meta)` from
    `R/units.R` to label thresholds and refuse a unit that contradicts the
    data.
@@ -55,7 +59,7 @@ Each branch was cut from the previous one (`v2-chunk-1` → ... →
    started))`.
 
 **Blocked / needs Jan:**
-- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-5`
+- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-6`
   (outward-facing, left to Jan).
 - This laptop runs R 4.5.0 while its packages were built for R 4.5.3, so
   every fresh worker or namespace load warns "package ... was built under R
@@ -110,6 +114,11 @@ Each branch was cut from the previous one (`v2-chunk-1` → ... →
 | 2026-10-19 | §14 | `extract_by_coord()` and `extract_cell_by_poly()` split by layers (`extract_in_blocks()`), not by units; their `chunk` counts layers per block | the result grows with the number of layers; every block keeps the same rows, so blocks bind side by side |
 | 2026-10-19 | §3, §10.4 | `raster` moved from Imports to Suggests | only the legacy `ave_point_density_2shp()` still calls `raster::`; it is removed in chunk 13 |
 | 2026-10-19 | §2 | `fill_missing_rast(fun)` defaulting from the kind is not done yet | not part of chunk 5; left for chunk 14 or whichever chunk touches it first |
+| 2026-10-19 | §8 | Chunk 6 branched from `v2-chunk-5` | Jan asked to start it before the earlier chunks were pushed |
+| 2026-10-19 | §13 | Rasters run the kernel through `apply_kernel_raster()` (own block reading and writing), not `terra::app()`; plan §13 and row 12 edited | probed on terra 1.9.46: `app()` calls its function once per cell with a vector, never with a block matrix |
+| 2026-10-19 | §10.2 | `spi_matrix()` fits each series on its own, with optional `furrr`; plan §10.2 edited | probed on SPEI 1.8.1: one call on a matrix gives the same numbers but took 9.2 s against 3.6 s for 300 series |
+| 2026-10-19 | §10.1 | `row_quantiles()` reproduces R's type-7 interpolation code exactly, vectorised over rows | v1 equality must hold, not just closeness |
+| 2026-10-19 | §10.7 | Benchmark at 1,000 units × 1,095 days and 10,000 units × 365 days rather than 10,000 × 1,095; results in `inst/bench/results.md`; `inst/bench` is build-ignored | v1 monthly percentiles alone took an hour at 10,000 × 365; the scripts are development tools |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -140,6 +149,31 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-19 — chunk 6 (laptop: FAO-Win, session: Claude)
+- Did: branch `v2-chunk-6` from `v2-chunk-5`. Probed `terra::app()` and
+  `SPEI::spi()` on matrices (see decisions). `R/kernel.R` (internal):
+  `as_matrix_wide()`, `matrix_to_long()`, `to_long()`, `flag_threshold()`,
+  `excess_threshold()`, `run_length_rows()`, `row_quantiles()`,
+  `quantile_by_month()`, `lookup_by_month()`, `spi_matrix()`,
+  `apply_kernel_raster()`. `inst/bench/bench-kernel.R` and
+  `inst/bench/results.md`. Plan §10.2 and §13 corrected.
+- Found: the kernel equals v1 exactly on the fixtures for long tables,
+  flags, excess, spells, monthly percentiles, relative flags and SPI. Speed:
+
+  | Case | Size | v1 | Kernel | Speed-up |
+  |---|---|---|---|---|
+  | Flags, excess, spells | 1,000 × 1,095 | 3.2 s | 0.4 s | 7× |
+  | Monthly percentiles | 1,000 × 1,095 | 131 s | 1.2 s | 113× |
+  | Flags, excess, spells | 10,000 × 365 | 7.6 s | 2.0 s | 4× |
+  | Monthly percentiles | 10,000 × 365 | 3,608 s | 4.0 s | 915× |
+
+  While the benchmark ran, a process check suggested it had stalled; it had
+  not (the CPU reading came from the launcher process, not R's worker).
+- Tests: 33 files, 448 tests, 1090 expectations, 0 failures; new
+  `test-kernel.R` (11 tests). Local `rcmdcheck` with CI's arguments: 0
+  errors, 0 warnings, 4 notes, none from the new code.
+- Next: see Next steps above.
 
 ### 2026-10-19 — chunk 5 (laptop: FAO-Win, session: Claude)
 - Did: branch `v2-chunk-5` from `v2-chunk-4`. `R/extract_helpers.R`
