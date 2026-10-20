@@ -17,7 +17,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 7 | Daily indicators | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
 | R | Rename to `c4e` (new repository) | 🔄 in progress | | 2026-10-20 | | committed on `main` of the new local repository; needs the GitHub repo and a push |
 | 8 | Standardised indices and parameters | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-8-std-index` of `c4e`; needs push and a PR into `main` |
-| 9 | Survey side | ☐ | | | | |
+| 9 | Survey side | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-9-survey` (cut from `chunk-8-std-index`); needs push and a PR into `main` after chunk 8 |
 | 10 | Export and inspection | ☐ | | | | |
 | 11 | Wrappers and presets | ☐ | | | | |
 | 12 | Grid methods and wrappers | ☐ | | | | |
@@ -29,25 +29,23 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** 8 is done on branch `chunk-8-std-index` (cut from
-`main` after the rename) and waits for review. The rename (chunk R) is
-committed on `main`; the GitHub repository did not exist yet when chunk 8
-was committed.
+**Current chunk:** chunks 8 and 9 are done on branches
+`chunk-8-std-index` and `chunk-9-survey` (the second cut from the first) and
+wait for review. The rename (chunk R) is committed on `main`. The GitHub
+repository `jmr-fao/c4e` did not exist yet when chunk 9 was committed.
 
 **Next steps (in order):**
 1. Jan: create the empty GitHub repository `jmr-fao/c4e` (no README,
    license or .gitignore, so the first push is clean), then push:
    `git push -u origin main` from the `c4e` folder. The R-CMD-check workflow
    runs on that push. Mark chunk R done here.
-2. Jan: push `chunk-8-std-index` and open a pull request into `main`.
-3. Next chunk: 9, survey side (plan §8 row 9): `prepare_coord()` with a
-   stable ID and survey metadata, `georef_coord()` reading lon/lat/crs from
-   meta, window objects (`window_lag()`, `window_season()`,
-   `window_fixed()`, `window_since()`), `summarise_by_interview()` on the
-   registry (one implementation, `stats`, `min_coverage`, chunking by
-   location), `summarise_by_period()`, `merge_with_survey()`,
-   `aggregate_to_adm()`. Before replacing a v1 function in place, save its
-   outputs with `dev/make_references.R`, as for `calc_par()`.
+2. Jan: push `chunk-8-std-index` and `chunk-9-survey`; open their pull
+   requests into `main` in order, merging chunk 8 first.
+3. Next chunk: 10, export and inspection (plan §8 row 10, §6, §9.7):
+   `write_stata()` (variable labels from the registry, 32-character names,
+   `codebook = TRUE` sidecar with labels and history), `indicator_label()`,
+   `summary.c4e_tbl()` / `validate_c4e()`. After it, chunk 11 (wrappers and
+   presets) has every step it chains.
 4. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`,
    `frame_matrix()`, `finish_frame()` and `run_indicator()`.
 5. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
@@ -140,6 +138,15 @@ was committed.
 | 2026-10-20 | §3 | SPEI water balance is precipitation minus the absolute evapotranspiration, matched by unit and date; v1 added PET by column position, expecting ERA5's negative sign | works with either sign convention and never mismatches columns |
 | 2026-10-20 | §3 | `calc_std_index()` takes several scales at once (`spi_1`, `spi_3`, ...); `transform` records them all | one call per variable instead of one per scale |
 | 2026-10-20 | §3 | Exported in chunk 8: `calc_std_index()`, `calc_std_threshold()`; `calc_par()` changed signature | |
+| 2026-10-20 | §8 | Chunk 9 branched from `chunk-8-std-index` | Jan asked to start it before chunk 8 was pushed |
+| 2026-10-20 | §9.1 | `prepare_coord()` IDs are built from the coordinates by default (`"30.12340_-0.54320"`, 5 decimals); `id_rule = "sequence"` gives v1's `"1"`, `"2"`, ... | the same location gets the same ID in every wave, subset and run |
+| 2026-10-20 | §3 | `prepare_coord()` keeps `lat_var`/`lon_var`, and `summarise_by_interview()` keeps v1's `by`/`id`/`interview`, instead of the `lon`/`lat` names in plan §3 | every existing script and test uses these names |
+| 2026-10-20 | §9.3 | Windows with less than `min_coverage` (default 0.8) of their days present, and windows with no data, give `NA` instead of v1's 0 or a dropped row | a count from half a window looks complete but is not |
+| 2026-10-20 | §11.3 | Season windows take the last season whose end is before the interview day; fixed windows are inclusive of `from` and `to`; since-windows run from the event to the day before the interview | |
+| 2026-10-20 | §3 | `aggregate_to_adm()` groups by division and any of `lag`, date, `month`, `period`, so it works on daily cell tables (giving area shares per day) as well as on window summaries | v1 grouped by division and lag only |
+| 2026-10-20 | §3 | `merge_with_survey()` returns a `c4e_tbl` when `new_value` has context, records the survey columns, and warns when a long table would explode beyond the memory budget | |
+| 2026-10-20 | tests | The `calc_par()` references, saved with v1's sequential IDs, are matched by cell coordinates | the coordinate IDs differ from the saved ones |
+| 2026-10-20 | §3 | Exported in chunk 9: `summarise_by_interview()`, `summarise_by_period()`, `window_lag()`, `window_season()`, `window_fixed()`, `window_since()`, `aggregate_to_adm()`; `prepare_coord()`, `georef_coord()`, `merge_with_survey()` extended | |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -171,6 +178,24 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-20 — chunk 9 (laptop: FAO-Win, session: Claude)
+- Did: branch `chunk-9-survey` from `chunk-8-std-index`. `prepare_coord()`
+  (coordinate IDs, survey columns recorded), `georef_coord()` (geom and CRS
+  from the metadata, CRS assumption announced), `merge_with_survey()`
+  (context kept, explosion warning), `R/windows.R` (four window types,
+  `window_frame()`, `expected_count()`), `R/summarise_by_interview.R`
+  (`summarise_by_interview()` on the registry with coverage, dropped
+  interviews reported, splitting by location; `summarise_by_period()`),
+  `R/aggregate_to_adm.R`.
+- Found: window summaries equal v1 `extr_day_by_interview()` and
+  `extr_spell_by_interview()` on the fixtures; the coordinate IDs broke the
+  ID-based matching of the saved `calc_par()` references (fixed in the
+  test).
+- Tests: 36 files, 491 tests, 1215 expectations, 0 failures; new
+  `test-survey.R` (16 tests). Local `rcmdcheck` with CI's arguments: 0
+  errors, 0 warnings, 4 notes, none from the new code.
+- Next: see Next steps above.
 
 ### 2026-10-20 — chunk 8 (laptop: FAO-Win, session: Claude)
 - Did: branch `chunk-8-std-index` in `c4e`. Saved v1 `calc_par()` outputs

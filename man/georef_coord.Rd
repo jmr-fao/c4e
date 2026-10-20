@@ -4,35 +4,40 @@
 \alias{georef_coord}
 \title{Georeference based on coordinates and coordinate reference system}
 \usage{
-georef_coord(df, geom, crs, id = NULL)
+georef_coord(df, geom = NULL, crs = NULL, id = NULL)
 }
 \arguments{
-\item{df}{A data frame.}
+\item{df}{A data frame, typically from \code{\link[=prepare_coord]{prepare_coord()}}.}
 
-\item{geom}{character. The field name(s) with the geometry data. Two names
-for x and y coordinates of points.}
+\item{geom}{character. The field names with the x and y coordinates of the
+points. Defaults to the columns recorded by \code{\link[=prepare_coord]{prepare_coord()}}.}
 
 \item{crs}{character. The coordinate reference system in one of the following
 formats: WKT/WKT2, \if{html}{\out{<authority>}}:\if{html}{\out{<code>}}, or PROJ-string notation. See
-\link[terra]{crs}.}
+\link[terra]{crs}. Defaults to the recorded CRS, else \code{"EPSG:4326"}.}
 
 \item{id}{Optional character string naming the column that identifies the
-units. When \code{NULL}, \code{ID} is used, or \code{ID_adm_div} when that is the only
-one present.}
+units. When \code{NULL}, the recorded key, \code{ID}, or \code{ID_adm_div} is used.}
 }
 \value{
-A \link[terra]{SpatVector} of points with one variable \code{ID} as
-location unique identifier.
+A \link[terra]{SpatVector} of points with one variable, the
+location identifier.
 }
 \description{
-This this function transform a data frame into a point
-\link[terra]{SpatVector}.
+Turns the distinct locations of a survey into a point
+\link[terra]{SpatVector}, one point per location ID, ready for
+\verb{extract_*()}.
+}
+\details{
+After \code{\link[=prepare_coord]{prepare_coord()}}, the coordinate columns are known and \code{geom} can be
+left out. Without a \code{crs}, the coordinates are taken as longitude and
+latitude on WGS 84 (\code{"EPSG:4326"}), which is announced.
 }
 \examples{
 survey <- read.csv(
   system.file("extdata", "survey.csv", package = "c4e"))
 coord <- prepare_coord(survey, lat_var = lat, lon_var = lon)
-georef_coord(coord, geom = c("lon", "lat"), crs = "EPSG:4326")
+georef_coord(coord)
 }
 \seealso{
 \link[terra:vect]{terra::vect}

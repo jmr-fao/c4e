@@ -113,10 +113,12 @@ test_that("thresholds need a standardised index to work on", {
 
 test_that("climatic parameters equal the v1 results on the fixtures", {
     reference <- readRDS(test_path("fixtures", "v1_calc_par.rds"))
+    # the references were saved with v1's sequential IDs; locations are
+    # matched by their cell coordinates, which do not depend on the ID rule
     same <- function(v2, v1) {
-        cols <- names(v1)
-        expect_equal(dplyr::arrange(tibble::as_tibble(v2)[cols], ID),
-                     dplyr::arrange(tibble::as_tibble(v1), ID))
+        cols <- setdiff(names(v1), "ID")
+        expect_equal(dplyr::arrange(tibble::as_tibble(v2)[cols], x_cell, y_cell),
+                     dplyr::arrange(tibble::as_tibble(v1)[cols], x_cell, y_cell))
     }
     tmax <- extracted("tmax_daily.tif")
     pre  <- extracted("pre_daily.tif")

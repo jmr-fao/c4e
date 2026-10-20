@@ -4,25 +4,56 @@
 \alias{prepare_coord}
 \title{Prepare ID for unique occurrences}
 \usage{
-prepare_coord(df, lat_var, lon_var)
+prepare_coord(
+  df,
+  lat_var,
+  lon_var,
+  id = NULL,
+  interview = NULL,
+  id_rule = c("coordinates", "sequence"),
+  digits = 5
+)
 }
 \arguments{
-\item{df}{A data frame}
+\item{df}{A data frame.}
 
 \item{lat_var}{\if{html}{\out{<data-masking>}} variable with the latitude coordinate}
 
 \item{lon_var}{\if{html}{\out{<data-masking>}} variable with the longitude coordinate}
+
+\item{id}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> Optional column
+identifying the survey units (households), recorded for later steps.}
+
+\item{interview}{<\code{\link[dplyr:dplyr_tidy_select]{tidy-select}}> Optional
+column with the interview dates, recorded for later steps.}
+
+\item{id_rule}{\code{"coordinates"} (stable IDs) or \code{"sequence"}.}
+
+\item{digits}{Decimals of the coordinates in a coordinate ID.}
 }
 \value{
-The same data frame \code{df} with an additional \code{ID} variable that
-identifies the unique locations.
+A \code{c4e_tbl}: \code{df} with an \code{ID} column first, keyed by \code{ID}, with
+the survey's columns recorded.
 }
 \description{
-This this function adds an \code{ID} columns that identifies unique occurrence
-based on unique coordinates.
+Adds an \code{ID} column identifying each unique location, and records which
+columns hold the coordinates, the household identifier and the interview
+date, so later steps (\code{\link[=georef_coord]{georef_coord()}}, \code{\link[=summarise_by_interview]{summarise_by_interview()}}) find
+them without being told again.
+}
+\details{
+By default the ID is built from the coordinates themselves (longitude and
+latitude rounded to \code{digits} decimals, e.g. \code{"30.12340_-0.54320"}), so the
+same location gets the same ID in every wave, subset and run. With
+\code{id_rule = "sequence"} the IDs are \code{"1"}, \code{"2"}, ... in the order of the
+sorted coordinates, as in v1; they change whenever the set of locations
+changes.
+
+Rows are sorted by latitude and longitude.
 }
 \examples{
 survey <- read.csv(
   system.file("extdata", "survey.csv", package = "c4e"))
-prepare_coord(survey, lat_var = lat, lon_var = lon)
+prepare_coord(survey, lat_var = lat, lon_var = lon, id = hhid,
+              interview = interview)
 }

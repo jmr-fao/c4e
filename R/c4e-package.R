@@ -20,5 +20,9 @@
 #' @author Jan Martin Rossi
 #'
 #' @keywords internal
-#' @importFrom rlang %||%
+#' @importFrom rlang %||% .data
 "_PACKAGE"
+
+# columns named in dplyr::join_by() inequality conditions, which take bare
+# names only
+utils::globalVariables(c("date", "w_start", "w_end"))

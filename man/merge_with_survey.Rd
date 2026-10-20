@@ -4,7 +4,7 @@
 \alias{merge_with_survey}
 \title{Merge survey observations with other data.}
 \usage{
-merge_with_survey(survey, new_value, iteration = NULL, id = NULL)
+merge_with_survey(survey, new_value, iteration = NULL, id = NULL, label = NULL)
 }
 \arguments{
 \item{survey}{A data frame. It must contain the unit identifier column used
@@ -13,21 +13,28 @@ for the merging.}
 \item{new_value}{A data frame. The data to be merge with the
 survey. It must carry the same identifier column as \code{survey}.}
 
-\item{iteration}{optional character to be print before computation. Usually,
-it is the name of the object on which the function is applied. This is useful
-when the function is used inside an apply family function to keep track of the
-iterations.}
+\item{iteration}{Deprecated; use \code{label}.}
 
 \item{id}{Optional character string naming the column that identifies the
 units. When \code{NULL}, \code{ID} is used, or \code{ID_adm_div} when that is the only
 one present.}
+
+\item{label}{Optional name shown in progress messages.}
 }
 \value{
 A \link[tibble]{tbl_df}, with variables from the survey and new
-weather values.
+weather values: a \code{c4e_tbl} with the context of \code{new_value} when it has
+one, recording which columns came from the survey.
 }
 \description{
 The two tables are matched on the column identifying the units.
+}
+\details{
+Joining a long daily table onto a survey repeats every day for every
+household at the location, which grows quickly; when the result would
+exceed the memory budget a warning points to \code{\link[=summarise_by_interview]{summarise_by_interview()}},
+which summarises each household's reference period without building the
+joined table.
 }
 \examples{
 tmax <- terra::rast(
