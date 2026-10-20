@@ -18,7 +18,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | R | Rename to `c4e` (new repository) | 🔄 in progress | | 2026-10-20 | | committed on `main` of the new local repository; needs the GitHub repo and a push |
 | 8 | Standardised indices and parameters | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-8-std-index` of `c4e`; needs push and a PR into `main` |
 | 9 | Survey side | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-9-survey` (cut from `chunk-8-std-index`); needs push and a PR into `main` after chunk 8 |
-| 10 | Export and inspection | ☐ | | | | |
+| 10 | Export and inspection | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-10-export` (cut from `chunk-9-survey`); needs push and a PR into `main` after chunk 9 |
 | 11 | Wrappers and presets | ☐ | | | | |
 | 12 | Grid methods and wrappers | ☐ | | | | |
 | 13 | Deprecations and removals | ☐ | | | | |
@@ -29,23 +29,25 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 8 and 9 are done on branches
-`chunk-8-std-index` and `chunk-9-survey` (the second cut from the first) and
-wait for review. The rename (chunk R) is committed on `main`. The GitHub
-repository `jmr-fao/c4e` did not exist yet when chunk 9 was committed.
+**Current chunk:** chunks 8, 9 and 10 are done on branches
+`chunk-8-std-index`, `chunk-9-survey` and `chunk-10-export` (each cut from
+the previous) and wait for review. The rename (chunk R) is committed on
+`main`. The GitHub repository `jmr-fao/c4e` did not exist yet when chunk 10
+was committed.
 
 **Next steps (in order):**
 1. Jan: create the empty GitHub repository `jmr-fao/c4e` (no README,
    license or .gitignore, so the first push is clean), then push:
    `git push -u origin main` from the `c4e` folder. The R-CMD-check workflow
    runs on that push. Mark chunk R done here.
-2. Jan: push `chunk-8-std-index` and `chunk-9-survey`; open their pull
-   requests into `main` in order, merging chunk 8 first.
-3. Next chunk: 10, export and inspection (plan §8 row 10, §6, §9.7):
-   `write_stata()` (variable labels from the registry, 32-character names,
-   `codebook = TRUE` sidecar with labels and history), `indicator_label()`,
-   `summary.c4e_tbl()` / `validate_c4e()`. After it, chunk 11 (wrappers and
-   presets) has every step it chains.
+2. Jan: push `chunk-8-std-index`, `chunk-9-survey` and `chunk-10-export`;
+   open their pull requests into `main` in order.
+3. Next chunk: 11, wrappers and presets (plan §8 row 11, §12):
+   `weather_extremes()`, `climate_indices()`, `static_controls()`,
+   `time_varying_controls()` as `cli_progress_step()` stages with
+   `dry_run`, list-of-surveys mapping with `vctrs::vec_rbind()`;
+   `R/presets.R` and `list_presets()`; the `*_control()` constructors.
+   Chunk 12 (grid methods) can follow or run alongside.
 4. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`,
    `frame_matrix()`, `finish_frame()` and `run_indicator()`.
 5. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
@@ -147,6 +149,13 @@ repository `jmr-fao/c4e` did not exist yet when chunk 9 was committed.
 | 2026-10-20 | §3 | `merge_with_survey()` returns a `c4e_tbl` when `new_value` has context, records the survey columns, and warns when a long table would explode beyond the memory budget | |
 | 2026-10-20 | tests | The `calc_par()` references, saved with v1's sequential IDs, are matched by cell coordinates | the coordinate IDs differ from the saved ones |
 | 2026-10-20 | §3 | Exported in chunk 9: `summarise_by_interview()`, `summarise_by_period()`, `window_lag()`, `window_season()`, `window_fixed()`, `window_since()`, `aggregate_to_adm()`; `prepare_coord()`, `georef_coord()`, `merge_with_survey()` extended | |
+| 2026-10-20 | §8 | Chunk 10 branched from `chunk-9-survey` | Jan asked to start it before chunk 9 was pushed |
+| 2026-10-20 | §6 | `write_stata()` names columns with its own rule (`-` before a digit → `m`, `.` between digits → `p`, other invalid characters → `_`; date columns as in v1); `to_stata_format()` is unchanged | `to_stata_format()` turns `-1.5` into `_15`, which collides with a threshold of 15 |
+| 2026-10-20 | §6 | Labels of window summaries use a short window phrase ("per 1-year window"); the `lag` column carries the full window description | full descriptions pushed labels past Stata's 80 characters |
+| 2026-10-20 | §6 | `c4e_labels()` is exported; `indicator_label()` stays internal | users and the codebook need the labels without writing a file |
+| 2026-10-20 | §9.7 | `validate_c4e()` checks duplicate rows, empty indicators, units without data and date gaps; `summary.c4e_tbl()` adds the context, counts, and per-indicator missing share and mean | |
+| 2026-10-20 | §3 | Window-summary registry entries now record their source's kind (`of`), step and definition | labels must know whether a sum is of days or of an excess |
+| 2026-10-20 | §6 | Exported in chunk 10: `write_stata()`, `c4e_labels()`, `validate_c4e()`, `summary()` method for `c4e_tbl` | |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -178,6 +187,21 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-20 — chunk 10 (laptop: FAO-Win, session: Claude)
+- Did: branch `chunk-10-export` from `chunk-9-survey`. `R/labels.R`
+  (`c4e_labels()` and per-kind labels), `R/write_stata.R` (`write_stata()`
+  with labels, Stata-safe names, name-length and clash checks, logical to
+  0/1, `codebook = TRUE` Markdown sidecar with context, variables and
+  history), `R/inspect.R` (`validate_c4e()` and `summary.c4e_tbl()` with
+  print methods). Summary registry entries record their source kind.
+- Found: `to_stata_format()` loses signs and decimals (see decisions); the
+  first label draft ran past 80 characters.
+- Tests: 37 files, 501 tests, 1240 expectations, 0 failures; new
+  `test-write-stata.R` (10 tests, snapshots of every label kind, the
+  checks and the summary). Local `rcmdcheck` with CI's arguments: 0
+  errors, 0 warnings, 4 notes, none from the new code.
+- Next: see Next steps above.
 
 ### 2026-10-20 — chunk 9 (laptop: FAO-Win, session: Claude)
 - Did: branch `chunk-9-survey` from `chunk-8-std-index`. `prepare_coord()`

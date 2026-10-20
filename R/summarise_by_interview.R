@@ -280,7 +280,8 @@ summary_entries <- function(plans, meta, window) {
                 min_spell = source$min_spell, index = source$index,
                 scale = source$scale, condition = source$condition,
                 unit = source$unit, variable = source$variable,
-                window = window$type)
+                of = source$kind, definition = source$definition,
+                step = source$step, window = window$type)
         }
     }
     entries
