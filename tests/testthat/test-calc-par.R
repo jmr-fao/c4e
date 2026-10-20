@@ -24,7 +24,7 @@ test_that("the fixture spans one observation per distinct month", {
 })
 
 test_that("calc_par computes a statistic per spatial unit", {
-    out <- calc_par(monthly_df(), pars = list(avg = mean))
+    out <- calc_par(monthly_df(), fn = list(avg = mean))
 
     expect_s3_class(out, "tbl_df")
     expect_equal(nrow(out), 2L)
@@ -33,7 +33,7 @@ test_that("calc_par computes a statistic per spatial unit", {
 })
 
 test_that("calc_par accepts several statistics at once", {
-    out <- calc_par(monthly_df(), pars = list(avg = mean, total = sum))
+    out <- calc_par(monthly_df(), fn = list(avg = mean, total = sum))
 
     expect_named(out, c("ID", "avg", "total"))
     # 24 monthly observations per ID
@@ -41,7 +41,7 @@ test_that("calc_par accepts several statistics at once", {
 })
 
 test_that("calc_par applies a prefix and a suffix to the statistic columns", {
-    out <- calc_par(monthly_df(), pars = list(avg = mean),
+    out <- calc_par(monthly_df(), fn = list(avg = mean),
                     prefix = "pre", suffix = "10yrs")
 
     expect_named(out, c("ID", "pre_avg_10yrs"))
@@ -54,28 +54,28 @@ test_that("calc_par keeps every identifier column it recognises", {
     df$x_cell <- c(10, 20)
     df$y_cell <- c(30, 40)
 
-    out <- calc_par(df, pars = list(avg = mean))
+    out <- calc_par(df, fn = list(avg = mean))
     expect_true(all(c("ID", "x_cell", "y_cell") %in% names(out)))
 })
 
-test_that("calc_par averages yearly totals when agg_period is 'year'", {
+test_that("calc_par averages yearly totals when period is 'year'", {
     # 12 months of 1 per year -> yearly total 12, averaged over 2 years -> 12
-    out <- calc_par(monthly_df(), pars = list(total = sum), agg_period = "year")
+    out <- calc_par(monthly_df(), fn = list(total = sum), period = "year")
 
     expect_equal(nrow(out), 2L)
     expect_equal(out$total, c(12, 120))
 })
 
-test_that("calc_par rejects an unsupported agg_period", {
-    expect_error(calc_par(monthly_df(), pars = list(avg = mean),
-                          agg_period = "decade"),
+test_that("calc_par rejects an unsupported period", {
+    expect_error(calc_par(monthly_df(), fn = list(avg = mean),
+                          period = "decade"),
                  "Unsupported")
 })
 
 test_that("calc_par warns when the last date is not a December month end", {
     df <- monthly_df(values = 1, from = "2022-01-01", to = "2023-06-01")
 
-    expect_warning(calc_par(df, pars = list(total = sum), agg_period = "year"),
+    expect_warning(calc_par(df, fn = list(total = sum), period = "year"),
                    "not the last day of a month")
 })
 
@@ -90,21 +90,21 @@ test_that("month aggregation stops on data already at monthly resolution", {
     # every period holds one observation, so there is nothing to aggregate
     df <- monthly_df(values = 1)
 
-    expect_error(calc_par(df, pars = list(total = sum), agg_period = "month"),
+    expect_error(calc_par(df, fn = list(total = sum), period = "month"),
                  "already at monthly resolution")
 })
 
 test_that("the monthly-resolution error names the alternatives", {
     df <- monthly_df(values = 1)
-    expect_error(calc_par(df, pars = list(total = sum), agg_period = "month"),
-                 "agg_period = NULL")
+    expect_error(calc_par(df, fn = list(total = sum), period = "month"),
+                 "period = NULL")
 })
 
 test_that("partial months are dropped whether they hold one day or several", {
     # a full December, preceded by a November sliver of varying length
     for (n_nov in c(1, 2, 5)) {
         df <- daily_df(as.Date("2023-11-30") - (n_nov - 1), "2023-12-31")
-        out <- calc_par(df, pars = list(total = sum), agg_period = "month")
+        out <- calc_par(df, fn = list(total = sum), period = "month")
         # the sliver never enters the average, so December stands alone
         expect_equal(out$total, 31)
     }
@@ -113,7 +113,7 @@ test_that("partial months are dropped whether they hold one day or several", {
 test_that("a month above the coverage threshold is kept", {
     # November represented by 27 of its 30 days is 0.9 coverage
     df <- daily_df("2023-11-04", "2023-12-31")
-    out <- calc_par(df, pars = list(total = sum), agg_period = "month")
+    out <- calc_par(df, fn = list(total = sum), period = "month")
 
     expect_equal(out$total, mean(c(27, 31)))
 })
@@ -122,8 +122,8 @@ test_that("min_coverage moves the threshold", {
     # November holds 15 of 30 days: kept at 0.5, dropped at 0.8
     df <- daily_df("2023-11-16", "2023-12-31")
 
-    strict <- calc_par(df, pars = list(total = sum), agg_period = "month")
-    relaxed <- calc_par(df, pars = list(total = sum), agg_period = "month",
+    strict <- calc_par(df, fn = list(total = sum), period = "month")
+    relaxed <- calc_par(df, fn = list(total = sum), period = "month",
                         min_coverage = 0.5)
 
     expect_equal(strict$total, 31)
@@ -132,7 +132,7 @@ test_that("min_coverage moves the threshold", {
 
 test_that("min_coverage = 0 keeps every period", {
     df <- daily_df("2023-11-30", "2023-12-31")
-    out <- calc_par(df, pars = list(total = sum), agg_period = "month",
+    out <- calc_par(df, fn = list(total = sum), period = "month",
                     min_coverage = 0)
     expect_equal(out$total, mean(c(1, 31)))
 })
@@ -140,27 +140,27 @@ test_that("min_coverage = 0 keeps every period", {
 test_that("the coverage error reports the best period reached", {
     # nothing close to a full month, so the message quotes the shortfall
     df <- daily_df("2023-12-25", "2023-12-31")
-    expect_error(calc_par(df, pars = list(total = sum), agg_period = "month"),
+    expect_error(calc_par(df, fn = list(total = sum), period = "month"),
                  "most complete period")
 })
 
 test_that("calc_par validates min_coverage", {
     df <- daily_df("2023-10-01", "2023-12-31")
-    expect_error(calc_par(df, pars = list(total = sum), agg_period = "month",
+    expect_error(calc_par(df, fn = list(total = sum), period = "month",
                           min_coverage = 1.5), "between 0 and 1")
-    expect_error(calc_par(df, pars = list(total = sum), agg_period = "month",
+    expect_error(calc_par(df, fn = list(total = sum), period = "month",
                           min_coverage = -1), "between 0 and 1")
-    expect_error(calc_par(df, pars = list(total = sum), agg_period = "month",
+    expect_error(calc_par(df, fn = list(total = sum), period = "month",
                           min_coverage = c(0.5, 0.8)), "between 0 and 1")
 })
 
 test_that("min_coverage does not affect the other aggregation paths", {
     df <- monthly_df(values = 1)
-    expect_equal(calc_par(df, pars = list(avg = mean), min_coverage = 0.9)$avg,
-                 calc_par(df, pars = list(avg = mean))$avg)
-    expect_equal(calc_par(df, pars = list(total = sum), agg_period = "year",
+    expect_equal(calc_par(df, fn = list(avg = mean), min_coverage = 0.9)$avg,
+                 calc_par(df, fn = list(avg = mean))$avg)
+    expect_equal(calc_par(df, fn = list(total = sum), period = "year",
                           min_coverage = 0.9)$total,
-                 calc_par(df, pars = list(total = sum), agg_period = "year")$total)
+                 calc_par(df, fn = list(total = sum), period = "year")$total)
 })
 
 test_that("month aggregation summarises daily data within each month", {
@@ -169,7 +169,7 @@ test_that("month aggregation summarises daily data within each month", {
     df <- data.frame(ID = "1")
     for (d in dates) df[[d]] <- 1
 
-    out <- calc_par(df, pars = list(total = sum), agg_period = "month")
+    out <- calc_par(df, fn = list(total = sum), period = "month")
     # three ~monthly bins of roughly 30 daily values each
     expect_equal(nrow(out), 1L)
     expect_gt(out$total, 25)
@@ -180,8 +180,8 @@ test_that("calc_par propagates NA handling from the supplied function", {
     df <- monthly_df()
     df[[2]] <- c(NA, 10)
 
-    naive <- calc_par(df, pars = list(avg = mean))
-    robust <- calc_par(df, pars = list(avg = \(x) mean(x, na.rm = TRUE)))
+    naive <- calc_par(df, fn = list(avg = mean))
+    robust <- calc_par(df, fn = list(avg = \(x) mean(x, na.rm = TRUE)))
 
     expect_true(is.na(naive$avg[1]))
     expect_false(is.na(robust$avg[1]))

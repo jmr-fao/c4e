@@ -16,7 +16,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 6 | Matrix kernel | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
 | 7 | Daily indicators | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
 | R | Rename to `c4e` (new repository) | 🔄 in progress | | 2026-10-20 | | committed on `main` of the new local repository; needs the GitHub repo and a push |
-| 8 | Standardised indices and parameters | ☐ | | | | |
+| 8 | Standardised indices and parameters | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-8-std-index` of `c4e`; needs push and a PR into `main` |
 | 9 | Survey side | ☐ | | | | |
 | 10 | Export and inspection | ☐ | | | | |
 | 11 | Wrappers and presets | ☐ | | | | |
@@ -29,23 +29,28 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** R, the rename. The package is now `c4e`, in its own
-repository (local folder `Documents/GitHub/c4e`, remote
-`https://github.com/jmr-fao/c4e.git`), seeded from `v2-chunk-7` of
-`climatic4economist` with the full history. Chunks 1 to 7 are in its `main`.
+**Current chunk:** 8 is done on branch `chunk-8-std-index` (cut from
+`main` after the rename) and waits for review. The rename (chunk R) is
+committed on `main`; the GitHub repository did not exist yet when chunk 8
+was committed.
 
 **Next steps (in order):**
 1. Jan: create the empty GitHub repository `jmr-fao/c4e` (no README,
    license or .gitignore, so the first push is clean), then push:
    `git push -u origin main` from the `c4e` folder. The R-CMD-check workflow
    runs on that push. Mark chunk R done here.
-2. Next chunk: 8, standardised indices and parameters (plan §8 row 8), on a
-   branch of `c4e` merged into `main` by pull request:
-   `calc_std_index()` on `spi_matrix()`, `calc_std_threshold()`,
-   `calc_par()` with `prefix` from the variable.
-3. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`,
+2. Jan: push `chunk-8-std-index` and open a pull request into `main`.
+3. Next chunk: 9, survey side (plan §8 row 9): `prepare_coord()` with a
+   stable ID and survey metadata, `georef_coord()` reading lon/lat/crs from
+   meta, window objects (`window_lag()`, `window_season()`,
+   `window_fixed()`, `window_since()`), `summarise_by_interview()` on the
+   registry (one implementation, `stats`, `min_coverage`, chunking by
+   location), `summarise_by_period()`, `merge_with_survey()`,
+   `aggregate_to_adm()`. Before replacing a v1 function in place, save its
+   outputs with `dev/make_references.R`, as for `calc_par()`.
+4. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`,
    `frame_matrix()`, `finish_frame()` and `run_indicator()`.
-4. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
+5. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
    empty_meta()`, `started <- Sys.time()`, resolve each argument with
    `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
    is given, wrap heavy work in `with_chunks()` with a `mem_estimate`, and
@@ -130,6 +135,11 @@ repository (local folder `Documents/GitHub/c4e`, remote
 | 2026-10-20 | §8 | Version restarts at `0.1.0.9000`; the first release is `c4e` 0.1.0 (or 1.0.0) | new package |
 | 2026-10-20 | §14 | DESCRIPTION title and description rewritten; the "title case" and "complete sentences" R CMD check notes are gone | part of the rename |
 | 2026-10-20 | repo | `CLAUDE.md` and `AGENTS.md` rewritten for `c4e` (AGENTS.md mirrors CLAUDE.md); the old vignettes still call `climatic4economist::` and are ported in chunks 15 and 16 | the instructions must name the right package and branch rules |
+| 2026-10-20 | §3 | `calc_par()` is rewritten in place under the same name: `pars` → `fn` (also accepts function names or one function), `agg_period` → `period`, `prefix` defaults to the variable (announced; `FALSE` for none); v1's windows anchored on the last date and its coverage rule are kept | the name was already right; equality with v1 is checked against saved outputs |
+| 2026-10-20 | §8 chunk 13 | Reference files start now: `dev/make_references.R` saves v1 outputs on the fixtures to `tests/testthat/fixtures/v1_<function>.rds` before a v1 function is replaced; first file `v1_calc_par.rds` | chunk 8 replaces `calc_par()` in place, so v1 cannot be called at test time |
+| 2026-10-20 | §3 | SPEI water balance is precipitation minus the absolute evapotranspiration, matched by unit and date; v1 added PET by column position, expecting ERA5's negative sign | works with either sign convention and never mismatches columns |
+| 2026-10-20 | §3 | `calc_std_index()` takes several scales at once (`spi_1`, `spi_3`, ...); `transform` records them all | one call per variable instead of one per scale |
+| 2026-10-20 | §3 | Exported in chunk 8: `calc_std_index()`, `calc_std_threshold()`; `calc_par()` changed signature | |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -161,6 +171,26 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-20 — chunk 8 (laptop: FAO-Win, session: Claude)
+- Did: branch `chunk-8-std-index` in `c4e`. Saved v1 `calc_par()` outputs
+  on the fixtures (`dev/make_references.R`,
+  `tests/testthat/fixtures/v1_calc_par.rds`). `R/calc_std_index.R`:
+  `calc_std_index()` (SPI/SPEI on `spi_matrix()`, several scales, water
+  balance from `pet` matched by unit and date, monthly data required) and
+  `calc_std_threshold()` (signed names such as `spi3_blw_-1.5`, registered
+  flags that `calc_spell()` picks up). `R/calc_par.R` rewritten: wide or
+  long input, `fn`/`period`, prefix from the variable, registry entries,
+  splitting by unit; the v1 helpers `aggregate_by_year()` and
+  `aggregate_by_month()` are gone. `test-calc-par.R` moved to the v2
+  argument names.
+- Found: SPI and SPEI equal v1's `compute_spi()`/`compute_spei()`; the new
+  `calc_par()` equals the saved v1 outputs, including v1's warning on
+  monthly data labelled by the first of the month.
+- Tests: 35 files, 475 tests, 1168 expectations, 0 failures; new
+  `test-std-index.R` (11 tests). Local `rcmdcheck` with CI's arguments: 0
+  errors, 0 warnings, 4 notes, none from the new code.
+- Next: see Next steps above.
 
 ### 2026-10-20 — rename to c4e (laptop: FAO-Win, session: Claude)
 - Did: cloned `climatic4economist` at `v2-chunk-7` into `Documents/GitHub/c4e`

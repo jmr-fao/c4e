@@ -34,11 +34,14 @@ calc_condition(x, warm = value > 30, mild = value > 27 & value <= 30)
 \seealso{
 Other indicators:
 \code{\link[=calc_heatwave]{calc_heatwave()}},
+\code{\link[=calc_par]{calc_par()}},
 \code{\link[=calc_percentile]{calc_percentile()}},
 \code{\link[=calc_percentile_day]{calc_percentile_day()}},
 \code{\link[=calc_spell]{calc_spell()}},
 \code{\link[=calc_spell_excess]{calc_spell_excess()}},
 \code{\link[=calc_spell_percentile]{calc_spell_percentile()}},
+\code{\link[=calc_std_index]{calc_std_index()}},
+\code{\link[=calc_std_threshold]{calc_std_threshold()}},
 \code{\link[=calc_threshold_day]{calc_threshold_day()}}
 }
 \concept{indicators}

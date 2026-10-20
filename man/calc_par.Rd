@@ -2,74 +2,78 @@
 % Please edit documentation in R/calc_par.R
 \name{calc_par}
 \alias{calc_par}
-\title{Calculate Aggregated Parameters with Optional Temporal Aggregation}
+\title{Climatic parameters per unit}
 \usage{
 calc_par(
-  df,
-  pars,
+  x,
+  fn,
+  period = NULL,
+  min_coverage = 0.8,
   prefix = NULL,
   suffix = NULL,
-  agg_period = NULL,
-  min_coverage = 0.8
+  id = NULL,
+  label = NULL,
+  chunk = "auto"
 )
 }
 \arguments{
-\item{df}{A data frame containing spatial identifier columns and numeric
-columns representing time-indexed observations. Time columns are expected
-to begin with a four-digit year (e.g. \code{"200101"}, \code{"2001-01-01"}).}
+\item{x}{A wide table from \verb{extract_*()}, or a long table.}
 
-\item{pars}{A function or a named list of functions applied to the values.
-For example, \code{mean} or \code{list(avg = mean, total = sum)}. Function names
-are used to construct output column names.}
+\item{fn}{The statistics: a named list of functions
+(\code{list(avg = mean, total = sum)}), a character vector of function names
+(\code{c("mean", "sd")}) or a single function. Functions receive the values
+with any \code{NA}, so handle them as needed (\verb{\\(v) mean(v, na.rm = TRUE)}).}
 
-\item{prefix}{Optional character string added as a prefix to the resulting
-parameter columns. Defaults to \code{NULL}.}
+\item{period}{\code{NULL} (all observations together), \code{"year"} or \code{"month"}.}
 
-\item{suffix}{Optional character string added as a suffix to the resulting
-parameter columns. Defaults to \code{NULL}.}
+\item{min_coverage}{Number between 0 and 1: the share of a month's days
+that must be present for the month to count. Used only when
+\code{period = "month"}.}
 
-\item{agg_period}{Optional character string specifying an intermediate
-temporal aggregation level. Supported values are \code{"year"} and \code{"month"}.
-If provided, aggregation is performed within each period before averaging
-across periods. Defaults to \code{NULL}.}
+\item{prefix}{Column name prefix; by default the variable, \code{FALSE} for
+none.}
 
-\item{min_coverage}{Number between 0 and 1. The share of a month's days that
-must be present for that month to enter the average. Used only when
-\code{agg_period = "month"}. Defaults to \code{0.8}, so a 31-day month needs at
-least 25 observations. Set to \code{0} to keep every period.}
+\item{suffix}{Optional column name suffix.}
+
+\item{id}{Optional name of the unit identifier column.}
+
+\item{label}{Optional name shown in progress messages.}
+
+\item{chunk}{\code{"auto"} splits the work by unit when it would not fit in
+memory; a whole number forces that many units per chunk; \code{FALSE} never
+splits.}
 }
 \value{
-A tibble with one row per spatial unit and columns containing the
-aggregated statistics defined in \code{pars}. Output column names are taken from
-the names of \code{pars}, optionally wrapped by \code{prefix} and \code{suffix} as
-\code{"<prefix>_<name>_<suffix>"}.
+A \code{c4e_tbl} with one row per unit: its identifiers and one column
+per statistic, registered with the statistic and period.
 }
 \description{
-Computes summary statistics for spatial units from time-indexed columns.
-The function reshapes the input data to long format and applies user-defined
-summary functions to the values associated with each spatial identifier.
+Computes summary statistics of each unit's series, such as the long-run
+mean and standard deviation of temperature, or the average yearly rainfall.
 }
 \details{
-When \code{agg_period} is specified, the function performs a two-step aggregation:
-values are first aggregated within each temporal period (e.g. year or month)
-using the functions provided in \code{pars}, and the resulting statistics are then
-averaged across periods. If \code{agg_period = NULL}, parameters are computed
-directly across all available observations.
+With \code{period}, the statistics are first computed within each period and
+then averaged across periods: \verb{fn = list(total = sum), period = "year"}
+gives the average yearly total. Periods are counted back from the last
+date of the data, so the last period always ends on the last observation:
+yearly periods are the 12-month windows ending there, monthly periods the
+one-month windows. When the last date is not the end of December (yearly)
+or of a month (monthly), a warning says so, because the windows then do
+not follow calendar years or months.
+
+Columns are named \verb{<prefix>_<statistic>_<suffix>}. The prefix defaults to
+the variable recorded upstream (announced), so a temperature table gives
+\code{tmax_mean}, \code{tmax_sd}.
 }
 \section{Monthly coverage}{
 
-With \code{agg_period = "month"} the values are first summarised within each
-month and those monthly statistics are then averaged. A month represented by
-only a handful of days would otherwise enter that average as though it were
-a whole month, dragging the result toward the partial period. \code{min_coverage}
-guards against this by comparing the observations present in each window
-against the number of days the window actually spans.
-
-If no month reaches the threshold the function stops rather than returning
-an empty result. The most common cause is passing data that is already
-monthly: each period then holds a single observation, so there is nothing to
-aggregate within a month. Use \code{agg_period = NULL} to summarise across all
-observations, or \code{agg_period = "year"} to average monthly values by year.
+With \code{period = "month"} a month represented by only a handful of days would
+enter the average as though it were complete. \code{min_coverage} guards
+against this by comparing the observations present in each window with the
+number of days it spans. If no month reaches it, the function stops; the
+most common cause is data already at monthly resolution, for which
+\code{period = NULL} or \code{period = "year"} are the right choices. Monthly input
+asked for monthly periods is refused at once.
 }
 
 \examples{
@@ -78,16 +82,27 @@ df <- data.frame(
   `200101` = c(10, 20),
   `200102` = c(15, 25),
   `200201` = c(5, 15),
-  `200202` = c(10, 20)
+  `200202` = c(10, 20),
+  check.names = FALSE
 )
 
 # Mean across all observations
-calc_par(df, pars = list(avg = mean))
+calc_par(df, fn = list(avg = mean))
 
 # Average of yearly totals
-calc_par(
-  df,
-  pars = list(total = sum),
-  agg_period = "year"
-)
+calc_par(df, fn = list(total = sum), period = "year")
 }
+\seealso{
+Other indicators:
+\code{\link[=calc_condition]{calc_condition()}},
+\code{\link[=calc_heatwave]{calc_heatwave()}},
+\code{\link[=calc_percentile]{calc_percentile()}},
+\code{\link[=calc_percentile_day]{calc_percentile_day()}},
+\code{\link[=calc_spell]{calc_spell()}},
+\code{\link[=calc_spell_excess]{calc_spell_excess()}},
+\code{\link[=calc_spell_percentile]{calc_spell_percentile()}},
+\code{\link[=calc_std_index]{calc_std_index()}},
+\code{\link[=calc_std_threshold]{calc_std_threshold()}},
+\code{\link[=calc_threshold_day]{calc_threshold_day()}}
+}
+\concept{indicators}
