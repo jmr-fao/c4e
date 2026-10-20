@@ -4,6 +4,12 @@
 #' standardized measure of dispersion, defined as the ratio of the standard
 #' deviation to the mean.
 #'
+#' The ratio is meaningful only on a scale with a true zero. For
+#' temperatures, use kelvin: in Celsius or Fahrenheit the same series gives
+#' different values, and a mean near zero inflates the ratio without
+#' bound. [calc_par()] converts C and F to kelvin for this statistic by
+#' itself.
+#'
 #' @param x A numeric vector.
 #' @param na_rm A logical value indicating whether to remove `NA` values before
 #'   computation. Default is `TRUE`.

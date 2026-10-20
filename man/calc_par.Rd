@@ -76,6 +76,19 @@ most common cause is data already at monthly resolution, for which
 asked for monthly periods is refused at once.
 }
 
+\section{Coefficient of variation of temperatures}{
+
+A coefficient of variation divides by the mean, so it needs a scale with
+a true zero. Celsius and Fahrenheit have none: the same place would score
+differently in each, and a place averaging 0 C would divide by zero.
+Statistics named \code{cv} (or with \code{cv} as a word of their name, such as
+\code{temp_cv}), and \code{\link[=cv]{cv()}} itself, are therefore computed on kelvin when the
+data are in C or F, with a message; the registry records
+\code{ratio_unit = "K"}. The values look small, since the mean in the
+denominator is near 273 rather than 20. Data with no recorded unit whose
+variable is a temperature give a warning, because the scale is unknown.
+}
+
 \examples{
 df <- data.frame(
   ID = c(1, 2),

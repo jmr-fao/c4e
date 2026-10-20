@@ -25,6 +25,17 @@
 #' `period = NULL` or `period = "year"` are the right choices. Monthly input
 #' asked for monthly periods is refused at once.
 #'
+#' @section Coefficient of variation of temperatures:
+#' A coefficient of variation divides by the mean, so it needs a scale with
+#' a true zero. Celsius and Fahrenheit have none: the same place would score
+#' differently in each, and a place averaging 0 C would divide by zero.
+#' Statistics named `cv` (or with `cv` as a word of their name, such as
+#' `temp_cv`), and [cv()] itself, are therefore computed on kelvin when the
+#' data are in C or F, with a message; the registry records
+#' `ratio_unit = "K"`. The values look small, since the mean in the
+#' denominator is near 273 rather than 20. Data with no recorded unit whose
+#' variable is a temperature give a warning, because the scale is unknown.
+#'
 #' @param x A wide table from `extract_*()`, or a long table.
 #' @param fn The statistics: a named list of functions
 #'   (`list(avg = mean, total = sum)`), a character vector of function names
@@ -89,11 +100,21 @@ calc_par <- function(x, fn, period = NULL, min_coverage = 0.8, prefix = NULL,
                     required = FALSE)
     }
     name_of <- function(stat) paste(c(prefix, stat, suffix), collapse = "_")
+    ratio <- ratio_statistics(fns)
+    shift <- ratio_shift(meta, ratio)
 
     compute <- function(piece) {
         frame <- indicator_frame(piece, id)
-        stats <- par_statistics(frame_matrix(frame, "value"), frame$dates, fns,
+        values <- frame_matrix(frame, "value")
+        stats <- par_statistics(values, frame$dates, fns[setdiff(names(fns), ratio)],
                                 period, min_coverage)
+        if (length(ratio) > 0) {
+            # the period warnings were given by the first call
+            shifted <- suppressWarnings(
+                par_statistics(values + shift, frame$dates, fns[ratio], period,
+                               min_coverage))
+            stats <- c(stats, shifted)[names(fns)]
+        }
         out <- frame$ids
         entries <- list()
         for (stat in names(stats)) {
@@ -102,7 +123,8 @@ calc_par <- function(x, fn, period = NULL, min_coverage = 0.8, prefix = NULL,
             entries[[col]] <- new_indicator(
                 "par", stat = stat, period = period %||% "all", base = "value",
                 min_coverage = if (identical(period, "month")) min_coverage,
-                variable = frame$meta$variable, unit = frame$meta$unit)
+                variable = frame$meta$variable, unit = frame$meta$unit,
+                ratio_unit = if (stat %in% ratio && shift > 0) "K")
         }
         new_meta <- modify_meta(frame$meta, list(
             shape = "summary", date_col = NULL,
@@ -116,6 +138,51 @@ calc_par <- function(x, fn, period = NULL, min_coverage = 0.8, prefix = NULL,
                               prefix = prefix, suffix = suffix),
                   n_new = length(fns), id = id, label = label, chunk = chunk,
                   started = started)
+}
+
+#' The statistics that need a scale with a true zero: coefficients of
+#' variation, by name (`cv`, `temp_cv`, `cv_month`) or as [cv()] itself
+#' @noRd
+ratio_statistics <- function(fns) {
+    is_ratio <- vapply(seq_along(fns), \(i) {
+        grepl("(^|_)cv($|_)", names(fns)[i], ignore.case = TRUE) ||
+            identical(fns[[i]], cv)
+    }, logical(1))
+    names(fns)[is_ratio]
+}
+
+#' What to add to put temperatures on an absolute scale before a coefficient
+#' of variation
+#'
+#' Kelvin for Celsius; for Fahrenheit the Rankine scale, which differs from
+#' kelvin only by a factor, so the coefficient of variation is the same.
+#' @noRd
+ratio_shift <- function(meta, ratio) {
+    if (length(ratio) == 0) {
+        return(0)
+    }
+    unit <- canonical_unit(meta$unit)
+    variable <- meta$variable %||% "the values"
+    shift <- switch(unit %||% "none", C = 273.15, F = 459.67, 0)
+    if (shift > 0) {
+        c4e_inform(c(
+            "Computing {.field {ratio}} of {variable} on kelvin, not {unit}.",
+            "i" = "A coefficient of variation needs a scale with a true zero."
+        ))
+    } else if (is.null(unit) && is_temperature(meta$variable)) {
+        cli::cli_warn(c(
+            "{.field {ratio}} of {variable} has no recorded unit to check.",
+            "i" = "A coefficient of variation needs a scale with a true zero:
+                   in C or F, declare the unit (e.g. {.code read_climate(path,
+                   unit = \"C\")}) so it is computed on kelvin."
+        ))
+    }
+    shift
+}
+
+is_temperature <- function(variable) {
+    isTRUE(grepl("^t(mean|max|min|as|2m|air)|temp", variable %||% "",
+                 ignore.case = TRUE))
 }
 
 #' A named list of functions from a list, names, or a single function

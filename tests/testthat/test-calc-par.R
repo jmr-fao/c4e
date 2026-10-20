@@ -186,3 +186,59 @@ test_that("calc_par propagates NA handling from the supplied function", {
     expect_true(is.na(naive$avg[1]))
     expect_false(is.na(robust$avg[1]))
 })
+
+# ==== coefficient of variation on a ratio scale ==============================
+
+temperature_tbl <- function(unit, variable = "tmax") {
+    update_meta(
+        tibble::tibble(ID = rep(c("1", "2"), each = 4),
+                       date = rep(as.Date("2022-01-01") + 0:3, 2),
+                       value = c(-2, 1, 3, -1, 20, 25, 30, 22)),
+        key = "ID", date_col = "date", shape = "long", variable = variable,
+        unit = unit, time_step = "day")
+}
+
+test_that("a cv of Celsius temperatures is computed on kelvin, and says so", {
+    x <- temperature_tbl("C")
+    expect_message(out <- calc_par(x, fn = c("mean", "cv")), "kelvin")
+    kelvin <- c(-2, 1, 3, -1) + 273.15
+    expect_equal(out$tmax_cv[1], stats::sd(kelvin) / mean(kelvin))
+    # the other statistics stay in the data's unit
+    expect_equal(out$tmax_mean[1], mean(c(-2, 1, 3, -1)))
+    meta <- c4e_meta(out)
+    expect_equal(meta$indicators$tmax_cv$ratio_unit, "K")
+    expect_null(meta$indicators$tmax_mean$ratio_unit)
+    expect_match(c4e_labels(out)[["tmax_cv"]], "computed in K")
+})
+
+test_that("Fahrenheit gives the same cv as kelvin, and Kelvin data are untouched", {
+    celsius <- suppressMessages(calc_par(temperature_tbl("C"), fn = "cv"))
+    fahrenheit <- temperature_tbl("F")
+    fahrenheit$value <- fahrenheit$value * 1.8 + 32
+    out <- suppressMessages(calc_par(fahrenheit, fn = "cv"))
+    expect_equal(out$tmax_cv, celsius$tmax_cv)
+
+    kelvin <- temperature_tbl("K")
+    expect_no_message(out_k <- calc_par(kelvin, fn = "cv", prefix = FALSE),
+                      message = "kelvin")
+    expect_equal(out_k$cv[1], cv(c(-2, 1, 3, -1)))
+    expect_null(c4e_meta(out_k)$indicators$cv$ratio_unit)
+})
+
+test_that("custom cv functions are recognised by name", {
+    x <- temperature_tbl("C")
+    out <- suppressMessages(
+        calc_par(x, fn = list(temp_cv = \(v) stats::sd(v) / mean(v)), prefix = FALSE))
+    kelvin <- c(20, 25, 30, 22) + 273.15
+    expect_equal(out$temp_cv[2], stats::sd(kelvin) / mean(kelvin))
+    # "cvx" is not a coefficient of variation
+    plain <- calc_par(x, fn = list(cvx = mean), prefix = FALSE)
+    expect_equal(plain$cvx[1], mean(c(-2, 1, 3, -1)))
+})
+
+test_that("a temperature cv with no unit warns, precipitation does not", {
+    x <- temperature_tbl(NULL)
+    expect_warning(calc_par(x, fn = "cv"), "no recorded unit")
+    expect_no_warning(calc_par(temperature_tbl(NULL, variable = "pre"), fn = "cv"))
+    expect_no_warning(calc_par(temperature_tbl("mm/day", variable = "pre"), fn = "cv"))
+})

@@ -166,6 +166,7 @@ rename (chunk R) is committed on `main`. The GitHub repository
 | 2026-10-20 | §12 | A list of surveys is bound with `vec_rbind()` after adding `survey` to each table, not with `.names_to` | `.names_to` binds through a plain tibble prototype and drops the registry |
 | 2026-10-20 | §12 | Not built in chunk 11: `climate_indices(wide = TRUE)`, `baseline` for SPI, `select_by_dates()` of the window span before extraction, an evaluable `c4e_history()` | kept the chunk to the four wrappers; listed in Next steps |
 | 2026-10-20 | §12 | Exported in chunk 11: `weather_extremes()`, `climate_indices()`, `static_controls()`, `time_varying_controls()`, `list_presets()`, `extremes_control()`, `indices_control()`, `controls_control()` | |
+| 2026-10-20 | §3, §11 | `calc_par()` computes coefficients of variation (statistics named `cv` or with `cv` as a word, e.g. `temp_cv`, and `cv()` itself) on kelvin when the data are in C or F, announces it, and records `ratio_unit = "K"` (labels say "computed in K"); a temperature with no recorded unit warns | a CV needs a scale with a true zero: in C it depends on the scale and divides by zero near 0 C (Jan's request) |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -215,6 +216,9 @@ To reproduce the GitHub check locally (same arguments as CI):
   mismatch error, overrides, `keep_steps`, `dry_run`, `verbose = FALSE`,
   lists of surveys, boundaries, year matching and labels. Local `rcmdcheck`
   with CI's arguments: 0 errors, 0 warnings, 4 notes, none from the new code.
+- Then, on Jan's request: the kelvin safeguard for coefficients of
+  variation in `calc_par()` (see decisions), with four tests in
+  `test-calc-par.R`; `rcmdcheck` again 0 errors, 0 warnings, 4 notes.
 - Next: see Next steps above.
 
 ### 2026-10-20 — chunk 10 (laptop: FAO-Win, session: Claude)

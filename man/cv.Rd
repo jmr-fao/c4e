@@ -22,6 +22,13 @@ This function calculates the coefficient of variation (CV), which is a
 standardized measure of dispersion, defined as the ratio of the standard
 deviation to the mean.
 }
+\details{
+The ratio is meaningful only on a scale with a true zero. For
+temperatures, use kelvin: in Celsius or Fahrenheit the same series gives
+different values, and a mean near zero inflates the ratio without
+bound. \code{\link[=calc_par]{calc_par()}} converts C and F to kelvin for this statistic by
+itself.
+}
 \examples{
 x <- c(10, 15, 20, 25, 30)
 cv(x)  # Compute CV for a numeric vector

@@ -165,9 +165,15 @@ par_label <- function(entry, meta) {
                          "all observations"
                      },
                      year = "averaged over years", month = "averaged over months")
+    unit <- entry$unit %||% meta$unit
+    unit <- if (!is.null(entry$ratio_unit)) {
+        paste0(" (", if (!is.null(unit)) paste0(unit, ", "), "computed in ",
+               entry$ratio_unit, ")")
+    } else if (!is.null(unit)) {
+        paste0(" (", unit, ")")
+    }
     paste0(entry$stat, " of ", entry$variable %||% meta$variable %||% "value",
-           if (!is.null(entry$unit %||% meta$unit)) paste0(" (", entry$unit %||% meta$unit, ")"),
-           ", ", period)
+           unit, ", ", period)
 }
 
 #' "mode of aez within 20 km", "pop, layer of the year before the survey"
