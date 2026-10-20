@@ -1,4 +1,4 @@
 library(testthat)
-library(climatic4economist)
+library(c4e)
 
-test_check("climatic4economist")
+test_check("c4e")

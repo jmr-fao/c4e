@@ -60,9 +60,9 @@ flagged against it).
 }
 \examples{
 pre <- read_climate(
-  system.file("extdata", "pre_daily.tif", package = "climatic4economist"))
+  system.file("extdata", "pre_daily.tif", package = "c4e"))
 survey <- read.csv(
-  system.file("extdata", "survey.csv", package = "climatic4economist"))
+  system.file("extdata", "survey.csv", package = "c4e"))
 coord <- prepare_coord(survey, lat_var = lat, lon_var = lon)
 points <- georef_coord(coord, geom = c("lon", "lat"), crs = "EPSG:4326")
 

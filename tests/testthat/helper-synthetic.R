@@ -2,7 +2,7 @@
 # The files are built by dev/make_fixtures.R and stored in inst/extdata/.
 
 fixture_path <- function(file) {
-    path <- system.file("extdata", file, package = "climatic4economist")
+    path <- system.file("extdata", file, package = "c4e")
     if (!nzchar(path)) {
         stop("Fixture `", file, "` not found; run dev/make_fixtures.R.",
              call. = FALSE)

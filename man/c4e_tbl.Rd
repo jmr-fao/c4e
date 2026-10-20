@@ -28,7 +28,7 @@ carries no metadata. \code{is_c4e_tbl()} returns \code{TRUE} or \code{FALSE}.
 \code{update_meta()} returns a \code{c4e_tbl}.
 }
 \description{
-Functions of climatic4economist return \code{c4e_tbl} objects: tibbles with one
+Functions of c4e return \code{c4e_tbl} objects: tibbles with one
 extra attribute, the \emph{metadata}, recording the context of the data. The
 context includes the key column, the variable and its unit, the time step,
 the date range and the CRS. It also holds a registry describing every

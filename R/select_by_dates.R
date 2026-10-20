@@ -33,7 +33,7 @@
 #' select_by_dates(df, from = "2022-06-01", to = "2022-12-31")
 #'
 #' tmax <- read_climate(
-#'   system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
+#'   system.file("extdata", "tmax_daily.tif", package = "c4e"))
 #' select_by_dates(tmax, from = "2023-06-01", to = "2023-06-30")
 select_by_dates <- function(x, from = NULL, to = NULL, ...) {
     UseMethod("select_by_dates")

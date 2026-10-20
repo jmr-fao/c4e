@@ -5,13 +5,13 @@
 
 #' Is the package allowed to print messages?
 #'
-#' Controlled by `options(climatic4economist.verbose = FALSE)`. rlang's
+#' Controlled by `options(c4e.verbose = FALSE)`. rlang's
 #' `rlib_message_verbosity = "quiet"` also silences the messages, because they
 #' are emitted with [cli::cli_inform()]. Warnings and errors are never
 #' silenced.
 #' @noRd
 c4e_verbose <- function() {
-    isTRUE(getOption("climatic4economist.verbose", TRUE))
+    isTRUE(getOption("c4e.verbose", TRUE))
 }
 
 #' Inform the user, unless messages are switched off
@@ -87,7 +87,7 @@ c4e_default <- function(arg, from, arg_name, field = arg_name, default = NULL,
         c("{.arg {arg_name}} is missing, and the input carries no {.field {field}}
            to use instead.",
           "i" = "Give {.arg {arg_name}} explicitly, or build the input with a
-                 climatic4economist step that records it."),
+                 c4e step that records it."),
         call = call
     )
 }
@@ -181,7 +181,7 @@ is_recordable <- function(value) {
 
 #' Show the steps that produced a table
 #'
-#' Every climatic4economist step records its name and the arguments it used,
+#' Every c4e step records its name and the arguments it used,
 #' after defaults were filled in from upstream, along with how long it took.
 #' `c4e_history()` returns that record, and printing it shows the pipeline as
 #' code. Data arguments, such as the raster or the survey, are not recorded

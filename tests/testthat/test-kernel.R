@@ -3,7 +3,7 @@
 
 extracted <- function(name = "tmax_daily.tif", layers = NULL) {
     raster <- suppressMessages(read_climate(
-        system.file("extdata", name, package = "climatic4economist")))
+        system.file("extdata", name, package = "c4e")))
     if (!is.null(layers)) raster <- raster[[layers]]
     survey <- synthetic_survey() |>
         prepare_coord(lat_var = lat, lon_var = lon)
@@ -168,7 +168,7 @@ test_that("SPI from the matrix equals compute_spi()", {
 
 test_that("a kernel runs over a raster block by block with the same numbers", {
     tmax <- suppressMessages(read_climate(
-        system.file("extdata", "tmax_daily.tif", package = "climatic4economist")))[[1:30]]
+        system.file("extdata", "tmax_daily.tif", package = "c4e")))[[1:30]]
     flags_of <- function(values) run_length_rows(flag_threshold(values, 300, "above"), 2)
 
     out <- apply_kernel_raster(tmax, flags_of, rows_per_block = 2)

@@ -45,5 +45,5 @@ Computes distances from each feature in \code{x} to features in \code{y}.
 Optionally reduces multiple distances per feature using a summary function.
 }
 \seealso{
-\link[terra:distance]{terra::distance} \link{calc_nearest_distance}
+\link[terra:distance]{terra::distance} \code{\link[=calc_nearest_distance]{calc_nearest_distance()}}
 }

@@ -19,10 +19,10 @@ test_that("byte sizes print in readable units", {
 })
 
 test_that("the memory budget follows the option, else half the free memory", {
-    withr::local_options(climatic4economist.mem_limit = "2GB")
+    withr::local_options(c4e.mem_limit = "2GB")
     expect_equal(mem_budget(), 2 * 1024^3)
 
-    withr::local_options(climatic4economist.mem_limit = NULL)
+    withr::local_options(c4e.mem_limit = NULL)
     budget <- mem_budget()
     expect_gt(budget, 0)
     expect_lt(budget, terra::free_RAM() * 1024)
@@ -55,7 +55,7 @@ test_that("nothing is split while the estimate fits the budget", {
         calls <<- calls + 1
         mean_by_id(x)
     }
-    withr::local_options(climatic4economist.mem_limit = "1GB")
+    withr::local_options(c4e.mem_limit = "1GB")
     expect_silent(out <- with_chunks(toy_tbl(), fn, mem_estimate = 1e6))
     expect_equal(calls, 1)
     expect_equal(out, mean_by_id(toy_tbl()))
@@ -65,7 +65,7 @@ test_that("nothing is split while the estimate fits the budget", {
 })
 
 test_that("an estimate over the budget splits by unit and gives the same result", {
-    withr::local_options(climatic4economist.mem_limit = "1KB")
+    withr::local_options(c4e.mem_limit = "1KB")
     calls <- 0
     fn <- function(x) {
         calls <<- calls + 1
@@ -82,7 +82,7 @@ test_that("an estimate over the budget splits by unit and gives the same result"
 })
 
 test_that("a unit is never split across chunks", {
-    withr::local_options(climatic4economist.mem_limit = "1KB")
+    withr::local_options(c4e.mem_limit = "1KB")
     seen <- list()
     fn <- function(x) {
         seen[[length(seen) + 1]] <<- unique(x$ID)
@@ -104,7 +104,7 @@ test_that("chunk = <n> forces n units per chunk, chunk = FALSE forbids splitting
     expect_equal(calls, 3)
     expect_equal(out, mean_by_id(toy_tbl()))
 
-    withr::local_options(climatic4economist.mem_limit = "1KB")
+    withr::local_options(c4e.mem_limit = "1KB")
     expect_snapshot(error = TRUE,
                     with_chunks(toy_tbl(), fn, chunk = FALSE, mem_estimate = 4096,
                                 label = "Window summaries"))
@@ -133,7 +133,7 @@ test_that("splitting runs through furrr when asked", {
 })
 
 test_that("splitting is silent when messages are off", {
-    withr::local_options(climatic4economist.verbose = FALSE)
+    withr::local_options(c4e.verbose = FALSE)
     expect_silent(with_chunks(toy_tbl(), mean_by_id, chunk = 2))
 })
 
@@ -150,7 +150,7 @@ test_that("splitting the extracted fixture table gives the unsplit result", {
             dplyr::arrange(ID)
     }
     estimate <- estimate_bytes(nrow(tmax), 60)
-    withr::local_options(climatic4economist.mem_limit = estimate / 3)
+    withr::local_options(c4e.mem_limit = estimate / 3)
 
     out <- suppressMessages(with_chunks(tmax, summarise_units,
                                         mem_estimate = estimate))

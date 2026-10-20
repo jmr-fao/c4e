@@ -44,9 +44,9 @@
 #'
 #' @examples
 #' tmax <- read_climate(
-#'   system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
+#'   system.file("extdata", "tmax_daily.tif", package = "c4e"))
 #' adm_div <- terra::vect(
-#'   system.file("extdata", "adm_div.gpkg", package = "climatic4economist"))
+#'   system.file("extdata", "adm_div.gpkg", package = "c4e"))
 #'
 #' extract_by_poly(tmax[[1:5]], adm_div)
 #' extract_by_poly(tmax[[1:5]], adm_div, weights = "coverage")

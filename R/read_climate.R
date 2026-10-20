@@ -276,7 +276,7 @@ format_layer_dates <- function(dates) {
 #'
 #' @examples
 #' tmax <- read_climate(
-#'   system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
+#'   system.file("extdata", "tmax_daily.tif", package = "c4e"))
 #' raster_meta(tmax)[c("variable", "unit", "time_step")]
 read_climate <- function(path, variable = NULL, unit = NULL, time_step = NULL,
                          kind = NULL, source = NULL, na_value = NULL,

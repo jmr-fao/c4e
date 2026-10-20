@@ -2,54 +2,62 @@
   <img src="figures/Climat4Economist_Symbol_6.png" width="200">
 </p>
 
-# 🌍 climatic4economist
+# 🌍 c4e
 
-## Work with climatic data and surveys
+## Climate data for economists
 
-This repository contains functions and workflows designed to support extraction of climate data at survey locations, computation of weather extreme indicators, and merging of climatic information with survey data by location and interview date.
-The climatic4economist package simplifies the process of bridging survey data with environmental data — a common need in socio-economic and impact studies where climatic conditions influence human and environmental outcomes.
-The package builds on existing spatial data ecosystems (e.g., terra) and provides utilities that wrap up many steps so users can follow routine workflows with minimal effort.
+c4e links climate rasters to household surveys. It extracts climate data at
+survey locations and administrative divisions, computes weather extreme
+indicators, and summarises them over the reference period before each
+interview, ready to merge with survey data.
 
+Tables carry their context from one step to the next: the variable, its
+unit, the time step, the thresholds, percentiles and spell lengths used. A
+value given once is not typed again, and every table can print the steps
+that produced it.
+
+c4e succeeds [climatic4economist](https://github.com/jmr-fao/climatic4economist),
+which stays available unchanged for existing scripts.
+
+> **Status:** under development. The design and progress are in
+> `dev/PLAN_v2.md` and `dev/LOG_v2.md`.
 
 ## 📘 Features
 
-* Extract climatic and other spatial data at survey locations
-* Compute weather extreme indicators
-* Generate lagged climatic variables relative to interview dates
-* Merge climate metrics with socio-economic survey data
-* Utility functions that wrap tedious spatial processing steps
-  
-This approach lets researchers:
-
-* Focus on analysis rather than data wrangling
-* Ensure reproducibility across projects
-* Integrate climatic context into survey-based research
-
+* Read climate rasters with their dates, unit and variable (ERA5, CHIRPS,
+  WFDE5, GAEZ and your own sources)
+* Convert units, including rates per day, month or year
+* Extract at survey locations, buffers, polygons or cells, with CRS checks
+* Daily extremes: thresholds, percentiles, spells, heatwaves, custom
+  conditions
+* Memory-aware: large jobs split automatically, with progress messages
 
 ## 📥 Installation
 
-Install directly from GitHub:
-
-```
-remotes::install_github("jmr-fao/climatic4economist")
+```r
+remotes::install_github("jmr-fao/c4e")
 ```
 
+## 🚀 A first pipeline
+
+```r
+tmax <- c4e::read_climate(
+  system.file("extdata", "tmax_daily.tif", package = "c4e"))
+survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+
+points <- survey |>
+  c4e::prepare_coord(lat_var = lat, lon_var = lon) |>
+  c4e::georef_coord(geom = c("lon", "lat"), crs = "EPSG:4326")
+
+hot_days <- c4e::extract_by_coord(tmax, points) |>
+  c4e::convert_unit("C") |>
+  c4e::calc_threshold_day(above = c(30, 35)) |>
+  c4e::calc_spell()
+
+c4e::c4e_history(hot_days)
+```
 
 ## 📦 Dependencies
 
-The package builds on the following packages:
-
-* terra — raster and vector spatial operations
-* sf — simple features support
-* data.table — efficient data manipulation
-* tidyverse —  data manipulation
-* checkmate — robust input validation
-* exactextractr — fast and precise raster extraction
-* SPEI — standardized weather indicators
-
-
-
-📚 Background
-
-This package was inspired by routines for linking large climate datasets with socio-economic surveys — a challenge often faced in impact studies and climate risk analysis.
-climatic4economist focuses on workflows common in economist, social science, and development research where climate data must be extracted and aligned with survey metadata.
+terra, exactextractr, sf, SPEI, the tidyverse (dplyr, tidyr, purrr, tibble),
+cli, vctrs and lifecycle.

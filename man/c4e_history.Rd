@@ -14,7 +14,7 @@ A tibble of class \code{c4e_history} with one row per step: \code{step},
 \code{call} (the step as code), \code{elapsed} (seconds) and \code{time}.
 }
 \description{
-Every climatic4economist step records its name and the arguments it used,
+Every c4e step records its name and the arguments it used,
 after defaults were filled in from upstream, along with how long it took.
 \code{c4e_history()} returns that record, and printing it shows the pipeline as
 code. Data arguments, such as the raster or the survey, are not recorded

@@ -1,7 +1,7 @@
-Package: climatic4economist
+Package: c4e
 Type: Package
-Title: Work with climatic data and surveys (Title Case)
-Version: 2.0.0.9000
+Title: Climate Data for Economists: Linking Climate Rasters to Surveys
+Version: 0.1.0.9000
 Authors@R: c(
     person(
       "JMR",
@@ -9,7 +9,12 @@ Authors@R: c(
       role = c("aut", "cre")
     )
   )
-Description: Contains functions for extracting weather data based on survey location and to construct weather extreme indicators
+Description: Extracts climate data at survey locations and administrative
+    divisions, computes weather extreme indicators (threshold and percentile
+    days, spells, heatwaves, standardised precipitation indices) and
+    summarises them over the reference period before each interview. Tables
+    carry their context, such as variable, unit, time step and thresholds,
+    from one step to the next. Successor of 'climatic4economist'.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
@@ -43,6 +48,6 @@ Suggests:
     withr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-URL: https://github.com/jmr-fao/climatic4economist
-BugReports: https://github.com/jmr-fao/climatic4economist/issues
+URL: https://github.com/jmr-fao/c4e
+BugReports: https://github.com/jmr-fao/c4e/issues
 Config/roxygen2/version: 8.1.1

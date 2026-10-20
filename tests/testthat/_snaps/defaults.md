@@ -12,7 +12,7 @@
     Condition
       Error:
       ! `unit` is missing, and the input carries no unit to use instead.
-      i Give `unit` explicitly, or build the input with a climatic4economist step that records it.
+      i Give `unit` explicitly, or build the input with a c4e step that records it.
 
 # an explicit value that contradicts the metadata is an error
 

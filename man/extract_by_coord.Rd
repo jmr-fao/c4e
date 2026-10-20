@@ -66,14 +66,14 @@ variables, the sum for counts (population) and the most frequent value
 for categories, unless \code{fn} says otherwise.
 
 When the result would exceed the memory budget (see
-\code{?climatic4economist}), the layers are extracted in blocks and bound
+\code{?c4e}), the layers are extracted in blocks and bound
 together, with a progress bar.
 }
 \examples{
 tmax <- read_climate(
-  system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
+  system.file("extdata", "tmax_daily.tif", package = "c4e"))
 survey <- read.csv(
-  system.file("extdata", "survey.csv", package = "climatic4economist"))
+  system.file("extdata", "survey.csv", package = "c4e"))
 coord <- prepare_coord(survey, lat_var = lat, lon_var = lon)
 points <- georef_coord(coord, geom = c("lon", "lat"), crs = "EPSG:4326")
 

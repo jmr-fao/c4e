@@ -2,9 +2,9 @@
 #'
 #' Searches for a subfolder with a given name starting from a specified root
 #' directory. The function first locates the root directory using
-#' `climatic4economist::find_root_directory()` and then recursively searches
+#' `c4e::find_root_directory()` and then recursively searches
 #' for the target subfolder using
-#' `climatic4economist::find_subfolder()`.
+#' `c4e::find_subfolder()`.
 #'
 #' @param folder_name A character string giving the name of the subfolder to
 #'   search for.
@@ -14,7 +14,7 @@
 #' @return
 #' A character string containing the full path to the first matching sub folder.
 #' The function returns `NULL` (or the value returned by
-#' `climatic4economist::find_subfolder()`) if no matching folder is found.
+#' `c4e::find_subfolder()`) if no matching folder is found.
 #'
 #' @examples
 #' \dontrun{

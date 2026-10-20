@@ -14,7 +14,7 @@
 #'
 #' @examples
 #' survey <- read.csv(
-#'   system.file("extdata", "survey.csv", package = "climatic4economist"))
+#'   system.file("extdata", "survey.csv", package = "c4e"))
 #' prepare_coord(survey, lat_var = lat, lon_var = lon)
 
 prepare_coord <- function(df, lat_var, lon_var) {

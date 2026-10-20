@@ -1,27 +1,41 @@
-# climatic4economist (development version, toward 2.0.0)
+# c4e (development version)
 
-Version 2.0.0 is a redesign. The full design is in `dev/PLAN_v2.md` and
-progress is tracked in `dev/LOG_v2.md` (both on branch `v2`).
+c4e is the successor of `climatic4economist`, started from its v2 redesign
+with the full history. `climatic4economist` 0.1 stays available unchanged
+for existing scripts. The design is in `dev/PLAN_v2.md` and progress is
+tracked in `dev/LOG_v2.md`.
 
-## Planned changes
+## Done so far
 
-* Outputs become `c4e_tbl` tibbles carrying their context (variable, unit,
-  time step, key, thresholds, percentiles, spell length, window), so later
-  steps take their defaults from earlier ones.
-* Rasters carry variable, unit and time step in terra's own slots, set by
-  a new `read_climate()`.
-* Four survey wrappers (`weather_extremes()`, `climate_indices()`,
-  `static_controls()`, `time_varying_controls()`) and two grid wrappers
-  (`grid_indicators()`, `grid_controls()`) with presets.
-* Memory-aware automatic chunking with progress messages.
-* `write_stata()` writes variable labels describing each indicator.
-* v1 function names stay for one release as deprecated wrappers.
+* `c4e_tbl` tables carry their context (key, variable, unit, time step,
+  dates, CRS, indicator registry, history); `c4e_meta()`, `update_meta()`,
+  `bind_indicators()`, `c4e_history()`.
+* Defaults are read from upstream and announced; large steps split by unit
+  or by layer when they exceed the memory budget
+  (`options(c4e.mem_limit = )`), with progress messages
+  (`options(c4e.verbose = )`).
+* Units: `convert_unit()` for rasters and tables, including rates per day,
+  month or year; `register_unit()`, `list_units()`.
+* Rasters: `read_climate()`, `raster_meta()`, `aggregate_time()`,
+  `register_source()`, `list_sources()`; `select_by_dates()` and
+  `select_by_season()` work on rasters; `read_boundaries()`.
+* Extraction returns `c4e_tbl` with the raster's context, checks CRS,
+  reports locations without data, buffers points and extracts in blocks of
+  layers.
+* Daily indicators on a matrix kernel, equal to the v1 results and up to
+  900 times faster: `calc_threshold_day()`, `calc_condition()`,
+  `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`,
+  `calc_spell_percentile()`, `calc_spell_excess()`, `calc_heatwave()`.
 
-## Infrastructure
+## Planned
 
-* Synthetic fixtures in `inst/extdata/` for tests and examples.
-* R-CMD-check GitHub Actions workflow.
+* Standardised indices and climatic parameters, survey-window summaries,
+  Stata export with labels, four survey wrappers and two grid wrappers with
+  presets.
+* The v1 functions that the new ones replace are removed before the first
+  release; there are no deprecation wrappers, since `climatic4economist`
+  keeps them.
 
 # climatic4economist 0.1.0
 
-* First version.
+* First version, under the old name.

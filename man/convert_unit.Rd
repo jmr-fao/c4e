@@ -59,7 +59,7 @@ monthly data.
 }
 \examples{
 tmax <- terra::rast(
-  system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
+  system.file("extdata", "tmax_daily.tif", package = "c4e"))
 terra::units(tmax)[1]
 tmax_c <- convert_unit(tmax[[1:3]], "C")
 terra::units(tmax_c)[1]

@@ -21,5 +21,5 @@
     Condition
       Error:
       ! Window summaries needs about 4.0 KB, more than the memory budget of 1.0 KB.
-      i Allow splitting with `chunk = "auto"`, or raise the budget with `options(climatic4economist.mem_limit = ...)`.
+      i Allow splitting with `chunk = "auto"`, or raise the budget with `options(c4e.mem_limit = ...)`.
 

@@ -16,14 +16,14 @@ from which the search should begin. Defaults to \code{"Users"}.}
 \value{
 A character string containing the full path to the first matching sub folder.
 The function returns \code{NULL} (or the value returned by
-\code{climatic4economist::find_subfolder()}) if no matching folder is found.
+\code{c4e::find_subfolder()}) if no matching folder is found.
 }
 \description{
 Searches for a subfolder with a given name starting from a specified root
 directory. The function first locates the root directory using
-\code{climatic4economist::find_root_directory()} and then recursively searches
+\code{c4e::find_root_directory()} and then recursively searches
 for the target subfolder using
-\code{climatic4economist::find_subfolder()}.
+\code{c4e::find_subfolder()}.
 }
 \examples{
 \dontrun{

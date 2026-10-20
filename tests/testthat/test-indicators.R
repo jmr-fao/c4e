@@ -4,7 +4,7 @@
 
 extracted <- function(name = "tmax_daily.tif", layers = NULL) {
     raster <- suppressMessages(read_climate(
-        system.file("extdata", name, package = "climatic4economist")))
+        system.file("extdata", name, package = "c4e")))
     if (!is.null(layers)) raster <- raster[[layers]]
     survey <- synthetic_survey() |>
         prepare_coord(lat_var = lat, lon_var = lon)
@@ -194,7 +194,7 @@ test_that("indicators split by unit give the same result", {
     wide <- extracted(layers = 1:120)
     whole <- calc_threshold_day(wide, above = 300) |> calc_spell(min_spell = 2)
 
-    withr::local_options(climatic4economist.mem_limit = "4KB")
+    withr::local_options(c4e.mem_limit = "4KB")
     split <- suppressMessages(
         calc_threshold_day(wide, above = 300) |> calc_spell(min_spell = 2))
     expect_equal(tibble::as_tibble(split), tibble::as_tibble(whole))

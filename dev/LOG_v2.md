@@ -1,4 +1,4 @@
-# climatic4economist v2 — progress log
+# c4e — progress log (started as climatic4economist v2)
 
 Handoff document for v2 development. Read this first in every session, on any
 laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
@@ -8,13 +8,14 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | # | Chunk | State | PR | Started | Done | Notes |
 |---|---|---|---|---|---|---|
 | 0 | Scaffold | ✔ done | | 2026-10-16 | 2026-10-19 | pushed; CI fixed on 2026-10-19 (examples, `withr`) |
-| 1 | `c4e_tbl` class | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-1`; needs push and a PR into `v2` |
-| 2 | Defaults, messages, history, chunking | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-2` (cut from `v2-chunk-1`); needs push and a PR into `v2` after chunk 1 |
-| 3 | Units | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-3` (cut from `v2-chunk-2`); needs push and a PR into `v2` after chunk 2 |
-| 4 | Raster readers | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-4` (cut from `v2-chunk-3`); needs push and a PR into `v2` after chunk 3 |
-| 5 | Extraction | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-5` (cut from `v2-chunk-4`); needs push and a PR into `v2` after chunk 4 |
-| 6 | Matrix kernel | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-6` (cut from `v2-chunk-5`); needs push and a PR into `v2` after chunk 5 |
-| 7 | Daily indicators | 🔄 in progress | | 2026-10-19 | | complete on branch `v2-chunk-7` (cut from `v2-chunk-6`); needs push and a PR into `v2` after chunk 6 |
+| 1 | `c4e_tbl` class | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
+| 2 | Defaults, messages, history, chunking | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
+| 3 | Units | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
+| 4 | Raster readers | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
+| 5 | Extraction | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
+| 6 | Matrix kernel | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
+| 7 | Daily indicators | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
+| R | Rename to `c4e` (new repository) | 🔄 in progress | | 2026-10-20 | | committed on `main` of the new local repository; needs the GitHub repo and a push |
 | 8 | Standardised indices and parameters | ☐ | | | | |
 | 9 | Survey side | ☐ | | | | |
 | 10 | Export and inspection | ☐ | | | | |
@@ -28,42 +29,40 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 1 to 7 are done locally and waiting for review.
-Each branch was cut from the previous one (`v2-chunk-1` → ... →
-`v2-chunk-7`), so each contains the chunks before it.
+**Current chunk:** R, the rename. The package is now `c4e`, in its own
+repository (local folder `Documents/GitHub/c4e`, remote
+`https://github.com/jmr-fao/c4e.git`), seeded from `v2-chunk-7` of
+`climatic4economist` with the full history. Chunks 1 to 7 are in its `main`.
 
 **Next steps (in order):**
-1. Jan: push `v2-chunk-1` to `v2-chunk-7`. Open the pull requests into `v2`
-   one at a time, in order, merging each once R-CMD-check is green, so each
-   shows only its own commits. Mark each chunk done here once merged.
-2. Next chunk: 8, standardised indices and parameters (plan §8 row 8):
-   `calc_std_index()` on `spi_matrix()` (SPI/SPEI, the water balance matched
-   by key and date), `calc_std_threshold()` (keeps the minus sign, reads wide
-   or long input through `indicator_frame()`), `calc_par()` with `prefix`
-   from the variable. Then chunk 9 (survey side) can use the registry the
-   indicator functions now write.
-3. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`
-   (wide or long input onto a units-by-dates grid), `frame_matrix()`,
-   `finish_frame()` and `run_indicator()` (splitting by unit, history
-   recorded once).
-4. Step functions written from chunk 3 on follow this pattern:
-   `meta <- c4e_meta(x) %||% empty_meta()`, `started <- Sys.time()`,
-   resolve each argument with `c4e_default()`, announce with
-   `c4e_progress_step()` only when a `label` (or the deprecated `iteration`)
-   is given, wrap heavy work in `with_chunks()` with a
-   `mem_estimate`, and return `new_c4e_tbl(out, c4e_record(meta, fn, args,
-   started))`.
+1. Jan: create the empty GitHub repository `jmr-fao/c4e` (no README,
+   license or .gitignore, so the first push is clean), then push:
+   `git push -u origin main` from the `c4e` folder. The R-CMD-check workflow
+   runs on that push. Mark chunk R done here.
+2. Next chunk: 8, standardised indices and parameters (plan §8 row 8), on a
+   branch of `c4e` merged into `main` by pull request:
+   `calc_std_index()` on `spi_matrix()`, `calc_std_threshold()`,
+   `calc_par()` with `prefix` from the variable.
+3. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`,
+   `frame_matrix()`, `finish_frame()` and `run_indicator()`.
+4. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
+   empty_meta()`, `started <- Sys.time()`, resolve each argument with
+   `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
+   is given, wrap heavy work in `with_chunks()` with a `mem_estimate`, and
+   return `new_c4e_tbl(out, c4e_record(meta, fn, args, started))`.
 
 **Blocked / needs Jan:**
-- Pushes and pull requests of `v2-chunk-1` to `v2-chunk-7`
-  (outward-facing, left to Jan).
-- This laptop runs R 4.5.0 while its packages were built for R 4.5.3, so
-  every fresh worker or namespace load warns "package ... was built under R
-  version 4.5.3". It inflates the test-warning count (e.g. the furrr test) but
-  is not a code problem. Updating R to 4.5.3 or later removes it.
-- Pull request 3 merges `v2` into `main`. The plan merges `main` only at
-  release (chunk 17). Keep it open as a draft tracking PR, or close it; don't
-  merge it yet.
+- Creating `jmr-fao/c4e` on GitHub and the first push (outward-facing, left
+  to Jan). Until then R CMD check reports the package URLs as 404.
+- In `climatic4economist`: pull request 3 (`v2` into `main`) and the seven
+  `v2-chunk-*` branches are superseded by `c4e`. Close pull request 3 and
+  delete the branches when convenient; nothing of them is lost, since `c4e`
+  has their full history.
+- The maintainer email in `DESCRIPTION` is `jan.rossi@fao.com`, while the
+  Quarto settings use `jan.rossi@fao.org`. Confirm which is right; it was
+  left unchanged.
+- This laptop runs R 4.5.0 with packages built for 4.5.3; namespace loads in
+  fresh workers warn "built under R version 4.5.3". Not a code problem.
 
 ## Decisions and deviations from the plan
 
@@ -124,12 +123,20 @@ Each branch was cut from the previous one (`v2-chunk-1` → ... →
 | 2026-10-19 | §11.1, §11.2, §11.5 | Done in chunk 7: thresholds from a table by unit (and month), `calc_condition()`, flag prefixes by time step (`day_`, `hr_`, `mo_`, `yr_`) | they share the same code path as numeric thresholds |
 | 2026-10-19 | §8 | The v1 indicator tests (`test-thresholds.R`, `test-spells.R`, `test-find-extr-rel-day.R`, `test-invariants.R`) are kept unchanged instead of migrated | the v1 functions still exist; they become wrappers, and their tests move, in chunk 13 |
 | 2026-10-19 | §3 | Exported in chunk 7: `calc_threshold_day()`, `calc_condition()`, `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`, `calc_spell_percentile()`, `calc_spell_excess()`, `calc_heatwave()` | |
+| 2026-10-20 | all | v2 continues as the new package `c4e` in its own repository, seeded from `v2-chunk-7` with the full history; `climatic4economist` 0.1 stays unchanged | Jan's decision: shorter `c4e::` calls, matches the `c4e_*` names, and old scripts keep working without deprecation warnings |
+| 2026-10-20 | §8 | In `c4e`, chunks merge into `main` by pull request; there is no separate `v2` branch | a new package has no released `main` to protect |
+| 2026-10-20 | §1, §14 | Options renamed to `c4e.verbose` and `c4e.mem_limit` | follow the package name |
+| 2026-10-20 | §8 chunk 13 | No deprecation wrappers. Before the replaced v1 functions are removed, their outputs on the fixtures are saved as reference files for the equality tests | the old names live on in `climatic4economist` |
+| 2026-10-20 | §8 | Version restarts at `0.1.0.9000`; the first release is `c4e` 0.1.0 (or 1.0.0) | new package |
+| 2026-10-20 | §14 | DESCRIPTION title and description rewritten; the "title case" and "complete sentences" R CMD check notes are gone | part of the rename |
+| 2026-10-20 | repo | `CLAUDE.md` and `AGENTS.md` rewritten for `c4e` (AGENTS.md mirrors CLAUDE.md); the old vignettes still call `climatic4economist::` and are ported in chunks 15 and 16 | the instructions must name the right package and branch rules |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
-- Title not in title case; Description not complete sentences; maintainer email `fao.com`.
+- Maintainer email `fao.com` (see Blocked); title and description fixed in the rename.
+- The `github.com/jmr-fao/c4e` URLs answer 404 until the repository exists.
 - Tarball is about 19.8 MB: vignette HTML and images are not build-ignored.
-- All declared Imports are used since chunk 2 (`cli`, `vctrs` in chunk 1; `lifecycle` in chunk 2).
+- All declared Imports are used since chunk 2.
 - Many "no visible binding for global variable" notes (NSE columns) and unqualified sf/sp/raster calls in `ave_*` (removed in chunk 13).
 - `AGENTS.md` and `figures/` at top level (`AGENTS.md` is now build-ignored).
 - `extract_cell_by_poly()` example takes about 6 s because of the `raster::brick()` conversion (removed in chunk 5).
@@ -154,6 +161,23 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-20 — rename to c4e (laptop: FAO-Win, session: Claude)
+- Did: cloned `climatic4economist` at `v2-chunk-7` into `Documents/GitHub/c4e`
+  (144 commits), renamed the branch to `main`, set the remote to
+  `https://github.com/jmr-fao/c4e.git`. Renamed the package: `DESCRIPTION`
+  (name, title, description, URLs, version `0.1.0.9000`),
+  `R/c4e-package.R` (was `R/climatic4economist.R`), `c4e.Rproj`, the
+  options, every `system.file(package = )` in examples and tests, cross
+  references in the docs, `tests/testthat.R`, README, NEWS, `CLAUDE.md`,
+  `AGENTS.md`, the CI branches, and the plan header and chunk 13 and 17
+  rows.
+- Found: nothing failed under the new name; R CMD check lost the title and
+  description notes and gained the expected 404 for the not-yet-created
+  GitHub URLs.
+- Tests: 34 files, 464 tests, 1136 expectations, 0 failures. Local
+  `rcmdcheck` with CI's arguments: 0 errors, 0 warnings, 4 notes.
+- Next: see Next steps above.
 
 ### 2026-10-19 — chunk 7 (laptop: FAO-Win, session: Claude)
 - Did: branch `v2-chunk-7` from `v2-chunk-6`. `R/indicator_helpers.R`

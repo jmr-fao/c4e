@@ -26,7 +26,7 @@
 #'
 #' @examples
 #' pre <- read_climate(
-#'   system.file("extdata", "pre_daily.tif", package = "climatic4economist"))
+#'   system.file("extdata", "pre_daily.tif", package = "c4e"))
 #' monthly <- aggregate_time(pre[[1:59]], "month")
 #' names(monthly)
 aggregate_time <- function(x, to = c("day", "month", "year"), fn = NULL, ...,

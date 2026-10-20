@@ -1,7 +1,7 @@
 # Based on r-lib/actions examples (check-standard, reduced to one OS).
 on:
   push:
-    branches: [main, v2]
+    branches: [main]
   pull_request:
 
 name: R-CMD-check

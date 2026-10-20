@@ -1,10 +1,17 @@
-# climatic4economist v2 — design plan
+# c4e — design plan (started as climatic4economist v2)
 
-> **Source of truth.** Once chunk 0 lands, this document lives in the repo as
-> `dev/PLAN_v2.md` on branch `v2`, next to `dev/LOG_v2.md` (progress log).
-> The copy under `~/.claude/plans/` is disposable. Any session, on any laptop,
-> starts by reading the log, then the plan section for the chunk it picks up,
-> and ends by appending to the log (§15).
+> **Source of truth.** This document lives in the `c4e` repository as
+> `dev/PLAN_v2.md`, next to `dev/LOG_v2.md` (progress log). Any session, on
+> any laptop, starts by reading the log, then the plan section for the chunk
+> it picks up, and ends by appending to the log (§15).
+>
+> **Renamed on 2026-10-20.** The v2 redesign continues as a new package,
+> `c4e`, in its own repository (`jmr-fao/c4e`), seeded from branch
+> `v2-chunk-7` of `climatic4economist` with the full history.
+> `climatic4economist` 0.1 stays unchanged for existing scripts. Read
+> "v2" below as "c4e", and "branch `v2`" as `main` of `c4e`. Options are
+> `c4e.verbose` and `c4e.mem_limit`. Chunk 13 and chunk 17 change
+> accordingly (see their rows in §8).
 
 ## Context
 
@@ -408,11 +415,11 @@ nothing depends on data outside the repo.
 | 10 | **Export and inspection** | S | 9 | `write_stata()` (labels, 32-char check, `codebook = TRUE` sidecar), `indicator_label()`, `summary.c4e_tbl()`/`validate_c4e()`; `test-write-stata.R` | `haven::read_dta()` of the output shows the labels; sidecar lists every indicator and the history |
 | 11 | **Wrappers and presets** | L | 8, 9, 10 | `R/wrappers.R`: `weather_extremes()`, `climate_indices()`, `static_controls()`, `time_varying_controls()`, each as `cli_progress_step()` stages with timings into history, `dry_run`, list-of-surveys mapping with `label` from names; `R/presets.R` + `list_presets()`; `extremes_control()`, `indices_control()`, `controls_control()` (incl. `chunk`, `dry_run`, `verbose`); `test-wrappers.R` | each wrapper equals its step-by-step chain on the fixtures; every preset runs on a matching fixture and errors cleanly on a mismatched one; `c4e_history()` output, with the data arguments supplied, re-evaluates to the same table |
 | 12 | **Grid methods and wrappers** | L | 6, 7, 8 | `SpatRaster` methods for `calc_threshold_day()`, `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`, `calc_par()`, `calc_std_index()` using `tapp()`/`quantile()`/`focal()` where a built-in exists and the kernel via `apply_kernel_raster()` otherwise (`app()` is per cell, see §13); `period` argument; `metags()` writer/reader (`set_raster_meta()`, `raster_meta()`), `extract_*()` restore meta from `metags()`; `grid_indicators()`, `grid_controls()` (surrounding-cell density, normals, optional `aggregate()`); `grid_first` option in `weather_extremes()`; `inst/bench/bench-grid.R`; `test-grid.R` | grid days-above per year equals `calc_threshold_day()` + yearly sum on the extracted table at the same cells; a `grid_indicators()` GeoTIFF read back with `terra::rast()` restores the registry through `extract_by_coord()`; a stack larger than `mem_info()` allows runs with `filename =` |
-| 13 | **Deprecations and removals** | M | 7–12 | `R/deprecated.R`: every v1 name as a `lifecycle::deprecate_warn()` wrapper mapping old arguments (`u_thresh` → `above`, `l_thrshld` → `below`, `time_scale` → `scale`, `iteration` → message); delete `ave_dist_2shp*`, `ave_point_density_2shp`, `substitute_*`, `is_above`/`is_below`/`*_threshold`, `*_na_check` from exports; remove `data.table` from Imports; `test-deprecated.R` | every v1 example runs with exactly one lifecycle warning and the v1 values; `NAMESPACE` lists only v2 names plus wrappers |
+| 13 | **Deprecations and removals** | M | 7–12 | `R/deprecated.R`: every v1 name as a `lifecycle::deprecate_warn()` wrapper mapping old arguments (`u_thresh` → `above`, `l_thrshld` → `below`, `time_scale` → `scale`, `iteration` → message); delete `ave_dist_2shp*`, `ave_point_density_2shp`, `substitute_*`, `is_above`/`is_below`/`*_threshold`, `*_na_check` from exports; remove `data.table` from Imports; `test-deprecated.R` | every v1 example runs with exactly one lifecycle warning and the v1 values; `NAMESPACE` lists only v2 names plus wrappers *After the rename:* no `lifecycle` wrappers, since `climatic4economist` keeps the v1 names; instead the replaced v1 functions are removed from `c4e`, after their outputs on the fixtures are saved as reference files so the equality tests keep running without them |
 | 14 | **Package hygiene** | M | 13 | `DESCRIPTION` (title, description, email, Imports pruned: `raster`, `sf`, `data.table`, `stringi`, `tidyterra` out; `exactextractr` to Suggests with `check_installed()`), `LICENSE`, `_pkgdown.yml` (reference grouped by prefix, wrappers first), `pkgdown.yaml` workflow, `globalVariables`/`.data`, `@family`/`@inheritParams`, all examples runnable on `inst/extdata` | `devtools::check()` 0 errors 0 warnings; CI and pkgdown green |
 | 15 | **Quick start and canonical vignettes** | L | 12, 14 | `vignettes/quick_start.qmd` (the four survey wrappers and the two grid wrappers, one preset each) and the five canonical articles of §7 plus a sixth, "Grid indicators and maps", on `inst/extdata`; README example; `_targets.R` example | all render in CI from the bundled data |
 | 16 | **Country case studies** | M | 15 | afg / afr / lbr / sur `.qmd` ported to v2 names (fix `sur_fre_weather_extreme`, `sur_spi`, `lbr_srvy_climatic_parameters`, `afr_sp_adm` first); `eval: false` where data is external; stale prose fixed | each file parses and its code uses only v2 exports (`lintr` object-usage check) |
-| 17 | **Release 2.0.0** | S | 16 | `NEWS.md` final (new API, deprecation table, bugs fixed §9.8, benchmarks), version bump, tag `v2.0.0`, merge `v2` → `main`, README install line | `remotes::install_github()` of the tag passes the quick start |
+| 17 | **Release 2.0.0** | S | 16 | `NEWS.md` final (new API, deprecation table, bugs fixed §9.8, benchmarks), version bump, tag `v2.0.0`, merge `v2` → `main`, README install line | `remotes::install_github()` of the tag passes the quick start *After the rename:* the first release is `c4e` 0.1.0 (or 1.0.0), tagged in `jmr-fao/c4e`; `climatic4economist` gets one README line pointing to `c4e` |
 
 Parallel tracks once chunk 2 is in: **A** = 3 → 4 → 5 (raster side), **B** = 6
 (kernel), **C** = `prepare_coord`/`georef_coord`/window objects from 9 (they

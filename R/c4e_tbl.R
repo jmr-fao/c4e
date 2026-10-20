@@ -1,7 +1,7 @@
 #' Tables that carry their context
 #'
 #' @description
-#' Functions of climatic4economist return `c4e_tbl` objects: tibbles with one
+#' Functions of c4e return `c4e_tbl` objects: tibbles with one
 #' extra attribute, the *metadata*, recording the context of the data. The
 #' context includes the key column, the variable and its unit, the time step,
 #' the date range and the CRS. It also holds a registry describing every

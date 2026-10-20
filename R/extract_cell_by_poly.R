@@ -11,7 +11,7 @@
 #' later aggregated with the coverage fractions.
 #'
 #' When the result would exceed the memory budget (see
-#' `?climatic4economist`), the layers are extracted in blocks and bound
+#' `?c4e`), the layers are extracted in blocks and bound
 #' together.
 #'
 #' @param raster A `SpatRaster` representing the raster data to extract.
@@ -33,9 +33,9 @@
 #'
 #' @examples
 #' tmax <- read_climate(
-#'   system.file("extdata", "tmax_daily.tif", package = "climatic4economist"))
+#'   system.file("extdata", "tmax_daily.tif", package = "c4e"))
 #' adm_div <- terra::vect(
-#'   system.file("extdata", "adm_div.gpkg", package = "climatic4economist"))
+#'   system.file("extdata", "adm_div.gpkg", package = "c4e"))
 #'
 #' # one row per cell and division, with the share of the cell inside it
 #' extract_cell_by_poly(tmax[[1:3]], adm_div)

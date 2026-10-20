@@ -2,7 +2,7 @@
 # raster selection, read_boundaries() (plan §2, §9.4, §9.5, §11.7)
 
 fixture_file <- function(name) {
-    system.file("extdata", name, package = "climatic4economist")
+    system.file("extdata", name, package = "c4e")
 }
 
 # write a small raster with the given layer names, units and time to a file

@@ -4,7 +4,7 @@
 #' locating the first folder from a specified root directory using
 #' `find_folder()`. Each subsequent folder is then searched recursively within
 #' the previously located folder using
-#' `climatic4economist::find_subfolder()`.
+#' `c4e::find_subfolder()`.
 #'
 #' This hierarchical search reduces the risk of matching folders with the same
 #' name elsewhere in the file system.

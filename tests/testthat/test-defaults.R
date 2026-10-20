@@ -28,10 +28,10 @@ test_that("a required argument with nothing upstream is an error naming it", {
 })
 
 test_that("messages can be silenced by option or by rlang verbosity", {
-    withr::local_options(climatic4economist.verbose = FALSE)
+    withr::local_options(c4e.verbose = FALSE)
     expect_silent(c4e_default(NULL, from = "C", arg_name = "unit"))
 
-    withr::local_options(climatic4economist.verbose = TRUE,
+    withr::local_options(c4e.verbose = TRUE,
                          rlib_message_verbosity = "quiet")
     expect_silent(c4e_default(NULL, from = "C", arg_name = "unit"))
 })
@@ -79,9 +79,9 @@ test_that("a progress step is shown only when verbose", {
         c4e_progress_step("Computing spells: {label}")
         invisible(TRUE)
     }
-    withr::local_options(climatic4economist.verbose = FALSE)
+    withr::local_options(c4e.verbose = FALSE)
     expect_silent(step("Mali22"))
-    withr::local_options(climatic4economist.verbose = TRUE)
+    withr::local_options(c4e.verbose = TRUE)
     expect_message(step("Mali22"), "Computing spells: Mali22")
 })
 

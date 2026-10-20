@@ -44,14 +44,14 @@ format_bytes <- function(bytes) {
 
 #' How much memory a heavy step may use
 #'
-#' `options(climatic4economist.mem_limit = "8GB")` sets the budget; otherwise
+#' `options(c4e.mem_limit = "8GB")` sets the budget; otherwise
 #' it is half of the free memory reported by [terra::free_RAM()], which
 #' counts kilobytes.
 #' @noRd
 mem_budget <- function() {
-    limit <- getOption("climatic4economist.mem_limit")
+    limit <- getOption("c4e.mem_limit")
     if (!is.null(limit)) {
-        return(parse_bytes(limit, arg = "options(climatic4economist.mem_limit)"))
+        return(parse_bytes(limit, arg = "options(c4e.mem_limit)"))
     }
     free_kb <- tryCatch(terra::free_RAM(), error = function(e) NA_real_)
     if (!isTRUE(free_kb > 0)) {
@@ -128,7 +128,7 @@ with_chunks <- function(x, fn, by = NULL, chunk = "auto", mem_estimate = NULL,
                    of {budget_text}.",
                   "i" = "Allow splitting with {.code chunk = \"auto\"}, or raise
                          the budget with
-                         {.code options(climatic4economist.mem_limit = ...)}."),
+                         {.code options(c4e.mem_limit = ...)}."),
                 call = call)
         }
         return(fn(x))

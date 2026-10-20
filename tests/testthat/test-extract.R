@@ -3,7 +3,7 @@
 
 fixture_raster <- function(name = "tmax_daily.tif") {
     suppressMessages(read_climate(
-        system.file("extdata", name, package = "climatic4economist")))
+        system.file("extdata", name, package = "c4e")))
 }
 fixture_points <- function() {
     survey <- synthetic_survey() |>
@@ -73,11 +73,11 @@ test_that("large extractions run in blocks of layers with the same result", {
     points <- fixture_points()
     whole  <- extract_by_coord(tmax, points)
 
-    withr::local_options(climatic4economist.mem_limit = 12 * 40 * 8 / 3)
+    withr::local_options(c4e.mem_limit = 12 * 40 * 8 / 3)
     expect_snapshot(split <- extract_by_coord(tmax, points))
     expect_equal(tibble::as_tibble(split), tibble::as_tibble(whole))
 
-    withr::local_options(climatic4economist.mem_limit = NULL)
+    withr::local_options(c4e.mem_limit = NULL)
     forced <- suppressMessages(extract_by_coord(tmax, points, chunk = 15))
     expect_equal(tibble::as_tibble(forced), tibble::as_tibble(whole))
 })

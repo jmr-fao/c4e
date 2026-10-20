@@ -23,7 +23,7 @@ Recursively locates a sequence of nested folders. The search begins by
 locating the first folder from a specified root directory using
 \code{find_folder()}. Each subsequent folder is then searched recursively within
 the previously located folder using
-\code{climatic4economist::find_subfolder()}.
+\code{c4e::find_subfolder()}.
 }
 \details{
 This hierarchical search reduces the risk of matching folders with the same
