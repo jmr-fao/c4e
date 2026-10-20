@@ -50,3 +50,6 @@ vignettes/.DS_Store
 # Synthetic fixtures for tests and examples (dev/make_fixtures.R); real data stays ignored
 !inst/extdata/*.tif
 !inst/extdata/*.gpkg
+
+# v1 reference outputs for the tests (dev/make_references.R)
+!tests/testthat/fixtures/*.rds
