@@ -27,6 +27,8 @@
 #'
 #' @seealso [calc_percentile_day()], [calc_spell_percentile()]
 #' @family indicators
+#' @param ... Further arguments of the methods; the table method takes
+#'   none.
 #' @export
 #'
 #' @examples
@@ -39,9 +41,16 @@
 #'
 #' extract_by_coord(pre, points) |>
 #'   calc_percentile(p = c(0.9, 0.99), exclude_below = 0.1)
-calc_percentile <- function(x, p, exclude_below = NULL, exclude_above = NULL,
-                            yearly = FALSE, baseline = NULL, replace = NA_real_,
-                            id = NULL, label = NULL, chunk = "auto") {
+calc_percentile <- function(x, ...) {
+    UseMethod("calc_percentile")
+}
+
+#' @rdname calc_percentile
+#' @export
+calc_percentile.default <- function(x, p, exclude_below = NULL, exclude_above = NULL,
+                                    yearly = FALSE, baseline = NULL, replace = NA_real_,
+                                    id = NULL, label = NULL, chunk = "auto", ...) {
+    rlang::check_dots_empty()
     started <- Sys.time()
     if (!is.numeric(p) || any(p < 0 | p > 1)) {
         cli::cli_abort("{.arg p} must be probabilities between 0 and 1.")

@@ -2,9 +2,12 @@
 % Please edit documentation in R/calc_par.R
 \name{calc_par}
 \alias{calc_par}
+\alias{calc_par.default}
 \title{Climatic parameters per unit}
 \usage{
-calc_par(
+calc_par(x, ...)
+
+\method{calc_par}{default}(
   x,
   fn,
   period = NULL,
@@ -13,11 +16,15 @@ calc_par(
   suffix = NULL,
   id = NULL,
   label = NULL,
-  chunk = "auto"
+  chunk = "auto",
+  ...
 )
 }
 \arguments{
 \item{x}{A wide table from \verb{extract_*()}, or a long table.}
+
+\item{...}{Further arguments of the methods; the table method takes
+none.}
 
 \item{fn}{The statistics: a named list of functions
 (\code{list(avg = mean, total = sum)}), a character vector of function names

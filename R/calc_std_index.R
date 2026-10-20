@@ -31,6 +31,8 @@
 #'
 #' @seealso [calc_std_threshold()]
 #' @family indicators
+#' @param ... Further arguments of the methods; the table method takes
+#'   none.
 #' @export
 #'
 #' @examples
@@ -42,9 +44,16 @@
 #'
 #' extract_by_coord(pre, points) |>
 #'   calc_std_index(scale = 3)
-calc_std_index <- function(x, scale, index = c("spi", "spei"), pet = NULL,
-                           id = NULL, label = NULL, chunk = "auto",
-                           .parallel = FALSE) {
+calc_std_index <- function(x, ...) {
+    UseMethod("calc_std_index")
+}
+
+#' @rdname calc_std_index
+#' @export
+calc_std_index.default <- function(x, scale, index = c("spi", "spei"), pet = NULL,
+                                   id = NULL, label = NULL, chunk = "auto",
+                                   .parallel = FALSE, ...) {
+    rlang::check_dots_empty()
     started <- Sys.time()
     index <- rlang::arg_match(index)
     if (!is.numeric(scale) || any(scale < 1) || any(scale != round(scale))) {

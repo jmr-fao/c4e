@@ -54,6 +54,8 @@
 #'   per statistic, registered with the statistic and period.
 #'
 #' @family indicators
+#' @param ... Further arguments of the methods; the table method takes
+#'   none.
 #' @export
 #'
 #' @examples
@@ -71,8 +73,15 @@
 #'
 #' # Average of yearly totals
 #' calc_par(df, fn = list(total = sum), period = "year")
-calc_par <- function(x, fn, period = NULL, min_coverage = 0.8, prefix = NULL,
-                     suffix = NULL, id = NULL, label = NULL, chunk = "auto") {
+calc_par <- function(x, ...) {
+    UseMethod("calc_par")
+}
+
+#' @rdname calc_par
+#' @export
+calc_par.default <- function(x, fn, period = NULL, min_coverage = 0.8, prefix = NULL,
+                             suffix = NULL, id = NULL, label = NULL, chunk = "auto", ...) {
+    rlang::check_dots_empty()
     started <- Sys.time()
     if (!is.numeric(min_coverage) || length(min_coverage) != 1 ||
         is.na(min_coverage) || min_coverage < 0 || min_coverage > 1) {

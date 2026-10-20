@@ -110,9 +110,12 @@ raster_meta <- function(x) {
     }
     meta  <- stored_raster_meta(x)
     dates <- if (terra::has.time(x)) terra::time(x)
+    # a grid result's layers have their own units (days, C, spells); the
+    # series unit is in its tags
+    grid <- read_grid_meta(x)
     list(
         variable   = meta$variable,
-        unit       = canonical_unit(raster_unit(x)),
+        unit       = canonical_unit(if (!is.null(grid)) grid$unit else raster_unit(x)),
         time_step  = meta$time_step %||% infer_time_step(dates),
         kind       = meta$kind,
         source     = meta$source,

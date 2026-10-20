@@ -117,5 +117,5 @@ extract_by_poly <- function(raster, poly, fn_agg = NULL, na_rm = TRUE,
                             args = list(fn_agg = fn_name, pkg = pkg, id = id,
                                         weights = weights),
                             started = started)
-    new_c4e_tbl(out, meta)
+    restore_grid_table(new_c4e_tbl(out, meta), raster)
 }

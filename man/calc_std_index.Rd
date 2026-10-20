@@ -2,9 +2,12 @@
 % Please edit documentation in R/calc_std_index.R
 \name{calc_std_index}
 \alias{calc_std_index}
+\alias{calc_std_index.default}
 \title{Standardised precipitation indices: SPI and SPEI}
 \usage{
-calc_std_index(
+calc_std_index(x, ...)
+
+\method{calc_std_index}{default}(
   x,
   scale,
   index = c("spi", "spei"),
@@ -12,12 +15,16 @@ calc_std_index(
   id = NULL,
   label = NULL,
   chunk = "auto",
-  .parallel = FALSE
+  .parallel = FALSE,
+  ...
 )
 }
 \arguments{
 \item{x}{Monthly precipitation (or water balance), wide from
 \verb{extract_*()} or long.}
+
+\item{...}{Further arguments of the methods; the table method takes
+none.}
 
 \item{scale}{Accumulation periods in months, e.g. \code{c(1, 3, 6)}.}
 

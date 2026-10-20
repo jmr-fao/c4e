@@ -33,6 +33,9 @@ which stays available unchanged for existing scripts.
   `static_controls()` and `time_varying_controls()` run the whole chain from
   a survey and a raster, with named presets (`list_presets()`), a dry run,
   and step-by-step progress
+* **Maps and grid panels**: `grid_indicators()` and `grid_controls()`
+  compute the same indicators and controls for every cell of a raster,
+  block by block, and write GeoTIFFs that keep their context
 * Read climate rasters with their dates, unit and variable (ERA5, CHIRPS,
   WFDE5, GAEZ and your own sources)
 * Convert units, including rates per day, month or year

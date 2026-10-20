@@ -2,21 +2,28 @@
 % Please edit documentation in R/calc_threshold_day.R
 \name{calc_threshold_day}
 \alias{calc_threshold_day}
+\alias{calc_threshold_day.default}
 \title{Flag days beyond thresholds}
 \usage{
-calc_threshold_day(
+calc_threshold_day(x, ...)
+
+\method{calc_threshold_day}{default}(
   x,
   above = NULL,
   below = NULL,
   unit = NULL,
   id = NULL,
   label = NULL,
-  chunk = "auto"
+  chunk = "auto",
+  ...
 )
 }
 \arguments{
 \item{x}{A wide table from \verb{extract_*()}, or a long table from an earlier
 indicator step.}
+
+\item{...}{Further arguments of the methods; the table method takes
+none.}
 
 \item{above, below}{Thresholds: numbers, or a table of thresholds by unit.}
 

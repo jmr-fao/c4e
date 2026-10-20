@@ -20,7 +20,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 9 | Survey side | ✔ done | #2 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack |
 | 10 | Export and inspection | ✔ done | #3 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack |
 | 11 | Wrappers and presets | ✔ done | #4 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack; also the cv safeguard, README and topics |
-| 12 | Grid methods and wrappers | 🔄 in progress | | 2026-10-20 | | branch `chunk-12-grid` from `main` |
+| 12 | Grid methods and wrappers | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-12-grid`; needs push and a pull request into `main` |
 | 13 | Deprecations and removals | ☐ | | | | |
 | 14 | Package hygiene | ☐ | | | | |
 | 15 | Quick start and canonical vignettes | ☐ | | | | |
@@ -29,23 +29,24 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** 12, grid methods and wrappers, on branch
-`chunk-12-grid` cut from `main` (chunks 0 to 11 are merged). `main` is
-protected on GitHub: changes arrive by pull request and R-CMD-check must
-pass.
+**Current chunk:** 12, grid methods and wrappers, is complete on branch
+`chunk-12-grid` (cut from `main`); it needs a push and a pull request.
+`main` is protected: R-CMD-check must pass before the merge.
 
 **Next steps (in order):**
-1. Chunk 12 (plan §8 row 12, §13):
-   `SpatRaster` methods of the indicator steps on the matrix kernel through
-   `apply_kernel_raster()`, `metags()` round trip, `grid_indicators()`,
-   `grid_controls()`, and `grid_first` in `extremes_control()`.
-2. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
+1. Push `chunk-12-grid` and open its pull request into `main`; merge when
+   R-CMD-check is green.
+2. Next chunk: 13, removing the v1 functions after saving their reference
+   outputs (plan §8 row 13, as changed on 2026-10-20: no deprecation
+   wrappers). Grid follow-ups, if needed: `tapp()` fast paths for spells
+   (a C++ run-length would be the next step), seasons as periods.
+3. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
    template of a wrapper's chain, not code that re-evaluates: the survey and
    raster inputs are not in it and `window` prints as a list. Make it
    evaluable (record windows as `window_lag(...)` calls, data arguments as
    placeholders) alongside chunk 12 or in chunk 14. Also not built:
    `climate_indices(wide = TRUE)` and a `baseline` for SPI.
-3. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
+4. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
    empty_meta()`, `started <- Sys.time()`, resolve each argument with
    `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
    is given, wrap heavy work in `with_chunks()` with a `mem_estimate`, and
@@ -153,6 +154,11 @@ pass.
 | 2026-10-20 | §3, §11 | `calc_par()` computes coefficients of variation (statistics named `cv` or with `cv` as a word, e.g. `temp_cv`, and `cv()` itself) on kelvin when the data are in C or F, announces it, and records `ratio_unit = "K"` (labels say "computed in K"); a temperature with no recorded unit warns | a CV needs a scale with a true zero: in C it depends on the scale and divides by zero near 0 C (Jan's request) |
 | 2026-10-20 | §15 | `main` on GitHub is protected: a pull request is needed and R-CMD-check must pass; no approvals are required (one maintainer), no force pushes or deletion | CI is green on every chunk; keeps a broken chunk out of `main` |
 | 2026-10-20 | §5 | Maintainer email is `jan.rossi@fao.org` | Jan's confirmation |
+| 2026-10-20 | §13 | The grid runs the table steps on blocks of raster rows (`grid_apply()`), instead of separate kernel code per indicator; a `tapp()` fast path covers sums of fixed-threshold days and excess | every grid number equals the table path by construction; the fast path gives 8 to 15 times the speed where terra has a built-in |
+| 2026-10-20 | §13 | `calc_threshold_day()`, `calc_percentile()`, `calc_par()` and `calc_std_index()` are S3 generics; the table code is the `default` method, which now rejects unknown arguments (`check_dots_empty()`); no raster methods for `calc_spell()` and `calc_percentile_day()` | spells and percentile days need a flag raster first; `grid_indicators()` covers them |
+| 2026-10-20 | §13 | Grid layers are named `<indicator>_<period>` (`day_abv_30_sum_2021`, `spi_3_2021-07`, `day_90p_07`); the registry, the series unit and the call are kept in URL-encoded GeoTIFF tags (`c4e_grid*`); `extract_by_coord()` and `extract_by_poly()` rebuild the long table | the extracted table equals the table path, registry included |
+| 2026-10-20 | §13 | `grid_controls()` builds the density window in kilometres at the raster's mean latitude on lon/lat rasters; layers on other grids are resampled onto the first (bilinear, nearest, sum by kind) | `focalMat()` takes degrees on lon/lat rasters |
+| 2026-10-20 | §13 | `grid_first` in `weather_extremes()` not built | per-interview windows need daily values; extracting `grid_indicators()` serves many surveys over one raster |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -182,6 +188,27 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-20 — chunk 12 (laptop: FAO-Win, session: Claude)
+- Did: `main` protected on GitHub (pull request and R-CMD-check required);
+  maintainer email `fao.org`. Branch `chunk-12-grid` from `main`.
+  `R/grid_engine.R` (block engine, layout, tags, extraction restore),
+  `R/grid.R` (raster methods of four step functions, `tapp()` fast path,
+  `grid_indicators()`, `grid_controls()`), the indicator chain of
+  `weather_extremes()` factored into `extremes_spec()` and
+  `compute_extremes()`, `raster_meta()` reads a grid's series unit from its
+  tags, `inst/bench/bench-grid.R`.
+- Found: terra splits tag values on `=` (values are URL-encoded);
+  `focalMat()` takes degrees on lon/lat rasters; `cover()` takes no number
+  on terra 1.9.46 (`subst()` instead); the engine runs about 270,000 values
+  a second, 80 to 125 times slower than `tapp()` for plain counts, hence
+  the fast path.
+- Tests: 1389+ expectations, 0 failures; `test-grid.R` checks the grid
+  against the table path at the survey points for every method and
+  wrapper, blocks against one block, the fast path against the engine,
+  the GeoTIFF round trip under a tiny memory budget, empty cells, density
+  against a hand-made `focal()`, normals and aggregated zones.
+- Next: see Next steps above.
 
 ### 2026-10-20 — GitHub repository (laptop: FAO-Win, session: Claude)
 - Did: created `jmr-fao/c4e` (public, empty) in the browser, reconnected

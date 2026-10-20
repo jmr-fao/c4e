@@ -106,7 +106,7 @@ extract_by_coord <- function(raster, coord, iteration = NULL, id = NULL,
                             fn_name = "extract_by_coord",
                             args = list(id = id, chunk = if (!identical(chunk, "auto")) chunk),
                             started = started)
-    new_c4e_tbl(out, meta)
+    restore_grid_table(new_c4e_tbl(out, meta), raster)
 }
 
 #' Summaries of the cells within a distance of each location
@@ -133,5 +133,5 @@ extract_buffer <- function(raster, coord, id, buffer, fn, started, ...) {
                             fn_name = "extract_by_coord",
                             args = list(id = id, buffer = buffer, fn = fn_name),
                             started = started)
-    new_c4e_tbl(out, meta)
+    restore_grid_table(new_c4e_tbl(out, meta), raster)
 }

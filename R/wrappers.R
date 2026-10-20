@@ -155,6 +155,61 @@ describe_thresholds <- function(above, below, p, unit, heatwave, min_spell, spel
     paste(parts, collapse = "; ")
 }
 
+#' The indicators a call asks for: explicit arguments over the preset's
+#' @noRd
+extremes_spec <- function(preset, above, below, p, min_spell, wrapper = "weather_extremes",
+                          call = rlang::caller_env()) {
+    spec <- preset_spec(preset, wrapper, call = call)
+    above <- above %||% spec$above
+    below <- below %||% spec$below
+    p <- p %||% spec$p
+    heatwave <- if (is.null(c(above, below, p))) spec$heatwave
+    min_spell <- min_spell %||% heatwave$min_spell %||% spec$min_spell %||% 2L
+    if (is.null(c(above, below, p)) && is.null(heatwave)) {
+        cli::cli_abort("Give a {.arg preset}, or thresholds with {.arg above},
+                        {.arg below} or {.arg p}.", call = call)
+    }
+    list(spec = spec, above = above, below = below, p = p, heatwave = heatwave,
+         min_spell = min_spell)
+}
+
+#' Values left out of percentiles: from control, the preset, or 0.1 mm for
+#' precipitation
+#' @noRd
+extremes_exclude_below <- function(control, spec, p, meta) {
+    control$exclude_below %||% spec$exclude_below %||%
+        (if (!is.null(p) && identical(meta$variable, "pre")) 0.1)
+}
+
+#' Daily indicators of an extracted table (or a block of grid cells)
+#' @noRd
+compute_extremes <- function(extracted, s, spells, exclude_below, baseline, control) {
+    indicators <- extracted
+    if (!is.null(s$heatwave)) {
+        return(calc_heatwave(indicators, excess = s$heatwave$excess,
+                             min_spell = s$min_spell, chunk = control$chunk))
+    }
+    if (!is.null(s$above) || !is.null(s$below)) {
+        indicators <- calc_threshold_day(indicators, above = s$above, below = s$below,
+                                         chunk = control$chunk)
+    }
+    if (!is.null(s$p)) {
+        pct <- calc_percentile(extracted, p = s$p, exclude_below = exclude_below,
+                               yearly = control$yearly, baseline = baseline,
+                               chunk = control$chunk)
+        indicators <- calc_percentile_day(indicators, pct, chunk = control$chunk)
+    }
+    if (spells) {
+        indicators <- calc_spell(indicators, min_spell = s$min_spell,
+                                 chunk = control$chunk)
+        if (!is.null(s$p) && isTRUE(control$spell_excess)) {
+            spell_pct <- calc_spell_percentile(indicators, p = s$p)
+            indicators <- calc_spell_excess(indicators, spell_pct)
+        }
+    }
+    indicators
+}
+
 # ==== weather_extremes() ==================================================== ----
 
 #' Extreme weather before each interview, in one call
@@ -243,16 +298,13 @@ weather_extremes <- function(survey, climate, lat = NULL, lon = NULL, id = NULL,
     env <- environment()
     stage <- function(msg) c4e_progress_step(msg, .envir = env)
 
-    spec <- preset_spec(preset, "weather_extremes")
-    above <- above %||% spec$above
-    below <- below %||% spec$below
-    p <- p %||% spec$p
-    heatwave <- if (is.null(c(above, below, p))) spec$heatwave
-    min_spell <- min_spell %||% heatwave$min_spell %||% spec$min_spell %||% 2L
-    if (is.null(c(above, below, p)) && is.null(heatwave)) {
-        cli::cli_abort("Give a {.arg preset}, or thresholds with {.arg above},
-                        {.arg below} or {.arg p}.")
-    }
+    s <- extremes_spec(preset, above, below, p, min_spell)
+    spec <- s$spec
+    above <- s$above
+    below <- s$below
+    p <- s$p
+    heatwave <- s$heatwave
+    min_spell <- s$min_spell
     window <- window %||% window_lag("1 year")
 
     locations <- survey_locations(survey, cols)
@@ -261,8 +313,7 @@ weather_extremes <- function(survey, climate, lat = NULL, lon = NULL, id = NULL,
     meta <- input_meta(climate)
     check_preset_data(spec, meta, preset)
     unit_to <- target_unit(meta, spec, c(above, below), unit)
-    exclude_below <- control$exclude_below %||% spec$exclude_below %||%
-        (if (!is.null(p) && identical(meta$variable, "pre")) 0.1)
+    exclude_below <- extremes_exclude_below(control, spec, p, meta)
 
     inform_spec(
         paste0("weather_extremes", if (!is.null(preset)) paste0(" (", preset, ")")),
@@ -299,30 +350,8 @@ weather_extremes <- function(survey, climate, lat = NULL, lon = NULL, id = NULL,
     extracted <- to_unit(extracted, unit_to)
 
     stage("Computing indicators")
-    indicators <- extracted
-    if (!is.null(heatwave)) {
-        indicators <- calc_heatwave(indicators, excess = heatwave$excess,
-                                    min_spell = min_spell, chunk = control$chunk)
-    } else {
-        if (!is.null(above) || !is.null(below)) {
-            indicators <- calc_threshold_day(indicators, above = above, below = below,
-                                             chunk = control$chunk)
-        }
-        if (!is.null(p)) {
-            pct <- calc_percentile(extracted, p = p, exclude_below = exclude_below,
-                                   yearly = control$yearly, baseline = baseline,
-                                   chunk = control$chunk)
-            indicators <- calc_percentile_day(indicators, pct, chunk = control$chunk)
-        }
-        if (spells) {
-            indicators <- calc_spell(indicators, min_spell = min_spell,
-                                     chunk = control$chunk)
-            if (!is.null(p) && isTRUE(control$spell_excess)) {
-                spell_pct <- calc_spell_percentile(indicators, p = p)
-                indicators <- calc_spell_excess(indicators, spell_pct)
-            }
-        }
-    }
+    indicators <- compute_extremes(extracted, s, spells, exclude_below, baseline,
+                                   control)
     if (!is.null(boundaries)) {
         indicators <- aggregate_to_adm(indicators)
     }

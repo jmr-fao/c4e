@@ -2,9 +2,12 @@
 % Please edit documentation in R/calc_percentile.R
 \name{calc_percentile}
 \alias{calc_percentile}
+\alias{calc_percentile.default}
 \title{Percentiles of daily values by unit and month}
 \usage{
-calc_percentile(
+calc_percentile(x, ...)
+
+\method{calc_percentile}{default}(
   x,
   p,
   exclude_below = NULL,
@@ -14,11 +17,15 @@ calc_percentile(
   replace = NA_real_,
   id = NULL,
   label = NULL,
-  chunk = "auto"
+  chunk = "auto",
+  ...
 )
 }
 \arguments{
 \item{x}{A wide table from \verb{extract_*()}, or a long indicator table.}
+
+\item{...}{Further arguments of the methods; the table method takes
+none.}
 
 \item{p}{Probabilities, e.g. \code{c(0.1, 0.9)}.}
 

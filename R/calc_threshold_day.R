@@ -32,6 +32,8 @@
 #'
 #' @seealso [calc_percentile_day()], [calc_spell()], [calc_condition()]
 #' @family indicators
+#' @param ... Further arguments of the methods; the table method takes
+#'   none.
 #' @export
 #'
 #' @examples
@@ -45,8 +47,15 @@
 #' extract_by_coord(tmax[[1:60]], points) |>
 #'   convert_unit("C") |>
 #'   calc_threshold_day(above = c(30, 35))
-calc_threshold_day <- function(x, above = NULL, below = NULL, unit = NULL,
-                               id = NULL, label = NULL, chunk = "auto") {
+calc_threshold_day <- function(x, ...) {
+    UseMethod("calc_threshold_day")
+}
+
+#' @rdname calc_threshold_day
+#' @export
+calc_threshold_day.default <- function(x, above = NULL, below = NULL, unit = NULL,
+                                       id = NULL, label = NULL, chunk = "auto", ...) {
+    rlang::check_dots_empty()
     started <- Sys.time()
     if (is.null(above) && is.null(below)) {
         cli::cli_abort("Give {.arg above}, {.arg below} or both.")

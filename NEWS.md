@@ -39,9 +39,16 @@ tracked in `dev/LOG_v2.md`.
   `dry_run`, `keep_steps`, and lists of surveys; options in
   `extremes_control()`, `indices_control()` and `controls_control()`.
 
+* Every cell of a raster: `grid_indicators()` (the extremes of
+  `weather_extremes()`, per year or month) and `grid_controls()` (population
+  density within radii, climate normals, other layers) return rasters;
+  `calc_threshold_day()`, `calc_percentile()`, `calc_par()` and
+  `calc_std_index()` also take a `SpatRaster`. Rasters are processed in
+  blocks of rows and can be written to GeoTIFF; `extract_by_coord()` and
+  `extract_by_poly()` restore the indicator registry from the file's tags.
+
 ## Planned
 
-* Two grid wrappers and grid methods of the indicators.
 * The v1 functions that the new ones replace are removed before the first
   release; there are no deprecation wrappers, since `climatic4economist`
   keeps them.
