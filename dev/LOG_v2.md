@@ -19,7 +19,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 8 | Standardised indices and parameters | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-8-std-index` of `c4e`; needs push and a PR into `main` |
 | 9 | Survey side | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-9-survey` (cut from `chunk-8-std-index`); needs push and a PR into `main` after chunk 8 |
 | 10 | Export and inspection | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-10-export` (cut from `chunk-9-survey`); needs push and a PR into `main` after chunk 9 |
-| 11 | Wrappers and presets | ☐ | | | | |
+| 11 | Wrappers and presets | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-11-wrappers` (cut from `chunk-10-export`); needs push and a PR into `main` after chunk 10 |
 | 12 | Grid methods and wrappers | ☐ | | | | |
 | 13 | Deprecations and removals | ☐ | | | | |
 | 14 | Package hygiene | ☐ | | | | |
@@ -29,27 +29,29 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 8, 9 and 10 are done on branches
-`chunk-8-std-index`, `chunk-9-survey` and `chunk-10-export` (each cut from
-the previous) and wait for review. The rename (chunk R) is committed on
-`main`. The GitHub repository `jmr-fao/c4e` did not exist yet when chunk 10
-was committed.
+**Current chunk:** chunks 8 to 11 are done on branches
+`chunk-8-std-index`, `chunk-9-survey`, `chunk-10-export` and
+`chunk-11-wrappers` (each cut from the previous) and wait for review. The
+rename (chunk R) is committed on `main`. The GitHub repository
+`jmr-fao/c4e` did not exist yet when chunk 11 was committed.
 
 **Next steps (in order):**
 1. Jan: create the empty GitHub repository `jmr-fao/c4e` (no README,
    license or .gitignore, so the first push is clean), then push:
    `git push -u origin main` from the `c4e` folder. The R-CMD-check workflow
    runs on that push. Mark chunk R done here.
-2. Jan: push `chunk-8-std-index`, `chunk-9-survey` and `chunk-10-export`;
-   open their pull requests into `main` in order.
-3. Next chunk: 11, wrappers and presets (plan §8 row 11, §12):
-   `weather_extremes()`, `climate_indices()`, `static_controls()`,
-   `time_varying_controls()` as `cli_progress_step()` stages with
-   `dry_run`, list-of-surveys mapping with `vctrs::vec_rbind()`;
-   `R/presets.R` and `list_presets()`; the `*_control()` constructors.
-   Chunk 12 (grid methods) can follow or run alongside.
-4. New step functions reuse `R/indicator_helpers.R`: `indicator_frame()`,
-   `frame_matrix()`, `finish_frame()` and `run_indicator()`.
+2. Jan: push `chunk-8-std-index`, `chunk-9-survey`, `chunk-10-export` and
+   `chunk-11-wrappers`; open their pull requests into `main` in order.
+3. Next chunk: 12, grid methods and wrappers (plan §8 row 12, §13):
+   `SpatRaster` methods of the indicator steps on the matrix kernel through
+   `apply_kernel_raster()`, `metags()` round trip, `grid_indicators()`,
+   `grid_controls()`, and `grid_first` in `extremes_control()`.
+4. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
+   template of a wrapper's chain, not code that re-evaluates: the survey and
+   raster inputs are not in it and `window` prints as a list. Make it
+   evaluable (record windows as `window_lag(...)` calls, data arguments as
+   placeholders) alongside chunk 12 or in chunk 14. Also not built:
+   `climate_indices(wide = TRUE)` and a `baseline` for SPI.
 5. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
    empty_meta()`, `started <- Sys.time()`, resolve each argument with
    `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
@@ -156,6 +158,14 @@ was committed.
 | 2026-10-20 | §9.7 | `validate_c4e()` checks duplicate rows, empty indicators, units without data and date gaps; `summary.c4e_tbl()` adds the context, counts, and per-indicator missing share and mean | |
 | 2026-10-20 | §3 | Window-summary registry entries now record their source's kind (`of`), step and definition | labels must know whether a sum is of days or of an excess |
 | 2026-10-20 | §6 | Exported in chunk 10: `write_stata()`, `c4e_labels()`, `validate_c4e()`, `summary()` method for `c4e_tbl` | |
+| 2026-10-20 | §12 | The control wrappers live in `R/controls.R`; `R/wrappers.R` holds the shared machinery, `weather_extremes()` and `climate_indices()` | two files of readable length |
+| 2026-10-20 | §12 | Wrappers convert units after extraction, on the table (`convert_unit()` appears in the history): to the preset's unit, else Kelvin data with thresholds below 100 to C, precipitation in m or kg/m2/s to mm | one place for conversions, visible in the history |
+| 2026-10-20 | §12 | Spell percentiles and their excess only with `extremes_control(spell_excess = TRUE)`, not by default with `p` | they double the columns and few analyses use them |
+| 2026-10-20 | §12 | With `boundaries`, divisions are attached to households by point in polygon and indicators summarised with `by = "ID_adm_div"`; distances in `static_controls()` stay at the household's own location | |
+| 2026-10-20 | §12 | Control columns are registered as `kind = "par"` with `stat` (`value`, `mean`, `mode`, `sum`, `density`, `distance`, `log1p`), `buffer` and `period` (`static` or the `match` rule); normals carry `years` | no new indicator kind; labels follow from these fields |
+| 2026-10-20 | §12 | A list of surveys is bound with `vec_rbind()` after adding `survey` to each table, not with `.names_to` | `.names_to` binds through a plain tibble prototype and drops the registry |
+| 2026-10-20 | §12 | Not built in chunk 11: `climate_indices(wide = TRUE)`, `baseline` for SPI, `select_by_dates()` of the window span before extraction, an evaluable `c4e_history()` | kept the chunk to the four wrappers; listed in Next steps |
+| 2026-10-20 | §12 | Exported in chunk 11: `weather_extremes()`, `climate_indices()`, `static_controls()`, `time_varying_controls()`, `list_presets()`, `extremes_control()`, `indices_control()`, `controls_control()` | |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -187,6 +197,25 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-20 — chunk 11 (laptop: FAO-Win, session: Claude)
+- Did: branch `chunk-11-wrappers` from `chunk-10-export`. `R/presets.R`
+  (ten presets, `list_presets()`, preset checks against the data, the three
+  `*_control()` constructors), `R/wrappers.R` (shared machinery,
+  `weather_extremes()`, `climate_indices()`), `R/controls.R`
+  (`static_controls()` with terrain, radii and distances;
+  `time_varying_controls()` with year matching, density, log and climate
+  normals). Labels for control columns in `R/labels.R`.
+- Found: tidy-select arguments forwarded as `cols$x` reached `prepare_coord()`
+  as expressions, not NULL (now `!!`); `vec_rbind(.names_to =)` drops the
+  registry; an old `test-extract.R` expectation checked a missing column
+  and passed vacuously (fixed).
+- Tests: 1322 expectations, 0 failures; `test-wrappers.R` covers each
+  wrapper against its step-by-step chain, every preset on a fixture, the
+  mismatch error, overrides, `keep_steps`, `dry_run`, `verbose = FALSE`,
+  lists of surveys, boundaries, year matching and labels. Local `rcmdcheck`
+  with CI's arguments: 0 errors, 0 warnings, 4 notes, none from the new code.
+- Next: see Next steps above.
 
 ### 2026-10-20 — chunk 10 (laptop: FAO-Win, session: Claude)
 - Did: branch `chunk-10-export` from `chunk-9-survey`. `R/labels.R`

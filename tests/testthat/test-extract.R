@@ -110,7 +110,8 @@ test_that("the summary follows the kind of variable, and is announced", {
     zones <- suppressMessages(read_climate(zones, variable = "aez"))
     expect_snapshot(out <- extract_by_poly(zones, synthetic_adm_div()))
     expect_equal(c4e_meta(out)$spatial_agg$fn, "mode")
-    expect_true(all(out$aez %in% c(1, 2)))
+    # the value column is named by the layer's date
+    expect_true(all(out[[ncol(out)]] %in% c(1, 2)))
 })
 
 test_that("coverage weights give exactextractr's area-weighted mean", {

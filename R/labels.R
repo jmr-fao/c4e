@@ -155,11 +155,41 @@ pct_label <- function(entry, meta) {
 }
 
 par_label <- function(entry, meta) {
-    period <- switch(entry$period %||% "all", all = "all observations",
+    if (isTRUE(entry$period %in% c("static", "same_year", "previous_year", "nearest"))) {
+        return(control_label(entry))
+    }
+    period <- switch(entry$period %||% "all",
+                     all = if (!is.null(entry$years)) {
+                         paste(entry$years, "years before the survey")
+                     } else {
+                         "all observations"
+                     },
                      year = "averaged over years", month = "averaged over months")
     paste0(entry$stat, " of ", entry$variable %||% meta$variable %||% "value",
            if (!is.null(entry$unit %||% meta$unit)) paste0(" (", entry$unit %||% meta$unit, ")"),
            ", ", period)
+}
+
+#' "mode of aez within 20 km", "pop, layer of the year before the survey"
+#' @noRd
+control_label <- function(entry) {
+    what <- switch(entry$stat,
+                   value    = entry$variable,
+                   density  = paste(entry$variable, "per km2"),
+                   distance = paste("distance to the nearest", entry$variable, "(km)"),
+                   log1p    = paste0("log(1 + ", entry$variable, ")"),
+                   paste(entry$stat, "of", entry$variable))
+    where <- if (isTRUE(entry$buffer > 0)) {
+        paste0(" within ", format(entry$buffer / 1000, trim = TRUE), " km")
+    } else {
+        ""
+    }
+    when <- switch(entry$period,
+                   same_year     = ", layer of the survey year",
+                   previous_year = ", layer of the year before the survey",
+                   nearest       = ", layer nearest the survey year",
+                   "")
+    paste0(what, where, when)
 }
 
 agg_label <- function(entry, meta) {

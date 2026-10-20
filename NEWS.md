@@ -26,12 +26,22 @@ tracked in `dev/LOG_v2.md`.
   900 times faster: `calc_threshold_day()`, `calc_condition()`,
   `calc_percentile()`, `calc_percentile_day()`, `calc_spell()`,
   `calc_spell_percentile()`, `calc_spell_excess()`, `calc_heatwave()`.
+* Standardised indices and parameters: `calc_std_index()` (SPI and SPEI),
+  `calc_std_threshold()`, and `calc_par()` with periods and coverage.
+* Survey side: stable coordinate IDs in `prepare_coord()`, window objects
+  (`window_lag()`, `window_season()`, `window_fixed()`, `window_since()`),
+  `summarise_by_interview()`, `summarise_by_period()`, `aggregate_to_adm()`.
+* Export and inspection: `write_stata()` with variable labels and a
+  codebook, `c4e_labels()`, `validate_c4e()`, `summary()`.
+* Wrappers that run the whole chain in one call: `weather_extremes()`,
+  `climate_indices()`, `static_controls()` and `time_varying_controls()`,
+  with presets (`list_presets()`), a specification block, step progress,
+  `dry_run`, `keep_steps`, and lists of surveys; options in
+  `extremes_control()`, `indices_control()` and `controls_control()`.
 
 ## Planned
 
-* Standardised indices and climatic parameters, survey-window summaries,
-  Stata export with labels, four survey wrappers and two grid wrappers with
-  presets.
+* Two grid wrappers and grid methods of the indicators.
 * The v1 functions that the new ones replace are removed before the first
   release; there are no deprecation wrappers, since `climatic4economist`
   keeps them.
