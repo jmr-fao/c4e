@@ -15,11 +15,11 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 5 | Extraction | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
 | 6 | Matrix kernel | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
 | 7 | Daily indicators | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
-| R | Rename to `c4e` (new repository) | 🔄 in progress | | 2026-10-20 | | committed on `main` of the new local repository; needs the GitHub repo and a push |
-| 8 | Standardised indices and parameters | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-8-std-index` of `c4e`; needs push and a PR into `main` |
-| 9 | Survey side | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-9-survey` (cut from `chunk-8-std-index`); needs push and a PR into `main` after chunk 8 |
-| 10 | Export and inspection | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-10-export` (cut from `chunk-9-survey`); needs push and a PR into `main` after chunk 9 |
-| 11 | Wrappers and presets | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-11-wrappers` (cut from `chunk-10-export`); needs push and a PR into `main` after chunk 10 |
+| R | Rename to `c4e` (new repository) | ✔ done | | 2026-10-20 | 2026-10-20 | `jmr-fao/c4e` created (public) and `main` pushed on 2026-10-20; Actions enabled |
+| 8 | Standardised indices and parameters | 👀 in review | #1 | 2026-10-20 | | `chunk-8-std-index` into `main` |
+| 9 | Survey side | 👀 in review | #2 | 2026-10-20 | | `chunk-9-survey`, stacked on #1 |
+| 10 | Export and inspection | 👀 in review | #3 | 2026-10-20 | | `chunk-10-export`, stacked on #2 |
+| 11 | Wrappers and presets | 👀 in review | #4 | 2026-10-20 | | `chunk-11-wrappers`, stacked on #3; also the cv safeguard, README and topics |
 | 12 | Grid methods and wrappers | ☐ | | | | |
 | 13 | Deprecations and removals | ☐ | | | | |
 | 14 | Package hygiene | ☐ | | | | |
@@ -29,19 +29,17 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 8 to 11 are done on branches
-`chunk-8-std-index`, `chunk-9-survey`, `chunk-10-export` and
-`chunk-11-wrappers` (each cut from the previous) and wait for review. The
-rename (chunk R) is committed on `main`. The GitHub repository
-`jmr-fao/c4e` did not exist yet when chunk 11 was committed.
+**Current chunk:** chunks 8 to 11 are in review as stacked pull requests
+in `jmr-fao/c4e`: #1 (`chunk-8-std-index` into `main`), #2 (into
+`chunk-8-std-index`), #3 (into `chunk-9-survey`) and #4 (into
+`chunk-10-export`). The rename (chunk R) is on `main` on GitHub.
 
 **Next steps (in order):**
-1. Jan: create the empty GitHub repository `jmr-fao/c4e` (no README,
-   license or .gitignore, so the first push is clean), then push:
-   `git push -u origin main` from the `c4e` folder. The R-CMD-check workflow
-   runs on that push. Mark chunk R done here.
-2. Jan: push `chunk-8-std-index`, `chunk-9-survey`, `chunk-10-export` and
-   `chunk-11-wrappers`; open their pull requests into `main` in order.
+1. Jan: review and merge #1, #2, #3, #4 in that order. With "Delete branch"
+   after each merge, GitHub retargets the next pull request to `main`; check
+   R-CMD-check is green on each before merging.
+2. After the merges: `git switch main && git pull`, then cut chunk 12 from
+   `main`.
 3. Next chunk: 12, grid methods and wrappers (plan §8 row 12, §13):
    `SpatRaster` methods of the indicator steps on the matrix kernel through
    `apply_kernel_raster()`, `metags()` round trip, `grid_indicators()`,
@@ -59,8 +57,6 @@ rename (chunk R) is committed on `main`. The GitHub repository
    return `new_c4e_tbl(out, c4e_record(meta, fn, args, started))`.
 
 **Blocked / needs Jan:**
-- Creating `jmr-fao/c4e` on GitHub and the first push (outward-facing, left
-  to Jan). Until then R CMD check reports the package URLs as 404.
 - In `climatic4economist`: pull request 3 (`v2` into `main`) and the seven
   `v2-chunk-*` branches are superseded by `c4e`. Close pull request 3 and
   delete the branches when convenient; nothing of them is lost, since `c4e`
@@ -171,7 +167,6 @@ rename (chunk R) is committed on `main`. The GitHub repository
 ### Open R CMD check NOTEs (for chunk 14)
 
 - Maintainer email `fao.com` (see Blocked); title and description fixed in the rename.
-- The `github.com/jmr-fao/c4e` URLs answer 404 until the repository exists.
 - Tarball is about 19.8 MB: vignette HTML and images are not build-ignored.
 - All declared Imports are used since chunk 2.
 - Many "no visible binding for global variable" notes (NSE columns) and unqualified sf/sp/raster calls in `ave_*` (removed in chunk 13).
@@ -198,6 +193,21 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-20 — GitHub repository (laptop: FAO-Win, session: Claude)
+- Did: created `jmr-fao/c4e` (public, empty) in the browser, reconnected
+  `origin`, pushed `main` and the four chunk branches, enabled Actions,
+  opened pull requests #1 to #4 stacked chunk by chunk, set the About
+  topics. On `chunk-11-wrappers`: README brought up to chunk 11 with the
+  R-CMD-check badge and a one-call example; the tracked root `.DS_Store`
+  removed (it was already in `.gitignore`).
+- Found: GitHub Desktop could not publish because `origin` pointed at a
+  repository that did not exist yet; Actions starts disabled on a new
+  repository and needs "Enable Actions on this repository". The `gh` CLI is
+  not installed on this laptop, so the app cannot follow the pull requests.
+- Tests: the README examples run and the one-call result equals the
+  step-by-step chain.
+- Next: see Next steps above.
 
 ### 2026-10-20 — chunk 11 (laptop: FAO-Win, session: Claude)
 - Did: branch `chunk-11-wrappers` from `chunk-10-export`. `R/presets.R`
