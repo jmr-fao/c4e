@@ -16,11 +16,11 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 6 | Matrix kernel | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
 | 7 | Daily indicators | ✔ done | | 2026-10-19 | 2026-10-19 | in `c4e` `main` (seeded from `v2-chunk-7`) |
 | R | Rename to `c4e` (new repository) | ✔ done | | 2026-10-20 | 2026-10-20 | `jmr-fao/c4e` created (public) and `main` pushed on 2026-10-20; Actions enabled |
-| 8 | Standardised indices and parameters | 👀 in review | #1 | 2026-10-20 | | `chunk-8-std-index` into `main` |
-| 9 | Survey side | 👀 in review | #2 | 2026-10-20 | | `chunk-9-survey`, stacked on #1 |
-| 10 | Export and inspection | 👀 in review | #3 | 2026-10-20 | | `chunk-10-export`, stacked on #2 |
-| 11 | Wrappers and presets | 👀 in review | #4 | 2026-10-20 | | `chunk-11-wrappers`, stacked on #3; also the cv safeguard, README and topics |
-| 12 | Grid methods and wrappers | ☐ | | | | |
+| 8 | Standardised indices and parameters | ✔ done | #1 | 2026-10-20 | 2026-10-20 | merged into `main` |
+| 9 | Survey side | ✔ done | #2 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack |
+| 10 | Export and inspection | ✔ done | #3 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack |
+| 11 | Wrappers and presets | ✔ done | #4 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack; also the cv safeguard, README and topics |
+| 12 | Grid methods and wrappers | 🔄 in progress | | 2026-10-20 | | branch `chunk-12-grid` from `main` |
 | 13 | Deprecations and removals | ☐ | | | | |
 | 14 | Package hygiene | ☐ | | | | |
 | 15 | Quick start and canonical vignettes | ☐ | | | | |
@@ -29,41 +29,29 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** chunks 8 to 11 are in review as stacked pull requests
-in `jmr-fao/c4e`: #1 (`chunk-8-std-index` into `main`), #2 (into
-`chunk-8-std-index`), #3 (into `chunk-9-survey`) and #4 (into
-`chunk-10-export`). The rename (chunk R) is on `main` on GitHub.
+**Current chunk:** 12, grid methods and wrappers, on branch
+`chunk-12-grid` cut from `main` (chunks 0 to 11 are merged). `main` is
+protected on GitHub: changes arrive by pull request and R-CMD-check must
+pass.
 
 **Next steps (in order):**
-1. Jan: review and merge #1, #2, #3, #4 in that order. With "Delete branch"
-   after each merge, GitHub retargets the next pull request to `main`; check
-   R-CMD-check is green on each before merging.
-2. After the merges: `git switch main && git pull`, then cut chunk 12 from
-   `main`.
-3. Next chunk: 12, grid methods and wrappers (plan §8 row 12, §13):
+1. Chunk 12 (plan §8 row 12, §13):
    `SpatRaster` methods of the indicator steps on the matrix kernel through
    `apply_kernel_raster()`, `metags()` round trip, `grid_indicators()`,
    `grid_controls()`, and `grid_first` in `extremes_control()`.
-4. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
+2. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
    template of a wrapper's chain, not code that re-evaluates: the survey and
    raster inputs are not in it and `window` prints as a list. Make it
    evaluable (record windows as `window_lag(...)` calls, data arguments as
    placeholders) alongside chunk 12 or in chunk 14. Also not built:
    `climate_indices(wide = TRUE)` and a `baseline` for SPI.
-5. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
+3. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
    empty_meta()`, `started <- Sys.time()`, resolve each argument with
    `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
    is given, wrap heavy work in `with_chunks()` with a `mem_estimate`, and
    return `new_c4e_tbl(out, c4e_record(meta, fn, args, started))`.
 
 **Blocked / needs Jan:**
-- In `climatic4economist`: pull request 3 (`v2` into `main`) and the seven
-  `v2-chunk-*` branches are superseded by `c4e`. Close pull request 3 and
-  delete the branches when convenient; nothing of them is lost, since `c4e`
-  has their full history.
-- The maintainer email in `DESCRIPTION` is `jan.rossi@fao.com`, while the
-  Quarto settings use `jan.rossi@fao.org`. Confirm which is right; it was
-  left unchanged.
 - This laptop runs R 4.5.0 with packages built for 4.5.3; namespace loads in
   fresh workers warn "built under R version 4.5.3". Not a code problem.
 
@@ -163,10 +151,11 @@ in `jmr-fao/c4e`: #1 (`chunk-8-std-index` into `main`), #2 (into
 | 2026-10-20 | §12 | Not built in chunk 11: `climate_indices(wide = TRUE)`, `baseline` for SPI, `select_by_dates()` of the window span before extraction, an evaluable `c4e_history()` | kept the chunk to the four wrappers; listed in Next steps |
 | 2026-10-20 | §12 | Exported in chunk 11: `weather_extremes()`, `climate_indices()`, `static_controls()`, `time_varying_controls()`, `list_presets()`, `extremes_control()`, `indices_control()`, `controls_control()` | |
 | 2026-10-20 | §3, §11 | `calc_par()` computes coefficients of variation (statistics named `cv` or with `cv` as a word, e.g. `temp_cv`, and `cv()` itself) on kelvin when the data are in C or F, announces it, and records `ratio_unit = "K"` (labels say "computed in K"); a temperature with no recorded unit warns | a CV needs a scale with a true zero: in C it depends on the scale and divides by zero near 0 C (Jan's request) |
+| 2026-10-20 | §15 | `main` on GitHub is protected: a pull request is needed and R-CMD-check must pass; no approvals are required (one maintainer), no force pushes or deletion | CI is green on every chunk; keeps a broken chunk out of `main` |
+| 2026-10-20 | §5 | Maintainer email is `jan.rossi@fao.org` | Jan's confirmation |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
-- Maintainer email `fao.com` (see Blocked); title and description fixed in the rename.
 - Tarball is about 19.8 MB: vignette HTML and images are not build-ignored.
 - All declared Imports are used since chunk 2.
 - Many "no visible binding for global variable" notes (NSE columns) and unqualified sf/sp/raster calls in `ave_*` (removed in chunk 13).

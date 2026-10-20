@@ -5,7 +5,7 @@ Version: 0.1.0.9000
 Authors@R: c(
     person(
       "JMR",
-      email = "jan.rossi@fao.com",
+      email = "jan.rossi@fao.org",
       role = c("aut", "cre")
     )
   )
