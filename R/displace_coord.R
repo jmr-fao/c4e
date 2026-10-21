@@ -1,0 +1,221 @@
+#' Displace survey coordinates to protect respondents
+#'
+#' Moves every survey location in a random direction by a random distance,
+#' following the rule of the Demographic and Health Surveys (DHS): urban
+#' locations by up to 2 km, rural ones by up to 5 km, and a random 1% of the
+#' rural ones by up to 10 km. Households that share a location move together.
+#' With `boundaries`, a location stays inside the administrative division it
+#' started in, so division-level variables are not affected.
+#'
+#' Run it before sharing a file with coordinates, or before any variable is
+#' computed from them when the team itself should not hold the true
+#' locations. Variables computed afterwards (weather extremes, distances,
+#' controls) are then based on the displaced locations: the error this adds
+#' is small for smooth climate fields and division averages, and larger for
+#' short distances such as to the nearest road.
+#'
+#' @section What changes in the table:
+#' * The coordinate columns hold the displaced coordinates.
+#' * Location identifiers built from coordinates ([prepare_coord()] with
+#'   `id_rule = "coordinates"`) are rebuilt from the displaced ones, since the
+#'   old identifiers would reveal the true locations.
+#' * The context records the rule and the limits (not the seed). Labels, the
+#'   Stata codebook and printed tables then say that the coordinates are
+#'   displaced, and later tables built from these locations carry the record.
+#'
+#' Keep `seed` private: with the seed, the displacement can be undone.
+#'
+#' @param x A survey from [prepare_coord()], or a data frame with coordinates
+#'   in longitude and latitude (WGS84).
+#' @param lat,lon <[`tidy-select`][dplyr::dplyr_tidy_select]> The coordinate
+#'   columns; read from `x` when it comes from [prepare_coord()].
+#' @param type <[`tidy-select`][dplyr::dplyr_tidy_select]> Optional column
+#'   saying whether each location is `"urban"` or `"rural"` (also `"U"`,
+#'   `"R"`, `TRUE` for urban). When not given, every location is treated as
+#'   rural, the larger displacement.
+#' @param urban,rural,rural_far Maximum displacement in metres.
+#' @param share_far Share of rural locations displaced by up to `rural_far`.
+#' @param boundaries Optional administrative divisions (`SpatVector` of
+#'   polygons) a location must stay inside.
+#' @param seed Optional seed, for a displacement that can be repeated. Keep it
+#'   private.
+#' @param max_tries Draws allowed per location to land inside its division.
+#'
+#' @return `x` with displaced coordinates, as a `c4e_tbl`.
+#'
+#' @seealso [prepare_coord()]
+#' @export
+#'
+#' @examples
+#' survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+#' coord <- prepare_coord(survey, lat_var = lat, lon_var = lon, id = hhid)
+#'
+#' adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+#' displaced <- displace_coord(coord, boundaries = adm_div, seed = 1)
+#'
+#' # how far each location moved, in km
+#' moved <- terra::distance(as.matrix(coord[c("lon", "lat")]),
+#'                          as.matrix(displaced[c("lon", "lat")]),
+#'                          lonlat = TRUE, pairwise = TRUE) / 1000
+#' summary(moved)
+#' c4e_labels(displaced)
+displace_coord <- function(x, lat = NULL, lon = NULL, type = NULL,
+                           urban = 2000, rural = 5000, rural_far = 10000,
+                           share_far = 0.01, boundaries = NULL, seed = NULL,
+                           max_tries = 100) {
+    started <- Sys.time()
+    for (arg in c("urban", "rural", "rural_far")) {
+        value <- get(arg)
+        if (!is.numeric(value) || length(value) != 1 || is.na(value) || value < 0) {
+            cli::cli_abort("{.arg {arg}} must be one distance in metres, 0 or more.")
+        }
+    }
+    if (!is.numeric(share_far) || length(share_far) != 1 || share_far < 0 || share_far > 1) {
+        cli::cli_abort("{.arg share_far} must be a number between 0 and 1.")
+    }
+    if (!is.null(seed)) {
+        restore_seed <- local_seed(seed)
+        on.exit(restore_seed(), add = TRUE)
+    }
+
+    meta <- c4e_meta(x) %||% empty_meta()
+    data <- tibble::as_tibble(x)
+    lat_name <- optional_column(data, rlang::enquo(lat), "lat") %||% meta$survey$lat
+    lon_name <- optional_column(data, rlang::enquo(lon), "lon") %||% meta$survey$lon
+    if (is.null(lat_name) || is.null(lon_name)) {
+        cli::cli_abort("Give {.arg lat} and {.arg lon}, or a survey from
+                        {.fn prepare_coord}.")
+    }
+    type_name <- optional_column(data, rlang::enquo(type), "type")
+
+    # one displacement per location: households at the same place move together
+    location <- vctrs::vec_group_id(data[c(lon_name, lat_name)])
+    first <- !duplicated(location)
+    lon0 <- data[[lon_name]][first]
+    lat0 <- data[[lat_name]][first]
+    known <- !is.na(lon0) & !is.na(lat0)
+    if (any(abs(lat0[known]) > 90) || any(abs(lon0[known]) > 360)) {
+        cli::cli_abort("The coordinates must be longitude and latitude in degrees.")
+    }
+    urban_loc <- if (is.null(type_name)) {
+        c4e_inform("No {.arg type} given: every location is displaced as rural
+                    (up to {rural / 1000} km).")
+        rep(FALSE, length(lon0))
+    } else {
+        is_urban(data[[type_name]][first])
+    }
+    limit <- ifelse(urban_loc, urban, rural)
+    rural_idx <- which(!urban_loc & known)
+    n_far <- round(share_far * length(rural_idx))
+    if (n_far > 0) {
+        far <- rural_idx[sample.int(length(rural_idx), n_far)]
+        limit[far] <- rural_far
+    }
+
+    division <- if (!is.null(boundaries)) {
+        boundaries <- as_spat_vector(boundaries)
+        division_of(lon0, lat0, boundaries)
+    }
+
+    lon1 <- lon0
+    lat1 <- lat0
+    todo <- which(known)
+    for (try in seq_len(max_tries)) {
+        if (length(todo) == 0) break
+        moved <- move_points(lon0[todo], lat0[todo], limit[todo])
+        lon1[todo] <- moved$lon
+        lat1[todo] <- moved$lat
+        if (is.null(boundaries)) {
+            todo <- integer()
+        } else {
+            # a location outside every division has no division to stay in
+            landed <- division_of(lon1[todo], lat1[todo], boundaries)
+            stays <- is.na(division[todo]) |
+                (!is.na(landed) & landed == division[todo])
+            todo <- todo[!stays]
+        }
+    }
+    if (length(todo) > 0) {
+        n_left <- length(todo)
+        cli::cli_abort(c("{n_left} location{?s} could not be kept inside {?its/their}
+                          division in {max_tries} draws.",
+                         "i" = "Check that {.arg boundaries} cover the survey, or raise
+                                {.arg max_tries}."))
+    }
+
+    data[[lon_name]] <- lon1[location]
+    data[[lat_name]] <- lat1[location]
+    if (identical(meta$id_rule, "coordinates") && identical(meta$key, "ID") &&
+        "ID" %in% names(data)) {
+        data$ID <- coordinate_id(data[[lon_name]], data[[lat_name]], 5)
+    }
+
+    record <- list(rule = "DHS", urban = urban, rural = rural, rural_far = rural_far,
+                   share_far = share_far, n_locations = sum(known),
+                   n_far = n_far, typed = !is.null(type_name),
+                   within_boundaries = !is.null(boundaries))
+    survey <- meta$survey %||% list(lon = lon_name, lat = lat_name)
+    survey$displaced <- record
+    meta <- modify_meta(meta, list(survey = survey))
+    meta <- c4e_record(meta, "displace_coord",
+                       list(urban = urban, rural = rural, rural_far = rural_far,
+                            share_far = share_far,
+                            boundaries = if (!is.null(boundaries)) "given"),
+                       started)
+    new_c4e_tbl(data, meta)
+}
+
+#' Move points by a random distance up to `limit` metres in a random
+#' direction
+#'
+#' The distance is drawn uniformly between 0 and the limit, as in the DHS
+#' rule; on the sphere, a metre of latitude is the same everywhere and a
+#' metre of longitude shrinks with the cosine of the latitude (accurate to a
+#' fraction of a percent at these distances).
+#' @noRd
+move_points <- function(lon, lat, limit) {
+    angle <- stats::runif(length(lon), 0, 2 * pi)
+    distance <- stats::runif(length(lon), 0, limit)
+    metres_per_degree <- 111320
+    list(lat = lat + distance * cos(angle) / metres_per_degree,
+         lon = lon + distance * sin(angle) /
+             (metres_per_degree * cos(lat * pi / 180)))
+}
+
+#' The division (row of `boundaries`) each point falls in; NA outside
+#' @noRd
+division_of <- function(lon, lat, boundaries) {
+    points <- terra::vect(cbind(lon, lat), crs = "EPSG:4326")
+    if (!terra::same.crs(points, boundaries)) {
+        points <- terra::project(points, terra::crs(boundaries))
+    }
+    hits <- terra::relate(points, boundaries, "intersects")
+    apply(hits, 1, \(row) if (any(row)) which(row)[1] else NA_integer_)
+}
+
+is_urban <- function(type) {
+    if (is.logical(type)) return(!is.na(type) & type)
+    value <- tolower(trimws(as.character(type)))
+    known <- value %in% c("urban", "u", "rural", "r")
+    if (!all(known | is.na(value))) {
+        bad <- unique(type[!known & !is.na(value)])
+        cli::cli_abort("{.arg type} must be urban or rural; found {.val {bad}}.",
+                       call = rlang::caller_env(2))
+    }
+    value %in% c("urban", "u")
+}
+
+#' Set the seed and return a function restoring the previous random state
+#' @noRd
+local_seed <- function(seed) {
+    had_seed <- exists(".Random.seed", envir = globalenv(), inherits = FALSE)
+    old <- if (had_seed) get(".Random.seed", envir = globalenv())
+    set.seed(seed)
+    function() {
+        if (had_seed) {
+            assign(".Random.seed", old, envir = globalenv())
+        } else {
+            rm(".Random.seed", envir = globalenv())
+        }
+    }
+}

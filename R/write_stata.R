@@ -108,7 +108,11 @@ write_codebook <- function(x, original, stata, label_of, path) {
         if (!is.null(meta$date_range)) paste0("- Dates: ", paste(meta$date_range, collapse = " to ")),
         if (!is.null(meta$crs)) paste0("- CRS: ", meta$crs),
         if (!is.null(meta$window)) paste0("- Window: ", describe_window(meta$window)),
-        if (!is.null(meta$key)) paste0("- One row per: ", paste(c(meta$key, meta$unit_cols), collapse = ", "))
+        if (!is.null(meta$key)) paste0("- One row per: ", paste(c(meta$key, meta$unit_cols), collapse = ", ")),
+        if (!is.null(meta$survey$displaced)) {
+            paste0("- Coordinates: ", describe_displacement(meta$survey$displaced),
+                   "; every variable computed from them uses the displaced locations")
+        }
     )
     escape <- function(text) gsub("|", "\\|", text, fixed = TRUE)
     rows <- paste0("| `", stata, "` | `", original, "` | ",

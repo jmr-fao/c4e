@@ -38,7 +38,29 @@ c4e_labels <- function(x) {
         labels[["lag"]] <- paste0("periods before the interview (",
                                   describe_window(meta$window), ")")
     }
+    displaced <- meta$survey$displaced
+    if (!is.null(displaced)) {
+        for (axis in c("lon", "lat")) {
+            col <- meta$survey[[axis]]
+            if (!is.null(col) && col %in% names(x)) {
+                labels[[col]] <- paste0(if (axis == "lon") "longitude" else "latitude",
+                                        ", ", describe_displacement(displaced))
+            }
+        }
+    }
     vapply(labels, truncate_label, character(1))
+}
+
+#' "displaced up to 2/5/10 km (DHS rule)", short enough for a Stata label
+#' @noRd
+describe_displacement <- function(record) {
+    km <- function(m) format(m / 1000, trim = TRUE)
+    limits <- if (isTRUE(record$typed)) {
+        paste(km(record$urban), km(record$rural), km(record$rural_far), sep = "/")
+    } else {
+        paste(km(record$rural), km(record$rural_far), sep = "/")
+    }
+    paste0("displaced up to ", limits, " km (", record$rule %||% "DHS", " rule)")
 }
 
 truncate_label <- function(label, width = 80) {

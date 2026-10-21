@@ -78,10 +78,17 @@ tracked in `dev/LOG_v2.md`.
   and spatial controls, grid indicators and maps), all run on the bundled
   data at every build.
 
+* `displace_coord()` displaces survey coordinates before they are shared,
+  following the DHS rule (urban up to 2 km, rural up to 5 km, 1% of rural
+  up to 10 km), keeping each location inside its administrative division.
+  Households at a location move together, coordinate identifiers are
+  rebuilt, and the displacement is recorded in the context, the labels and
+  the Stata codebook (the seed is not).
+
 ## Planned
 
-* Three case-study articles and `displace_coord()` for privacy, then the
-  first release.
+* The first release, on GitHub and r-universe. Case studies move to a
+  separate tutorial website.
 
 # climatic4economist 0.1.0
 

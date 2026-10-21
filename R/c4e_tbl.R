@@ -548,7 +548,8 @@ describe_meta <- function(meta) {
     parts <- c(
         if (nzchar(first)) first,
         if (!is.null(meta$key)) paste0("key ", meta$key),
-        if (n > 0) paste(n, if (n == 1) "indicator" else "indicators")
+        if (n > 0) paste(n, if (n == 1) "indicator" else "indicators"),
+        if (!is.null(meta$survey$displaced)) "displaced coordinates"
     )
     paste(parts, collapse = "; ")
 }
