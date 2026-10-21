@@ -1,0 +1,320 @@
+# 🌍 c4e
+
+![](reference/figures/logo.png)
+
+## Climate data for economists
+
+c4e links climate rasters to household surveys. It extracts climate data
+at survey locations and administrative divisions, computes weather
+extreme indicators, standardised drought indices and spatial controls,
+and summarises them over the reference period before each interview,
+ready to merge with survey data and export to Stata.
+
+Tables carry their context from one step to the next: the variable, its
+unit, the time step, the thresholds, percentiles and spell lengths used.
+A value given once is not typed again, and every table can print the
+steps that produced it.
+
+c4e succeeds
+[climatic4economist](https://github.com/jmr-fao/climatic4economist),
+which stays available unchanged for existing scripts.
+
+> **Status:** under development. The design and progress are in
+> `dev/PLAN_v2.md` and `dev/LOG_v2.md`.
+
+## 📘 Features
+
+- **One call per question**:
+  [`weather_extremes()`](https://jmr-fao.github.io/c4e/reference/weather_extremes.md),
+  [`climate_indices()`](https://jmr-fao.github.io/c4e/reference/climate_indices.md),
+  [`static_controls()`](https://jmr-fao.github.io/c4e/reference/static_controls.md)
+  and
+  [`time_varying_controls()`](https://jmr-fao.github.io/c4e/reference/time_varying_controls.md)
+  run the whole chain from a survey and a raster, with named presets
+  ([`list_presets()`](https://jmr-fao.github.io/c4e/reference/list_presets.md)),
+  a dry run, and step-by-step progress
+- **Maps and grid panels**:
+  [`grid_indicators()`](https://jmr-fao.github.io/c4e/reference/grid_indicators.md)
+  and
+  [`grid_controls()`](https://jmr-fao.github.io/c4e/reference/grid_controls.md)
+  compute the same indicators and controls for every cell of a raster,
+  block by block, and write GeoTIFFs that keep their context
+- Read climate rasters with their dates, unit and variable (ERA5,
+  CHIRPS, WFDE5, GAEZ and your own sources)
+- Convert units, including rates per day, month or year
+- Extract at survey locations, buffers, polygons or cells, with CRS
+  checks
+- Daily extremes: thresholds, percentiles, spells, heatwaves, custom
+  conditions
+- Standardised indices (SPI, SPEI) and climatic parameters, with
+  coefficients of variation of temperatures computed on kelvin
+- Window summaries before each interview: lags, seasons, fixed periods,
+  time since an event, with a minimum coverage
+- Stata export with variable labels and a codebook; table checks and
+  summaries
+- Memory-aware: large jobs split automatically, with progress messages
+
+## 📥 Installation
+
+``` r
+
+remotes::install_github("jmr-fao/c4e")
+```
+
+## 🚀 In one call
+
+``` r
+
+survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+survey$interview <- as.Date(survey$interview)
+
+hot <- c4e::weather_extremes(
+  survey,
+  system.file("extdata", "tmax_daily.tif", package = "c4e"),
+  id = hhid, interview = interview,
+  preset = "heat"                 # days above 30 and 35 C, and their spells
+)
+
+c4e::c4e_history(hot)             # the equivalent step-by-step chain
+c4e::write_stata(hot, "hot_days.dta", codebook = TRUE)
+```
+
+## 🔧 Step by step
+
+``` r
+
+tmax <- c4e::read_climate(
+  system.file("extdata", "tmax_daily.tif", package = "c4e"))
+
+coord  <- c4e::prepare_coord(survey, lat_var = lat, lon_var = lon,
+                             id = hhid, interview = interview)
+points <- c4e::georef_coord(coord)
+
+hot_days <- c4e::extract_by_coord(tmax, points) |>
+  c4e::convert_unit("C") |>
+  c4e::calc_threshold_day(above = c(30, 35)) |>
+  c4e::calc_spell() |>
+  c4e::summarise_by_interview(coord, x = _, window = c4e::window_lag("1 year"))
+```
+
+## 📦 Dependencies
+
+terra, exactextractr, sf, SPEI, the tidyverse (dplyr, tidyr, purrr,
+tibble), cli, vctrs and lifecycle; haven for the Stata export.
+
+# Package index
+
+## One call per question
+
+Wrappers that run the whole chain from a survey and a raster, with
+presets and a short argument list.
+
+- [`weather_extremes()`](https://jmr-fao.github.io/c4e/reference/weather_extremes.md)
+  : Extreme weather before each interview, in one call
+- [`climate_indices()`](https://jmr-fao.github.io/c4e/reference/climate_indices.md)
+  : Standardised precipitation indices before each interview, in one
+  call
+- [`static_controls()`](https://jmr-fao.github.io/c4e/reference/static_controls.md)
+  : Location controls that do not change over time, in one call
+- [`time_varying_controls()`](https://jmr-fao.github.io/c4e/reference/time_varying_controls.md)
+  : Location controls in the survey year, in one call
+- [`list_presets()`](https://jmr-fao.github.io/c4e/reference/list_presets.md)
+  : List the presets of the wrappers
+- [`extremes_control()`](https://jmr-fao.github.io/c4e/reference/extremes_control.md)
+  [`indices_control()`](https://jmr-fao.github.io/c4e/reference/extremes_control.md)
+  [`controls_control()`](https://jmr-fao.github.io/c4e/reference/extremes_control.md)
+  : Further options of the wrappers
+
+## Every cell of a raster
+
+Indicators, parameters and controls returned as rasters.
+
+- [`grid_indicators()`](https://jmr-fao.github.io/c4e/reference/grid_indicators.md)
+  : Weather extremes for every cell of a raster, in one call
+- [`grid_controls()`](https://jmr-fao.github.io/c4e/reference/grid_controls.md)
+  : Spatial controls for every cell of a raster, in one call
+- [`calc_threshold_day(`*`<SpatRaster>`*`)`](https://jmr-fao.github.io/c4e/reference/grid_methods.md)
+  [`calc_percentile(`*`<SpatRaster>`*`)`](https://jmr-fao.github.io/c4e/reference/grid_methods.md)
+  [`calc_par(`*`<SpatRaster>`*`)`](https://jmr-fao.github.io/c4e/reference/grid_methods.md)
+  [`calc_std_index(`*`<SpatRaster>`*`)`](https://jmr-fao.github.io/c4e/reference/grid_methods.md)
+  : Indicators for every cell of a raster
+
+## Reading rasters and boundaries
+
+- [`read_climate()`](https://jmr-fao.github.io/c4e/reference/read_climate.md)
+  : Read a climate raster with its context
+- [`raster_meta()`](https://jmr-fao.github.io/c4e/reference/raster_meta.md)
+  : Context recorded on a raster
+- [`list_sources()`](https://jmr-fao.github.io/c4e/reference/list_sources.md)
+  : List the data sources read_climate() recognises
+- [`register_source()`](https://jmr-fao.github.io/c4e/reference/register_source.md)
+  : Teach read_climate() a data source
+- [`read_boundaries()`](https://jmr-fao.github.io/c4e/reference/read_boundaries.md)
+  : Read administrative boundaries
+- [`aggregate_time()`](https://jmr-fao.github.io/c4e/reference/aggregate_time.md)
+  : Aggregate a raster to a coarser time step
+- [`select_by_dates()`](https://jmr-fao.github.io/c4e/reference/select_by_dates.md)
+  : Select time observations based on date range
+- [`select_by_season()`](https://jmr-fao.github.io/c4e/reference/select_by_season.md)
+  : Select Columns of a Data Frame Corresponding to a Seasonal Period
+- [`convert_unit()`](https://jmr-fao.github.io/c4e/reference/convert_unit.md)
+  : Convert data to another unit
+- [`list_units()`](https://jmr-fao.github.io/c4e/reference/list_units.md)
+  : List the unit conversions
+- [`register_unit()`](https://jmr-fao.github.io/c4e/reference/register_unit.md)
+  : Add a unit conversion
+
+## The survey side
+
+- [`prepare_coord()`](https://jmr-fao.github.io/c4e/reference/prepare_coord.md)
+  : Prepare ID for unique occurrences
+- [`georef_coord()`](https://jmr-fao.github.io/c4e/reference/georef_coord.md)
+  : Georeference based on coordinates and coordinate reference system
+- [`window_lag()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  [`window_season()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  [`window_fixed()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  [`window_since()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  : Reference windows for survey summaries
+- [`select_by_interview()`](https://jmr-fao.github.io/c4e/reference/select_by_interview.md)
+  : Select time observations based on interview date and time interval
+
+## Extraction
+
+- [`extract_by_coord()`](https://jmr-fao.github.io/c4e/reference/extract_by_coord.md)
+  : Extract values from a SpatRaster
+- [`extract_by_poly()`](https://jmr-fao.github.io/c4e/reference/extract_by_poly.md)
+  : Extract and Aggregate Raster Values by Polygons
+- [`extract_cell_by_poly()`](https://jmr-fao.github.io/c4e/reference/extract_cell_by_poly.md)
+  : Extract Raster Values by Polygon
+- [`extract_weighted_by_poly()`](https://jmr-fao.github.io/c4e/reference/extract_weighted_by_poly.md)
+  : Weighted Mean or Mode of Raster Values by Polygon
+- [`aggregate_to_adm()`](https://jmr-fao.github.io/c4e/reference/aggregate_to_adm.md)
+  : Aggregate cell indicators to administrative divisions
+
+## Daily indicators
+
+- [`calc_threshold_day()`](https://jmr-fao.github.io/c4e/reference/calc_threshold_day.md)
+  : Flag days beyond thresholds
+- [`calc_condition()`](https://jmr-fao.github.io/c4e/reference/calc_condition.md)
+  : Flag days that meet a condition
+- [`calc_percentile()`](https://jmr-fao.github.io/c4e/reference/calc_percentile.md)
+  : Percentiles of daily values by unit and month
+- [`calc_percentile_day()`](https://jmr-fao.github.io/c4e/reference/calc_percentile_day.md)
+  : Flag days beyond their unit's monthly percentiles
+- [`calc_spell()`](https://jmr-fao.github.io/c4e/reference/calc_spell.md)
+  : Spells of consecutive flagged days
+- [`calc_spell_percentile()`](https://jmr-fao.github.io/c4e/reference/calc_spell_percentile.md)
+  : Percentiles of spell lengths by unit and month
+- [`calc_spell_excess()`](https://jmr-fao.github.io/c4e/reference/calc_spell_excess.md)
+  : Spells longer than usual
+- [`calc_heatwave()`](https://jmr-fao.github.io/c4e/reference/calc_heatwave.md)
+  : Heatwaves as defined by the WMO
+
+## Standardised indices and parameters
+
+- [`calc_std_index()`](https://jmr-fao.github.io/c4e/reference/calc_std_index.md)
+  : Standardised precipitation indices: SPI and SPEI
+- [`calc_std_threshold()`](https://jmr-fao.github.io/c4e/reference/calc_std_threshold.md)
+  : Flag months beyond thresholds of a standardised index
+- [`calc_par()`](https://jmr-fao.github.io/c4e/reference/calc_par.md) :
+  Climatic parameters per unit
+
+## Summaries over windows and periods
+
+- [`summarise_by_interview()`](https://jmr-fao.github.io/c4e/reference/summarise_by_interview.md)
+  : Summarise indicators over each household's reference period
+- [`summarise_by_period()`](https://jmr-fao.github.io/c4e/reference/summarise_by_period.md)
+  : Summarise indicators by calendar period
+- [`merge_with_survey()`](https://jmr-fao.github.io/c4e/reference/merge_with_survey.md)
+  : Merge survey observations with other data.
+- [`merge_by_common()`](https://jmr-fao.github.io/c4e/reference/merge_by_common.md)
+  : Merge Data Frames or Lists by Common Variable(s)
+
+## Tables with context
+
+- [`c4e_meta()`](https://jmr-fao.github.io/c4e/reference/c4e_tbl.md)
+  [`is_c4e_tbl()`](https://jmr-fao.github.io/c4e/reference/c4e_tbl.md)
+  [`update_meta()`](https://jmr-fao.github.io/c4e/reference/c4e_tbl.md)
+  : Tables that carry their context
+- [`bind_indicators()`](https://jmr-fao.github.io/c4e/reference/bind_indicators.md)
+  : Join indicator tables side by side
+- [`c4e_history()`](https://jmr-fao.github.io/c4e/reference/c4e_history.md)
+  : Show the steps that produced a table
+- [`c4e_labels()`](https://jmr-fao.github.io/c4e/reference/c4e_labels.md)
+  : Labels describing the columns of a table
+- [`validate_c4e()`](https://jmr-fao.github.io/c4e/reference/validate_c4e.md)
+  : Check a table for common data problems
+- [`summary(`*`<c4e_tbl>`*`)`](https://jmr-fao.github.io/c4e/reference/summary.c4e_tbl.md)
+  : Summarise a c4e table
+
+## Export
+
+- [`write_stata()`](https://jmr-fao.github.io/c4e/reference/write_stata.md)
+  : Write a table to Stata with labelled variables
+- [`to_stata_format()`](https://jmr-fao.github.io/c4e/reference/to_stata_format.md)
+  : Convert Variable Names to Stata-Compatible Format
+
+## Spatial helpers
+
+- [`crop_with_buffer()`](https://jmr-fao.github.io/c4e/reference/crop_with_buffer.md)
+  : Crop a Raster with a Buffer around a Vector Layer
+- [`fill_missing_rast()`](https://jmr-fao.github.io/c4e/reference/fill_missing_rast.md)
+  : Fill Missing Raster Values Using Neighboring Cells
+- [`split_raster()`](https://jmr-fao.github.io/c4e/reference/split_raster.md)
+  : Split a Raster into Smaller Tiles
+- [`align_count_rast()`](https://jmr-fao.github.io/c4e/reference/align_count_rast.md)
+  : Align a Count Raster onto the Grid of Another Raster
+- [`calc_distance()`](https://jmr-fao.github.io/c4e/reference/calc_distance.md)
+  : Compute Distances Between Spatial Objects (using purrr::partial)
+- [`calc_nearest_distance()`](https://jmr-fao.github.io/c4e/reference/calc_nearest_distance.md)
+  : Calculate nearest distance between two SpatVector objects
+- [`calc_weighted_distance()`](https://jmr-fao.github.io/c4e/reference/calc_weighted_distance.md)
+  : Calculate weighted (least-cost) distance to target features
+- [`calc_road_density()`](https://jmr-fao.github.io/c4e/reference/calc_road_density.md)
+  : Compute Road Network Density per Polygon
+- [`erase_water_bodies()`](https://jmr-fao.github.io/c4e/reference/erase_water_bodies.md)
+  : Erase Large Water Bodies from Polygons
+- [`get_poly_attr_for_point()`](https://jmr-fao.github.io/c4e/reference/get_poly_attr_for_point.md)
+  : Extract Polygon Attributes for Point Locations
+- [`get_utm_crs()`](https://jmr-fao.github.io/c4e/reference/get_utm_crs.md)
+  : Get UTM CRS for a SpatVector (averaging centroids if multiple
+  features)
+- [`compare_adm_div()`](https://jmr-fao.github.io/c4e/reference/compare_adm_div.md)
+  : Compare hierarchical administrative names between two datasets
+
+## Statistics and dates
+
+- [`cv()`](https://jmr-fao.github.io/c4e/reference/cv.md) : Compute
+  Coefficient of Variation (CV)
+- [`skewness()`](https://jmr-fao.github.io/c4e/reference/skewness.md) :
+  Calculate sample skewness
+- [`calc_mode()`](https://jmr-fao.github.io/c4e/reference/calc_mode.md)
+  : Compute the statistical mode of a vector
+- [`find_lag()`](https://jmr-fao.github.io/c4e/reference/find_lag.md) :
+  Compute the number of complete time intervals between two dates
+- [`check_dates_complete()`](https://jmr-fao.github.io/c4e/reference/check_dates_complete.md)
+  : Check Completeness of a Date Sequence
+- [`filter_between()`](https://jmr-fao.github.io/c4e/reference/filter_between.md)
+  : Filter data frame rows based on a date range
+
+## Files and folders
+
+- [`check_path()`](https://jmr-fao.github.io/c4e/reference/check_path.md)
+  : Build and validate a file path
+- [`find_folder()`](https://jmr-fao.github.io/c4e/reference/find_folder.md)
+  : Find a Subfolder Within a Root Directory
+- [`find_nested_folder()`](https://jmr-fao.github.io/c4e/reference/find_nested_folder.md)
+  : Find a Nested Subfolder
+- [`find_root_directory()`](https://jmr-fao.github.io/c4e/reference/find_root_directory.md)
+  : Find a Root Directory by Walking Upward
+- [`find_subfolder()`](https://jmr-fao.github.io/c4e/reference/find_subfolder.md)
+  : Find a Subfolder by Name
+- [`find_year_file()`](https://jmr-fao.github.io/c4e/reference/find_year_file.md)
+  : Find the File of a Yearly Raster Series for Given Years
+
+## Package
+
+- [`c4e`](https://jmr-fao.github.io/c4e/reference/c4e-package.md)
+  [`c4e-package`](https://jmr-fao.github.io/c4e/reference/c4e-package.md)
+  : c4e: climate data for economists
+
