@@ -87,7 +87,7 @@ tracked in `dev/LOG_v2.md`.
 
 ## Planned
 
-* The first release, on GitHub and r-universe. Case studies move to a
+* The first release, on GitHub for testing, then r-universe. Case studies move to a
   separate tutorial website.
 
 # climatic4economist 0.1.0

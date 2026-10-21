@@ -25,7 +25,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 14 | Package hygiene | ✔ done | #6 | 2026-10-21 | 2026-10-21 | merged into `main`; README and title in #7, #8; site live |
 | 15 | Quick start and canonical vignettes | ✔ done | #9 | 2026-10-21 | 2026-10-21 | merged into `main`; site live with Get started and six articles |
 | 16 | Privacy and case studies | 🔄 in progress | | 2026-10-21 | | `displace_coord()` complete on branch `chunk-16-displace`; the case studies move to a separate tutorial site |
-| 17 | Release c4e 0.1.0 (GitHub and r-universe) | ☐ | | | | |
+| 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
@@ -35,8 +35,8 @@ States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ d
 **Next steps (in order):**
 1. Push `chunk-16-displace`, open its pull request into `main`, merge when
    both checks are green.
-2. Chunk 17, the release (plan §8 row 17): GitHub release and
-   r-universe; CRAN later. Jan: the author's full name for `DESCRIPTION`.
+2. Chunk 17, the release (plan §8 row 17): a GitHub release only, for
+   colleagues to test; r-universe after their feedback, CRAN later. Jan: the author's full name for `DESCRIPTION`.
 3. Separately: the tutorial website `jmr-fao/c4e-tutorials` (Quarto, GitHub
    Pages) with the three case studies (one country with household
    coordinates and division controls; several countries with
@@ -176,6 +176,7 @@ States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ d
 | 2026-10-21 | §7, §8 row 15 | Vignettes in R Markdown, not Quarto: `vignettes/c4e.Rmd` (*Get started*, built by R CMD build) and six articles in `vignettes/articles/` (build-ignored, rendered by pkgdown) | knitr needs nothing more in CI; articles keep R CMD check fast while the website still runs every one on each pull request |
 | 2026-10-21 | §8 row 15 | The `_targets.R` example is a non-run chunk in *Get started*, not a file | `targets` is not a dependency; the chunk shows the pattern where readers look for it |
 | 2026-10-21 | §8 rows 16, 17 | Release on GitHub and r-universe now, CRAN later; case studies on a separate tutorial website, not in the package; the six workflow articles stay on the package site; `displace_coord()` in the package | Jan's choice: a lean package; r-universe gives `install.packages()` without CRAN's review |
+| 2026-10-21 | §8 row 17 | The first release goes to GitHub only, for colleagues to test with `remotes::install_github()`; r-universe follows their feedback | Jan's choice: test with a small group before wider publication |
 | 2026-10-21 | §8 row 16 | `displace_coord()` draws the distance uniformly up to the limit and the direction uniformly (the DHS rule), moves all households of a location together, redraws a location until it lands in its own division, rebuilds coordinate identifiers (the old ones reveal the true place), and records the rule in `survey$displaced` but never the seed (the seed undoes the displacement) | privacy holds only if no trace of the true location survives |
 
 ### Open R CMD check NOTEs
