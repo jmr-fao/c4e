@@ -59,12 +59,29 @@
 <div class="section level2">
 <h2 id="climate-data-for-economists">Climate data for economists<a class="anchor" aria-label="anchor" href="#climate-data-for-economists"></a>
 </h2>
-<p>c4e links climate rasters to household surveys. It extracts climate data at survey locations and administrative divisions, computes weather extreme indicators, standardised drought indices and spatial controls, and summarises them over the reference period before each interview, ready to merge with survey data and export to Stata.</p>
-<p>Tables carry their context from one step to the next: the variable, its unit, the time step, the thresholds, percentiles and spell lengths used. A value given once is not typed again, and every table can print the steps that produced it.</p>
-<p>c4e succeeds <a href="https://github.com/jmr-fao/climatic4economist" class="external-link">climatic4economist</a>, which stays available unchanged for existing scripts.</p>
+<p>c4e is built for economists working with household surveys. From the location of each household and the date of its interview, it computes:</p>
+<ul>
+<li>
+<strong>weather extremes</strong>: hot, cold, wet and dry days beyond thresholds or percentiles, their spells, heatwaves and drought indices (SPI, SPEI), over the period before each interview;</li>
+<li>
+<strong>spatial controls</strong>: elevation and terrain, agro-ecological zones, distances to roads, markets or borders, population density and climate normals, at the household’s location or for its administrative division.</li>
+</ul>
+<p>The result is one row per household, ready to merge with the survey and export to Stata with labelled variables.</p>
+<div class="section level3">
+<h3 id="built-on-climatic4economist">Built on climatic4economist<a class="anchor" aria-label="anchor" href="#built-on-climatic4economist"></a>
+</h3>
+<p>c4e builds on <a href="https://github.com/jmr-fao/climatic4economist" class="external-link">climatic4economist</a> (hence the name, c4e) and keeps what it does, while improving two things:</p>
+<ul>
+<li>
+<strong>The flow between steps.</strong> Tables carry their context from one step to the next: the variable, its unit, the time step, and the thresholds, percentiles and spell lengths used. A value given once is not typed again, and every table can print the steps that produced it.</li>
+<li>
+<strong>The safeguards.</strong> Units are checked and converted where they are clearly meant, data that do not match a preset are refused with a fix, windows short of data give missing values rather than zeros, large jobs are split to fit in memory, and a coefficient of variation of temperatures is computed on kelvin.</li>
+</ul>
+<p>climatic4economist stays available unchanged for existing scripts.</p>
 <blockquote>
 <p><strong>Status:</strong> under development. The design and progress are in <code>dev/PLAN_v2.md</code> and <code>dev/LOG_v2.md</code>.</p>
 </blockquote>
+</div>
 </div>
 <div class="section level2">
 <h2 id="blue_book-features">📘 Features<a class="anchor" aria-label="anchor" href="#blue_book-features"></a>
