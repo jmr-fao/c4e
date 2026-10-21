@@ -1,8 +1,14 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://jmr-fao.github.io/c4e/404.html</loc></url>
-<url><loc>https://jmr-fao.github.io/c4e/AGENTS.html</loc></url>
-<url><loc>https://jmr-fao.github.io/c4e/CLAUDE.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/LICENSE.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/administrative-divisions.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/c4e.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/drought-indices.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/grid-indicators.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/household-extremes.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/index.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/relative-extremes.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/articles/spatial-controls.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/authors.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/index.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/news/index.html</loc></url>

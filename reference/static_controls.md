@@ -130,7 +130,7 @@ static_controls(survey, list(elevation = dem), id = hhid,
 #>   radii: 0, 20 km
 #>   12 locations, 20 survey units
 #> ℹ Extracting 4 layers
-#> ✔ Extracting 4 layers [266ms]
+#> ✔ Extracting 4 layers [209ms]
 #> 
 #> # A tibble: 20 × 9
 #> # Context:  summary; key hhid; 8 indicators

@@ -1,6 +1,6 @@
 # c4e
 
-![](reference/figures/logo.png)
+![c4e logo](reference/figures/logo.png)
 
 ## Climate data for economists
 

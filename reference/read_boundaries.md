@@ -52,23 +52,23 @@ root <- file.path(tempdir(), "gaul")
 dir.create(file.path(root, "MWI", "MWI_ADM2"), recursive = TRUE,
            showWarnings = FALSE)
 adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
-adm_div$iso3_code <- "MWI"
-adm_div$gaul1_name <- c("North", "North", "South")
-adm_div$gaul2_name <- c("Alpha", "Beta", "Gamma")
+# GAUL's own field names
+terra::values(adm_div) <- data.frame(iso3_code = "MWI",
+                                     gaul1_name = c("North", "North", "South"),
+                                     gaul2_name = c("Alpha", "Beta", "Gamma"))
 terra::writeVector(adm_div, file.path(root, "MWI", "MWI_ADM2", "MWI_ADM2.geojson"),
                    filetype = "GeoJSON", overwrite = TRUE)
 
 read_boundaries(root, iso = "MWI", level = 2)
-#> Warning: [names<-] some names were changed to make them valid and/or unique
 #> class       : SpatVector
 #> geometry    : polygons
-#> dimensions  : 3, 6  (geometries, attributes)
+#> dimensions  : 3, 4  (geometries, attributes)
 #> extent      : 30, 31.2, -1, 0.2  (xmin, xmax, ymin, ymax)
 #> source      : MWI_ADM2.geojson
 #> coord. ref. : lon/lat WGS 84 (EPSG:4326)
-#> names       : ID_adm_div adm_div_1_1 adm_div_2_1   iso adm_div_1_2 adm_div_2_2
-#> type        :      <chr>       <chr>       <chr> <chr>       <chr>       <chr>
-#> values      :          1        West      West A   MWI       North       Alpha
-#>                        2        East  East South   MWI       North        Beta
-#>                        3        East  East North   MWI       South       Gamma
+#> names       : ID_adm_div   iso adm_div_1 adm_div_2
+#> type        :      <chr> <chr>     <chr>     <chr>
+#> values      :          1   MWI     North     Alpha
+#>                        2   MWI     North      Beta
+#>                        3   MWI     South     Gamma
 ```

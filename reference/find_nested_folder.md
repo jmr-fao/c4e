@@ -45,6 +45,6 @@ dir.create(file.path(root, "data", "raw", "rasters"), recursive = TRUE,
 
 old <- setwd(root)
 find_nested_folder("data", "raw", "rasters", root = "c4e_example")
-#> [1] "/tmp/RtmpWDOetL/c4e_example/data/raw/rasters"
+#> [1] "/tmp/Rtmp4zrNDx/c4e_example/data/raw/rasters"
 setwd(old)
 ```

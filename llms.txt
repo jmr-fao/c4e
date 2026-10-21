@@ -1,6 +1,6 @@
 # c4e
 
-![](reference/figures/logo.png)
+![c4e logo](reference/figures/logo.png)
 
 ## Climate data for economists
 
@@ -336,3 +336,19 @@ Indicators, parameters and controls returned as rasters.
   [`c4e-package`](https://jmr-fao.github.io/c4e/reference/c4e-package.md)
   : c4e: climate data for economists
 
+# Articles
+
+### Workflows
+
+- [Household extremes, step by
+  step](https://jmr-fao.github.io/c4e/articles/household-extremes.md):
+- [Relative extremes: percentiles and
+  spells](https://jmr-fao.github.io/c4e/articles/relative-extremes.md):
+- [Administrative
+  divisions](https://jmr-fao.github.io/c4e/articles/administrative-divisions.md):
+- [Drought indices: SPI and
+  SPEI](https://jmr-fao.github.io/c4e/articles/drought-indices.md):
+- [Climatic parameters and spatial
+  controls](https://jmr-fao.github.io/c4e/articles/spatial-controls.md):
+- [Grid indicators and
+  maps](https://jmr-fao.github.io/c4e/articles/grid-indicators.md):

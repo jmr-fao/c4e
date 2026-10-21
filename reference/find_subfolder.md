@@ -50,5 +50,5 @@ dir.create(file.path(root, "data", "weather"), recursive = TRUE,
            showWarnings = FALSE)
 
 find_subfolder(root, "weather")
-#> [1] "/tmp/RtmpWDOetL/c4e_example/data/weather"
+#> [1] "/tmp/Rtmp4zrNDx/c4e_example/data/weather"
 ```

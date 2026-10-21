@@ -1,8 +1,15 @@
 pandoc: 3.8.3
 pkgdown: 2.2.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2026-10-21T12:08Z
+articles:
+  articles/administrative-divisions: administrative-divisions.html
+  c4e: c4e.html
+  articles/drought-indices: drought-indices.html
+  articles/grid-indicators: grid-indicators.html
+  articles/household-extremes: household-extremes.html
+  articles/relative-extremes: relative-extremes.html
+  articles/spatial-controls: spatial-controls.html
+last_built: 2026-10-21T13:00Z
 urls:
   reference: https://jmr-fao.github.io/c4e/reference
   article: https://jmr-fao.github.io/c4e/articles
