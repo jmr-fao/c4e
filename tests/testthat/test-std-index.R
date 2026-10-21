@@ -25,7 +25,11 @@ test_that("SPI equals compute_spi() and records its scale", {
     pre <- extracted("pre_monthly.tif")
     out <- calc_std_index(pre, scale = 3)
 
-    v1 <- v1_long(compute_spi(tibble::as_tibble(pre), time_scale = 3), "spi_3")
+    # the same reference as test-kernel.R
+    v1 <- v1_long(v1_ref("kernel_spi",
+                         tibble::as_tibble(compute_spi(tibble::as_tibble(pre),
+                                                       time_scale = 3))),
+                  "spi_3")
     v2 <- tibble::as_tibble(out)[c("ID", "date", "spi_3")] |> dplyr::arrange(ID, date)
     expect_equal(v2, v1)
 
@@ -58,7 +62,9 @@ test_that("SPEI from precipitation and evapotranspiration equals compute_spei()"
     expect_snapshot(out <- calc_std_index(pre, scale = 3, index = "spei", pet = pet))
     balance <- dplyr::mutate(tibble::as_tibble(pre),
                              dplyr::across(dplyr::matches(date_pattern()), \(v) v - 60))
-    v1 <- v1_long(compute_spei(balance, time_scale = 3), "spei_3")
+    v1 <- v1_long(v1_ref("std_spei",
+                         tibble::as_tibble(compute_spei(balance, time_scale = 3))),
+                  "spei_3")
     expect_equal(tibble::as_tibble(out)[c("ID", "date", "spei_3")] |>
                      dplyr::arrange(ID, date), v1)
     # evapotranspiration recorded with ERA5's negative sign gives the same balance
@@ -83,9 +89,11 @@ test_that("index thresholds keep their sign and equal extr_std_index()", {
     out <- calc_std_threshold(spi, below = c(-1, -1.5), above = 1.5)
 
     expect_true(all(c("spi3_blw_-1", "spi3_blw_-1.5", "spi3_abv_1.5") %in% names(out)))
-    v1 <- tibble::as_tibble(spi) |>
-        dplyr::transmute(value = spi_3) |>
-        extr_std_index(l_thrshld = c(-1, -1.5), u_thrshld = 1.5)
+    v1 <- v1_ref("std_threshold",
+                 tibble::as_tibble(spi) |>
+                     dplyr::transmute(value = spi_3) |>
+                     extr_std_index(l_thrshld = c(-1, -1.5), u_thrshld = 1.5),
+                 keep = c("std_blw_1.5", "std_abv_1.5"))
     expect_equal(out[["spi3_blw_-1.5"]], v1$std_blw_1.5)
     expect_equal(out[["spi3_abv_1.5"]], v1$std_abv_1.5)
 

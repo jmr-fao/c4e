@@ -29,7 +29,8 @@ test_that("a wide table becomes a units-by-dates matrix and back", {
     expect_equal(m$dates, as.Date("2021-01-01") + 0:59)
 
     long <- matrix_to_long(m$values, m$ids["ID"], m$dates)
-    v1 <- find_extr_abs_day(wide)
+    v1 <- v1_ref("kernel_long_60", find_extr_abs_day(wide),
+                 keep = c("ID", "date", "value"))
     expect_equal(long, v1_long(v1, c("ID", "date", "value")))
 })
 
@@ -57,8 +58,12 @@ test_that("to_long() turns a wide c4e table into a long one with its context", {
 test_that("flags and excesses equal find_extr_abs_day()", {
     wide <- extracted()
     m <- as_matrix_wide(wide)
-    v1 <- v1_long(find_extr_abs_day(wide, u_thresh = c(300, 305), l_thresh = 290,
-                                    unit = "K"),
+    # the same reference as test-indicators.R
+    v1 <- v1_long(v1_ref("indicators_abs",
+                         find_extr_abs_day(wide, u_thresh = c(300, 305), l_thresh = 290,
+                                           unit = "K"),
+                         keep = c("ID", "date", "value", "day_abv_300", "day_abv_305",
+                                  "day_blw_290", "K_abv_300", "K_abv_305", "K_blw_290")),
                   c("ID", "date", "day_abv_305", "K_abv_305", "day_blw_290",
                     "K_blw_290"))
 
@@ -76,8 +81,11 @@ test_that("flags and excesses equal find_extr_abs_day()", {
 test_that("spells equal find_spell()", {
     wide <- extracted()
     m <- as_matrix_wide(wide)
-    v1 <- find_extr_abs_day(wide, u_thresh = 303, l_thresh = 293) |>
-        find_spell(min_spell = 3) |>
+    # the same reference as test-indicators.R
+    v1 <- v1_ref("indicators_spells",
+                 find_extr_abs_day(wide, u_thresh = 303, l_thresh = 293) |>
+                     find_spell(min_spell = 3),
+                 keep = c("ID", "date", "spell_abv_303", "spell_blw_293")) |>
         v1_long(c("ID", "date", "spell_abv_303", "spell_blw_293"))
 
     long <- matrix_to_long(
@@ -103,8 +111,10 @@ test_that("runs are counted per row, broken by FALSE and NA", {
     expect_equal(run_length_rows(rbind(c(FALSE, TRUE), c(TRUE, FALSE)), 2)[2, 1],
                  NA_integer_)
     # each row matches compute_spell(), the v1 rule
+    v1 <- v1_ref("kernel_compute_spell",
+                 lapply(seq_len(nrow(flags)), \(i) compute_spell(flags[i, ], 2)))
     for (i in seq_len(nrow(flags))) {
-        expect_equal(spells[i, ], compute_spell(flags[i, ], 2))
+        expect_equal(spells[i, ], v1[[i]])
     }
 })
 
@@ -116,7 +126,8 @@ test_that("monthly percentiles equal calc_pct_day()", {
     pct <- quantile_by_month(m$values, m$dates, p = c(0.1, 0.9),
                              exclude_below = 0.1)
 
-    v1 <- tibble::as_tibble(calc_pct_day(wide, p = c(0.1, 0.9), l_thresh = 0.1)) |>
+    v1 <- v1_ref("kernel_pct",
+                 tibble::as_tibble(calc_pct_day(wide, p = c(0.1, 0.9), l_thresh = 0.1))) |>
         dplyr::arrange(ID, month)
     kernel <- tibble::tibble(
         ID      = rep(m$ids$ID, each = 12),
@@ -134,8 +145,11 @@ test_that("relative flags equal find_extr_rel_day()", {
     threshold <- lookup_by_month(pct[["90p"]], m$dates)
     expect_equal(dim(threshold), dim(m$values))
 
-    v1 <- find_extr_rel_day(wide, u_thresh = calc_pct_day(wide, p = 0.9),
-                            unit = "K") |>
+    # the same reference as test-indicators.R
+    v1 <- v1_ref("indicators_rel_upper",
+                 find_extr_rel_day(wide, u_thresh = calc_pct_day(wide, p = 0.9),
+                                   unit = "K"),
+                 keep = c("ID", "date", "day_abv_90p", "K_abv_90p")) |>
         v1_long(c("ID", "date", "day_abv_90p", "K_abv_90p"))
     long <- matrix_to_long(
         m$values, m$ids["ID"], m$dates, value_name = NULL,
@@ -158,7 +172,8 @@ test_that("SPI from the matrix equals compute_spi()", {
     m <- as_matrix_wide(wide)
     spi <- spi_matrix(m$values, scale = 3)
 
-    v1 <- compute_spi(tibble::as_tibble(wide), time_scale = 3) |>
+    v1 <- v1_ref("kernel_spi",
+                 tibble::as_tibble(compute_spi(tibble::as_tibble(wide), time_scale = 3))) |>
         dplyr::arrange(ID)
     v1_values <- as.matrix(v1[grep(date_pattern(), names(v1))])
     expect_equal(unname(spi), unname(v1_values))

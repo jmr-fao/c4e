@@ -26,10 +26,13 @@ same_columns <- function(v2, v1, cols, order_by = c("ID", "date")) {
 test_that("absolute thresholds equal find_extr_abs_day()", {
     wide <- extracted()
     v2 <- calc_threshold_day(wide, above = c(300, 305), below = 290)
-    v1 <- find_extr_abs_day(wide, u_thresh = c(300, 305), l_thresh = 290, unit = "K")
+    cols <- c("value", "day_abv_300", "day_abv_305", "day_blw_290",
+              "K_abv_300", "K_abv_305", "K_blw_290")
+    v1 <- v1_ref("indicators_abs",
+                 find_extr_abs_day(wide, u_thresh = c(300, 305), l_thresh = 290, unit = "K"),
+                 keep = c("ID", "date", cols))
 
-    same_columns(v2, v1, c("value", "day_abv_300", "day_abv_305", "day_blw_290",
-                           "K_abv_300", "K_abv_305", "K_blw_290"))
+    same_columns(v2, v1, cols)
 })
 
 test_that("the thresholds are registered with their unit and direction", {
@@ -60,8 +63,8 @@ test_that("per-unit thresholds come from a table", {
     limits <- tibble::tibble(ID = unique(wide$ID), local = seq(295, 306, length.out = 12))
     out <- calc_threshold_day(wide, above = limits)
 
-    v1_like <- find_extr_abs_day(wide) |>
-        tibble::as_tibble() |>
+    v1_like <- v1_ref("indicators_long_31", find_extr_abs_day(wide),
+                      keep = c("ID", "date", "value")) |>
         dplyr::left_join(limits, by = "ID") |>
         dplyr::mutate(day_abv_local = value > local)
     same_columns(out, v1_like, "day_abv_local")
@@ -82,8 +85,10 @@ test_that("conditions written as expressions are registered as flags", {
 
 test_that("spells equal find_spell() and follow every registered flag", {
     wide <- extracted()
-    v1 <- find_extr_abs_day(wide, u_thresh = 303, l_thresh = 293) |>
-        find_spell(min_spell = 3)
+    v1 <- v1_ref("indicators_spells",
+                 find_extr_abs_day(wide, u_thresh = 303, l_thresh = 293) |>
+                     find_spell(min_spell = 3),
+                 keep = c("ID", "date", "spell_abv_303", "spell_blw_293"))
     v2 <- calc_threshold_day(wide, above = 303, below = 293) |>
         calc_spell(min_spell = 3)
 
@@ -96,10 +101,13 @@ test_that("spells equal find_spell() and follow every registered flag", {
 })
 
 test_that("spells work on a v1 table without a registry", {
-    v1 <- find_extr_abs_day(extracted(layers = 1:90), u_thresh = 303)
-    out <- calc_spell(tibble::as_tibble(v1), min_spell = 2)
+    v1 <- v1_ref("indicators_v1_table",
+                 tibble::as_tibble(find_extr_abs_day(extracted(layers = 1:90),
+                                                     u_thresh = 303)))
+    out <- calc_spell(v1, min_spell = 2)
     expect_equal(out$spell_abv_303,
-                 find_spell(v1, min_spell = 2)$spell_abv_303)
+                 v1_ref("indicators_v1_table_spells",
+                        find_spell(v1, min_spell = 2)$spell_abv_303))
 })
 
 test_that("the minimum spell length is read from upstream spells", {
@@ -115,10 +123,12 @@ test_that("the minimum spell length is read from upstream spells", {
 test_that("monthly percentiles equal calc_pct_day()", {
     wide <- extracted("pre_daily.tif")
     v2 <- calc_percentile(wide, p = c(0.1, 0.9), exclude_below = 0.1, yearly = TRUE)
-    v1 <- calc_pct_day(wide, p = c(0.1, 0.9), l_thresh = 0.1, yearly = TRUE)
+    cols <- c("day_10p", "day_90p", "yr_10p", "yr_90p")
+    v1 <- v1_ref("indicators_pct",
+                 calc_pct_day(wide, p = c(0.1, 0.9), l_thresh = 0.1, yearly = TRUE),
+                 keep = c("ID", "month", cols))
 
-    same_columns(v2, v1, c("day_10p", "day_90p", "yr_10p", "yr_90p"),
-                 order_by = c("ID", "month"))
+    same_columns(v2, v1, cols, order_by = c("ID", "month"))
     meta <- c4e_meta(v2)
     expect_equal(meta$shape, "lookup")
     expect_equal(meta$indicators$day_90p[c("kind", "p", "period", "exclude_below")],
@@ -129,7 +139,10 @@ test_that("monthly percentiles equal calc_pct_day()", {
 test_that("a baseline restricts the dates the percentiles use", {
     wide <- extracted()
     v2 <- calc_percentile(wide, p = 0.9, baseline = c("2021-01-01", "2021-12-31"))
-    v1 <- calc_pct_day(select_by_dates(tibble::as_tibble(wide), to = "2021-12-31"), p = 0.9)
+    v1 <- v1_ref("indicators_pct_baseline",
+                 calc_pct_day(select_by_dates(tibble::as_tibble(wide), to = "2021-12-31"),
+                              p = 0.9),
+                 keep = c("ID", "month", "day_90p"))
     same_columns(v2, v1, "day_90p", order_by = c("ID", "month"))
     expect_equal(c4e_meta(v2, "date_range"), as.Date(c("2021-01-01", "2021-12-31")))
 })
@@ -139,8 +152,14 @@ test_that("relative flags equal find_extr_rel_day(), upper and lower tails", {
     pct <- calc_percentile(wide, p = c(0.1, 0.9))
     expect_snapshot(v2 <- calc_percentile_day(wide, pct))
 
-    v1_upper <- find_extr_rel_day(wide, u_thresh = calc_pct_day(wide, p = 0.9), unit = "K")
-    v1_lower <- find_extr_rel_day(wide, l_thresh = calc_pct_day(wide, p = 0.1), unit = "K")
+    v1_upper <- v1_ref("indicators_rel_upper",
+                       find_extr_rel_day(wide, u_thresh = calc_pct_day(wide, p = 0.9),
+                                         unit = "K"),
+                       keep = c("ID", "date", "day_abv_90p", "K_abv_90p"))
+    v1_lower <- v1_ref("indicators_rel_lower",
+                       find_extr_rel_day(wide, l_thresh = calc_pct_day(wide, p = 0.1),
+                                         unit = "K"),
+                       keep = c("ID", "date", "day_blw_10p", "K_blw_10p"))
     same_columns(v2, v1_upper, c("day_abv_90p", "K_abv_90p"))
     same_columns(v2, v1_lower, c("day_blw_10p", "K_blw_10p"))
 
@@ -159,10 +178,17 @@ test_that("percentile tables must describe the same variable", {
 
 test_that("spell percentiles and spell excess equal the v1 functions", {
     wide <- extracted("pre_daily.tif")
-    v1_days  <- find_extr_abs_day(wide, l_thresh = 1)
-    v1_pct   <- calc_pct_spell(v1_days, p = c(0.5, 0.9), min_spell = 2)
-    v1_spell <- find_spell(v1_days, min_spell = 2)
-    v1_rel   <- suppressMessages(find_extr_spell_rel(v1_spell, v1_pct))
+    cols <- c("spell_blw_1_50p", "spell_blw_1_90p")
+    v1_pct <- v1_ref("indicators_spell_pct",
+                     calc_pct_spell(find_extr_abs_day(wide, l_thresh = 1),
+                                    p = c(0.5, 0.9), min_spell = 2),
+                     keep = c("ID", "month", cols))
+    v1_rel <- v1_ref("indicators_spell_rel", {
+        v1_days <- find_extr_abs_day(wide, l_thresh = 1)
+        suppressMessages(find_extr_spell_rel(
+            find_spell(v1_days, min_spell = 2),
+            calc_pct_spell(v1_days, p = c(0.5, 0.9), min_spell = 2)))
+    }, keep = c("ID", "date", cols))
 
     spells <- calc_threshold_day(wide, below = 1) |> calc_spell(min_spell = 2)
     pct <- calc_spell_percentile(spells, p = c(0.5, 0.9))
@@ -180,7 +206,9 @@ test_that("spell percentiles and spell excess equal the v1 functions", {
 test_that("WMO heatwaves equal find_wmo_heatwave()", {
     wide <- extracted()
     v2 <- calc_heatwave(wide, excess = 5, min_spell = 2)
-    v1 <- find_wmo_heatwave(wide, excess = 5, min_spell = 2)
+    v1 <- v1_ref("indicators_heatwave",
+                 find_wmo_heatwave(wide, excess = 5, min_spell = 2),
+                 keep = c("ID", "date", "spell_wmo"))
     same_columns(v2, v1, "spell_wmo")
     expect_equal(c4e_meta(v2)$indicators$spell_wmo$definition, "wmo")
 

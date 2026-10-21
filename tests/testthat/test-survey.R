@@ -69,13 +69,16 @@ test_that("window summaries equal extr_day_by_interview() and extr_spell_by_inte
     indicators <- hot_days()
     out <- summarise_by_interview(coord, indicators, interval = "1 year", n_lags = 1)
 
-    v1_days <- extr_day_by_interview(tibble::as_tibble(coord), tibble::as_tibble(indicators),
-                                     by = ID, id = hhid, interview = interview,
-                                     interval = "1 year", n_lags = 1)
-    v1_spells <- extr_spell_by_interview(tibble::as_tibble(coord),
-                                         tibble::as_tibble(indicators),
-                                         by = ID, id = hhid, interview = interview,
-                                         interval = "1 year", n_lags = 1)
+    v1_days <- v1_ref("survey_days",
+                      extr_day_by_interview(tibble::as_tibble(coord),
+                                            tibble::as_tibble(indicators),
+                                            by = ID, id = hhid, interview = interview,
+                                            interval = "1 year", n_lags = 1))
+    v1_spells <- v1_ref("survey_spells",
+                        extr_spell_by_interview(tibble::as_tibble(coord),
+                                                tibble::as_tibble(indicators),
+                                                by = ID, id = hhid, interview = interview,
+                                                interval = "1 year", n_lags = 1))
     same_rows(out, v1_days, c("day_abv_25_sum", "day_abv_30_sum", "C_abv_30_sum"))
     same_rows(out, v1_spells, c("spell_abv_30_max", "spell_abv_30_mean",
                                 "spell_abv_30_sum", "spell_abv_30_n"))
@@ -220,7 +223,9 @@ test_that("division averages equal agg_to_adm_div()", {
         indicators = list(day_abv_30_sum = new_indicator("agg", stat = "sum"),
                           spell_abv_30_max = new_indicator("agg", stat = "max"))))
     out <- aggregate_to_adm(cells)
-    v1 <- agg_to_adm_div(tibble::as_tibble(cells), match_col = "^day|^spell")
+    v1 <- v1_ref("survey_adm_div",
+                 tibble::as_tibble(agg_to_adm_div(tibble::as_tibble(cells),
+                                                  match_col = "^day|^spell")))
 
     expect_equal(tibble::as_tibble(out)[names(v1)], tibble::as_tibble(v1))
     expect_equal(c4e_meta(out)$spatial_agg$level, "adm_div")
