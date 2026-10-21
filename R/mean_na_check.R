@@ -11,21 +11,8 @@
 #' @return A numeric value representing the mean of `x`, ignoring `NA` values.
 #'   If all values in `x` are `NA`, it returns `replace`.
 #'
-#' @export
+#' @noRd
 #'
-#' @examples
-#' # Example with no missing values
-#' mean_na_check(c(1, 2, 3, 4, 5))  # Returns 3
-#'
-#' # Example with missing values
-#' mean_na_check(c(1, 2, NA, 4, 5))  # Returns 3
-#'
-#' # Example where all values are NA
-#' mean_na_check(c(NA, NA, NA))  # Returns 0
-#'
-#' # Example with a custom replacement value
-#' mean_na_check(c(NA, NA, NA), replace = -1)  # Returns -1
-
 mean_na_check <- function(x, replace = 0) {
     if (all(is.na(x))) { return(as.numeric(replace)) }
     return(as.numeric(mean(x, na.rm = TRUE)))

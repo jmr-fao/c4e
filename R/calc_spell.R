@@ -3,7 +3,7 @@
 #' For every flag column registered by an earlier step (thresholds,
 #' percentiles, conditions), finds runs of consecutive flagged days and
 #' records the length of each run of at least `min_spell` days on its last
-#' day. `day_abv_30` gives `spell_abv_30`. Replaces [find_spell()].
+#' day. `day_abv_30` gives `spell_abv_30`. Replaces `find_spell()` of climatic4economist.
 #'
 #' `min_spell` defaults to the one used by earlier spells of the same table,
 #' announced, and otherwise to 2. A missing value ends a run.
@@ -77,7 +77,7 @@ upstream_min_spell <- function(meta) {
 #' ending in each calendar month, per unit, over all years: the "unusually
 #' long" spells that [calc_spell_excess()] compares with. A month without
 #' any spell gets `min_spell`. Values are whole days (truncated), as in v1.
-#' Replaces [calc_pct_spell()].
+#' Replaces `calc_pct_spell()` of climatic4economist.
 #'
 #' Spells are computed first when `x` only has flags.
 #'
@@ -153,7 +153,7 @@ calc_spell_percentile <- function(x, p, min_spell = NULL, id = NULL,
 #' month from [calc_spell_percentile()], and records by how many days it
 #' exceeds them (`NA` for shorter spells and for days that end no spell).
 #' Each percentile column is matched with the spell it was computed from
-#' through the registry. Replaces [find_extr_spell_rel()].
+#' through the registry. Replaces `find_extr_spell_rel()` of climatic4economist.
 #'
 #' @param x A long table with spell columns, from [calc_spell()].
 #' @param pct A spell-percentile table from [calc_spell_percentile()].
@@ -231,7 +231,7 @@ calc_spell_excess <- function(x, pct, id = NULL, label = NULL, chunk = "auto") {
 #' mean of its unit and calendar month; a heatwave is a run of at least
 #' `min_spell` such days. Records the length of each heatwave on its last
 #' day in `spell_wmo`. The data must be temperatures in C or K (an excess in
-#' degrees is the same in both). Replaces [find_wmo_heatwave()].
+#' degrees is the same in both). Replaces `find_wmo_heatwave()` of climatic4economist.
 #'
 #' @param x A wide table of daily temperatures from `extract_*()`, or a long
 #'   indicator table.

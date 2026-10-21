@@ -2,8 +2,8 @@
 #'
 #' Computes the Standardized Precipitation Index (SPI) or the Standardized
 #' Precipitation-Evapotranspiration Index (SPEI) for every unit, at one or
-#' more accumulation scales in months. Replaces [compute_spi()],
-#' [compute_spei()] and [compute_water_balance()].
+#' more accumulation scales in months. Replaces `compute_spi()` of climatic4economist,
+#' `compute_spei()` and `compute_water_balance()`.
 #'
 #' The data must be monthly. Daily rasters are aggregated first with
 #' [aggregate_time()], before extraction.
@@ -132,7 +132,7 @@ aligned_matrix <- function(other, frame, col = "value", call = rlang::caller_env
 #' the months below or above each threshold, e.g. `spi3_blw_-1.5` for a
 #' 3-month SPI below -1.5 (severe drought). The sign is kept in the name.
 #' The flags are registered, so [calc_spell()] finds drought spells and the
-#' window summaries count drought months. Replaces [extr_std_index()].
+#' window summaries count drought months. Replaces `extr_std_index()` of climatic4economist.
 #'
 #' @param x A long table from [calc_std_index()].
 #' @param above,below Thresholds on the index, e.g. `below = c(-1, -1.5, -2)`.

@@ -40,7 +40,7 @@ A heatwave day is at least \code{excess} degrees hotter than the long-term
 mean of its unit and calendar month; a heatwave is a run of at least
 \code{min_spell} such days. Records the length of each heatwave on its last
 day in \code{spell_wmo}. The data must be temperatures in C or K (an excess in
-degrees is the same in both). Replaces \code{\link[=find_wmo_heatwave]{find_wmo_heatwave()}}.
+degrees is the same in both). Replaces \code{find_wmo_heatwave()} of climatic4economist.
 }
 \examples{
 tmax <- read_climate(

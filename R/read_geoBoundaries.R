@@ -32,14 +32,8 @@
 #' ```
 #' It performs intersection between ADM2 and ADM1 shapes to ensure hierarchical alignment.
 #'
-#' @export
+#' @noRd
 #'
-#' @examples
-#' \dontrun{
-#' path <- "path/to/admin_data"
-#' read_geoBoundaries(path_to_files = path, iso = c("KEN", "UGA"), lvl = 2)
-#' }
-
 read_geoBoundaries <- function(path_to_files, iso, lvl = 2, file_format = "geojson") {
     if (length(iso) > 1) iso <- paste(iso, collapse = "|")
     iso_name <- stringi::stri_split_fixed(iso, "|") |> unlist() |> sort()

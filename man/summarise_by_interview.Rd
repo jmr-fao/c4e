@@ -66,8 +66,8 @@ For every survey unit (household), summarises the daily (or monthly)
 indicators of its location over the window before its interview: the
 number of hot days in the 12 months before the interview, the longest dry
 spell in the last rainy season, and so on. Replaces
-\code{\link[=extr_day_by_interview]{extr_day_by_interview()}}, \code{\link[=extr_spell_by_interview]{extr_spell_by_interview()}},
-\code{\link[=extr_day_index]{extr_day_index()}} and \code{\link[=extr_spell_index]{extr_spell_index()}}.
+\code{extr_day_by_interview()}, \code{extr_spell_by_interview()},
+\code{extr_day_index()} and \code{extr_spell_index()}.
 }
 \details{
 The summaries follow the kind of each indicator in the registry: flags

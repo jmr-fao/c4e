@@ -32,7 +32,7 @@ A \code{c4e_tbl} with one row per division (and lag or date).
 Averages cell-level indicators within each administrative division,
 weighting each cell by the share of it inside the division
 (\code{coverage_fraction} from \code{\link[=extract_cell_by_poly]{extract_cell_by_poly()}}). Replaces
-\code{\link[=agg_to_adm_div]{agg_to_adm_div()}}.
+\code{agg_to_adm_div()}.
 }
 \details{
 Rows are grouped by the division and, when present, by \code{lag}, the date,

@@ -57,7 +57,7 @@ Computes, for each unit and calendar month, percentiles of the daily
 values over all years of the baseline, e.g. the 90th percentile of
 maximum temperature in July. These are the relative thresholds that
 \code{\link[=calc_percentile_day]{calc_percentile_day()}} compares each day with. Replaces
-\code{\link[=calc_pct_day]{calc_pct_day()}}.
+\code{calc_pct_day()}.
 }
 \details{
 Use \code{exclude_below} to leave out values, for instance days with less than

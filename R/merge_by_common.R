@@ -12,7 +12,7 @@
 #'
 #' @return A single data frame, the full join of the inputs.
 #'
-#' @seealso \code{\link[dplyr]{full_join}}, \code{\link{find_merge_var}}
+#' @seealso \code{\link[dplyr]{full_join}}, `find_merge_var()`
 #'
 #' @export
 #'
@@ -57,21 +57,8 @@ merge_by_common <- function(x, y = NULL) {
 #' @return A character vector containing the names of the common column(s) between \code{x} and
 #'   \code{y}, or among the elements of \code{x} if it is a list.
 #'
-#' @export
+#' @noRd
 #'
-#' @examples
-#' # Example 1: Finding the common column between two data frames
-#' df1 <- data.frame(ID = 1:3, Value = c(10, 20, 30))
-#' df2 <- data.frame(ID = c(2, 3, 4), Value = c(200, 300, 400))
-#' common_var <- find_merge_var(df1, df2)
-#'
-#' # Example 2: Finding common columns in a list of data frames
-#' list_df <- list(
-#'     data.frame(ID = 1:3, Value = c(10, 20, 30)),
-#'     data.frame(ID = c(2, 3, 4), Value = c(200, 300, 400))
-#' )
-#' common_var_list <- find_merge_var(list_df)
-
 find_merge_var <- function(x, y = NULL) {
     if (is.null(y) && is.list(x)) {
         out <- lapply(x, colnames) |>

@@ -58,20 +58,3 @@ test_that("month_label crosses a leap day correctly", {
     expect_equal(month_label("2024-02-29"), "02")
 })
 
-test_that("the month key joins percentiles to observations consistently", {
-    # calc_pct_day() produces the threshold side and find_extr_rel_day() the
-    # observation side; both must label months identically or the join drops rows
-    df <- data.frame(ID = "1")
-    dates <- format(seq(as.Date("2020-01-01"), as.Date("2022-12-01"),
-                        by = "month"), "%Y-%m-%d")
-    set.seed(1)
-    for (d in dates) df[[d]] <- runif(1, 0, 50)
-
-    thresholds <- calc_pct_day(df, p = 0.9)
-    out <- find_extr_rel_day(df, u_thresh = thresholds)
-
-    expect_setequal(unique(thresholds$month),
-                    month_label(dates))
-    # every observation found a matching threshold
-    expect_false(any(is.na(out$day_abv_90p)))
-})

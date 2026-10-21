@@ -18,21 +18,8 @@
 #' @return A filtered data frame where rows are selected based on the interview
 #'   dates falling within the specified interval.
 #'
-#' @export
+#' @noRd
 #'
-#' @examples
-#' # Example data frame with interview dates
-#' df <- data.frame(id = 1:5,
-#'                  date = as.Date(c('2022-01-01', '2022-02-01',
-#'                   '2022-03-01', NA, '2022-05-01')),
-#'                  value = c(10, 20, 30, 40, 50))
-#'
-#' # Define interview and filter by 1 year interval
-#' filter_by_interview(df, interview = "date", interval = "1 year")
-#'
-#' # Define interview and filter by 3 months interval
-#' filter_by_interview(df, interview = "date", interval = "3 months")
-
 filter_by_interview <- function(df, interview, interval, missing = "drop") {
 
     n_period <- as.numeric(gsub("[a-zA-Z]|\\s", "", interval))

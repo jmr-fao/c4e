@@ -43,7 +43,7 @@ indicator columns, and the new flag and excess columns.
 }
 \description{
 For every unit and day, flags whether the value lies above or below each
-threshold, and how far beyond it lies. Replaces \code{\link[=find_extr_abs_day]{find_extr_abs_day()}}.
+threshold, and how far beyond it lies. Replaces \code{find_extr_abs_day()} of climatic4economist.
 }
 \details{
 Thresholds are read in the unit of the data, which comes from upstream

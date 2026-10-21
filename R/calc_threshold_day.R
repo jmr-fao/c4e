@@ -1,7 +1,7 @@
 #' Flag days beyond thresholds
 #'
 #' For every unit and day, flags whether the value lies above or below each
-#' threshold, and how far beyond it lies. Replaces [find_extr_abs_day()].
+#' threshold, and how far beyond it lies. Replaces `find_extr_abs_day()` of climatic4economist.
 #'
 #' Thresholds are read in the unit of the data, which comes from upstream
 #' (see [read_climate()] and [convert_unit()]). A `unit` that contradicts the

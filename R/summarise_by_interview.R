@@ -4,8 +4,8 @@
 #' indicators of its location over the window before its interview: the
 #' number of hot days in the 12 months before the interview, the longest dry
 #' spell in the last rainy season, and so on. Replaces
-#' [extr_day_by_interview()], [extr_spell_by_interview()],
-#' [extr_day_index()] and [extr_spell_index()].
+#' `extr_day_by_interview()`, `extr_spell_by_interview()`,
+#' `extr_day_index()` and `extr_spell_index()`.
 #'
 #' The summaries follow the kind of each indicator in the registry: flags
 #' and excesses are summed (days, degree-days), spells give their maximum,

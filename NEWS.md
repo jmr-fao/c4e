@@ -47,11 +47,27 @@ tracked in `dev/LOG_v2.md`.
   blocks of rows and can be written to GeoTIFF; `extract_by_coord()` and
   `extract_by_poly()` restore the indicator registry from the file's tags.
 
+* The v1 functions that the new ones replace are removed, with no
+  deprecation wrappers: `climatic4economist` 0.1 keeps them for existing
+  scripts. Removed: `find_extr_abs_day()`, `find_extr_rel_day()`,
+  `find_extr_spell_rel()`, `find_spell()`, `find_wmo_heatwave()`,
+  `calc_pct_day()`, `calc_pct_spell()`, `compute_spell()`, `compute_spi()`,
+  `compute_spei()`, `compute_water_balance()`, `extr_std_index()`,
+  `extr_day_index()`, `extr_spell_index()`, `extr_day_by_interview()`,
+  `extr_spell_by_interview()`, `agg_to_adm_div()`, `aggregate_frequency()`,
+  `ave_dist_2shp()`, `ave_point_density_2shp()`, `above_threshold()`,
+  `below_threshold()`, `is_above()`, `is_below()`, `substitute_l()`,
+  `substitute_u()`, `quantile_df()`, `quantile_na_check()`,
+  `character_to_clock()`, `second_to_date()`, `is_date()`,
+  `sort_date_columns()`. No longer exported (used inside the package):
+  `filter_by_interview()`, `find_merge_var()`, `read_GAUL()`,
+  `read_geoBoundaries()`, `sum_na_check()`, `mean_na_check()`,
+  `max_na_check()`, `to_date()`. `data.table` is no longer imported.
+
 ## Planned
 
-* The v1 functions that the new ones replace are removed before the first
-  release; there are no deprecation wrappers, since `climatic4economist`
-  keeps them.
+* Package hygiene, the quick start and canonical vignettes, the country case
+  studies on the new names, and the first release.
 
 # climatic4economist 0.1.0
 

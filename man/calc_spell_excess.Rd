@@ -28,7 +28,7 @@ Compares each spell with the spell-length percentiles of its unit and
 month from \code{\link[=calc_spell_percentile]{calc_spell_percentile()}}, and records by how many days it
 exceeds them (\code{NA} for shorter spells and for days that end no spell).
 Each percentile column is matched with the spell it was computed from
-through the registry. Replaces \code{\link[=find_extr_spell_rel]{find_extr_spell_rel()}}.
+through the registry. Replaces \code{find_extr_spell_rel()} of climatic4economist.
 }
 \examples{
 x <- update_meta(

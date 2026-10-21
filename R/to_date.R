@@ -8,18 +8,8 @@
 #'
 #' @return A character vector with transformed strings.
 #'
-#' @export
+#' @noRd
 #'
-#' @examples
-#' to_date("X2023_05_01")
-#' "2023-05-01"
-#'
-#' to_date("X2023.12.31")
-#' "2023-12-31"
-#'
-#' to_date("2023/12/31")
-#' "2023-12-31"
-
 to_date <- function(x) {
     # anchored: a bare "X" strips the first one anywhere, so a name such as
     # "MAX_2020" would come back as "MA-2020"

@@ -28,7 +28,7 @@ the last day of each spell.
 For every flag column registered by an earlier step (thresholds,
 percentiles, conditions), finds runs of consecutive flagged days and
 records the length of each run of at least \code{min_spell} days on its last
-day. \code{day_abv_30} gives \code{spell_abv_30}. Replaces \code{\link[=find_spell]{find_spell()}}.
+day. \code{day_abv_30} gives \code{spell_abv_30}. Replaces \code{find_spell()} of climatic4economist.
 }
 \details{
 \code{min_spell} defaults to the one used by earlier spells of the same table,

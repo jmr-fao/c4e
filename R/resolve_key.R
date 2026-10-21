@@ -2,8 +2,8 @@
 #'
 #' Most functions in the package work on one row per unit and per date, keyed by
 #' a column naming the unit. That column is called `ID` when the units come from
-#' [prepare_coord()] and `ID_adm_div` when they come from [read_GAUL()] or
-#' [read_geoBoundaries()], so the key is looked up rather than assumed.
+#' [prepare_coord()] and `ID_adm_div` when they come from `read_GAUL()` or
+#' `read_geoBoundaries()`, so the key is looked up rather than assumed.
 #'
 #' Auto-detection is what lets the key travel through a pipeline: each function
 #' finds whichever key its input carries, so a table keyed by `ID_adm_div` runs

@@ -50,37 +50,6 @@ test_that("to_date is vectorised and leaves plain names alone", {
 
 # --- survey columns must not be read as observations ------------------------
 
-test_that("a survey column does not enter the percentile calculation", {
-    # income_2019 used to be selected as a date, rewritten to income-2019, and
-    # parsed by ymd(truncated = 2) as 2019-01-01: the household's income became
-    # a January 2019 weather reading, shifting the median from 13 to 25
-    dates_only <- data.frame(
-        ID = c("1", "2"),
-        `2022-01-01` = c(1, 30), `2022-01-02` = c(25, 2),
-        check.names = FALSE
-    )
-    with_survey <- data.frame(
-        ID = c("1", "2"), income_2019 = c(50000, 60000),
-        `2022-01-01` = c(1, 30), `2022-01-02` = c(25, 2),
-        check.names = FALSE
-    )
-
-    expect_equal(as.data.frame(calc_pct_day(with_survey, p = 0.5)),
-                 as.data.frame(calc_pct_day(dates_only, p = 0.5)))
-})
-
-test_that("survey columns survive the daily and heatwave reshapers", {
-    df <- data.frame(
-        ID = c("1", "2"), income_2019 = c(50000, 60000),
-        `2022-01-01` = c(1, 30), `2022-01-02` = c(25, 2),
-        check.names = FALSE
-    )
-
-    # whatever the reshapers emit, an income must never appear as a value
-    expect_false(any(find_extr_abs_day(df, u_thresh = 20)$value > 1000))
-    expect_false(any(find_wmo_heatwave(df, excess = 1)$value > 1000))
-})
-
 test_that("merge_with_survey keeps a survey column that merely contains a year", {
     # the old pattern read income_2019_01 as a date column and dropped it
     survey <- data.frame(ID = c("1", "2"), income_2019_01 = c(10, 20))

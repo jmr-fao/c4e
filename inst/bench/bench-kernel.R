@@ -2,8 +2,13 @@
 # (plan §10.1, §10.7). Run from the package root:
 #   Rscript inst/bench/bench-kernel.R
 # Writes inst/bench/results.md. Each case checks that both give the same
-# result before timing counts.
+# result before timing counts. The v1 functions were removed from c4e in
+# chunk 13; they are called from climatic4economist 0.1, which keeps them.
 
+if (!requireNamespace("climatic4economist", quietly = TRUE)) {
+    stop("The v1 side needs climatic4economist: ",
+         "remotes::install_github(\"jmr-fao/climatic4economist\")")
+}
 suppressMessages(pkgload::load_all(".", quiet = TRUE))
 set.seed(1)
 
@@ -28,8 +33,8 @@ time_it <- function(expr) {
 # ==== Cases ================================================================ ----
 # absolute thresholds with excess, then spells
 v1_absolute <- function(wide) {
-    find_extr_abs_day(wide, u_thresh = c(30, 35), unit = "C") |>
-        find_spell(min_spell = 2) |>
+    climatic4economist::find_extr_abs_day(wide, u_thresh = c(30, 35), unit = "C") |>
+        climatic4economist::find_spell(min_spell = 2) |>
         tibble::as_tibble() |>
         dplyr::select(ID, date, spell_abv_30, spell_abv_35) |>
         dplyr::arrange(ID, date)
@@ -47,7 +52,7 @@ kernel_absolute <- function(wide) {
 
 # monthly percentiles
 v1_percentile <- function(wide) {
-    tibble::as_tibble(calc_pct_day(wide, p = c(0.9, 0.95))) |>
+    tibble::as_tibble(climatic4economist::calc_pct_day(wide, p = c(0.9, 0.95))) |>
         dplyr::arrange(ID, month)
 }
 kernel_percentile <- function(wide) {

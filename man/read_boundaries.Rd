@@ -14,7 +14,7 @@ read_boundaries(
 }
 \arguments{
 \item{path}{Folder containing the boundary files, organised as described
-in \code{\link[=read_GAUL]{read_GAUL()}} and \code{\link[=read_geoBoundaries]{read_geoBoundaries()}}.}
+in \code{read_GAUL()} and \code{read_geoBoundaries()}.}
 
 \item{iso}{ISO 3166-1 alpha-3 country code(s).}
 
@@ -38,7 +38,4 @@ on the source: one row per division, a sequential \code{ID_adm_div}, the names
 \dontrun{
 adm2 <- read_boundaries("path/to/GAUL", iso = "MWI", level = 2)
 }
-}
-\seealso{
-\code{\link[=read_GAUL]{read_GAUL()}}, \code{\link[=read_geoBoundaries]{read_geoBoundaries()}}
 }

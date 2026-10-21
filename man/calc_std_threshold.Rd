@@ -34,7 +34,7 @@ Flags, for every SPI or SPEI column registered by \code{\link[=calc_std_index]{c
 the months below or above each threshold, e.g. \code{spi3_blw_-1.5} for a
 3-month SPI below -1.5 (severe drought). The sign is kept in the name.
 The flags are registered, so \code{\link[=calc_spell]{calc_spell()}} finds drought spells and the
-window summaries count drought months. Replaces \code{\link[=extr_std_index]{extr_std_index()}}.
+window summaries count drought months. Replaces \code{extr_std_index()} of climatic4economist.
 }
 \examples{
 pre <- read_climate(

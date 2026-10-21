@@ -38,7 +38,7 @@ For each spell column, computes percentiles of the lengths of the spells
 ending in each calendar month, per unit, over all years: the "unusually
 long" spells that \code{\link[=calc_spell_excess]{calc_spell_excess()}} compares with. A month without
 any spell gets \code{min_spell}. Values are whole days (truncated), as in v1.
-Replaces \code{\link[=calc_pct_spell]{calc_pct_spell()}}.
+Replaces \code{calc_pct_spell()} of climatic4economist.
 }
 \details{
 Spells are computed first when \code{x} only has flags.

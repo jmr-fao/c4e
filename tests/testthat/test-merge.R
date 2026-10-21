@@ -55,16 +55,6 @@ test_that("merge_with_survey drops pre-existing date columns from the survey", {
     expect_equal(out[["2020.01"]], 1.5)
 })
 
-test_that("compute_water_balance adds precipitation and evapotranspiration", {
-    pre <- data.frame(ID = 1:2, x_cell = c(10, 20), y_cell = c(40, 50),
-                      `2020` = c(100, 120), check.names = FALSE)
-    pet <- data.frame(ID = 1:2, x_cell = c(10, 20), y_cell = c(40, 50),
-                      `2020` = c(-50, -60), check.names = FALSE)
-    out <- compute_water_balance(pre, pet)
-    expect_equal(out[["2020"]], c(50, 60))
-    expect_true(all(c("ID", "x_cell", "y_cell") %in% names(out)))
-})
-
 test_that("prepare_coord assigns one ID per unique coordinate pair", {
     df <- data.frame(lat = c(1, 2, 1, 2), lon = c(10, 20, 10, 20),
                      v = 1:4)

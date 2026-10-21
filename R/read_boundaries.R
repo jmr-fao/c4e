@@ -6,7 +6,7 @@
 #' `adm_div_1`, `adm_div_2`, ... and the country `iso`.
 #'
 #' @param path Folder containing the boundary files, organised as described
-#'   in [read_GAUL()] and [read_geoBoundaries()].
+#'   in `read_GAUL()` and `read_geoBoundaries()`.
 #' @param iso ISO 3166-1 alpha-3 country code(s).
 #' @param level Administrative level, `1` or `2`.
 #' @param source `"gaul"` or `"geoboundaries"`.
@@ -15,7 +15,6 @@
 #' @return A `SpatVector`, or a named list of them when `iso` has several
 #'   codes.
 #'
-#' @seealso [read_GAUL()], [read_geoBoundaries()]
 #' @export
 #'
 #' @examples

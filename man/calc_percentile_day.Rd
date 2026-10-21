@@ -38,7 +38,7 @@ A long \code{c4e_tbl} with flag and excess columns per percentile.
 Compares each day with the percentile of its unit and calendar month from
 \code{\link[=calc_percentile]{calc_percentile()}}: a day above the 90th percentile of July is flagged
 \code{day_abv_90p}, and its distance above goes in \verb{<unit>_abv_90p}. Replaces
-\code{\link[=find_extr_rel_day]{find_extr_rel_day()}}.
+\code{find_extr_rel_day()}.
 }
 \details{
 Whether a percentile is an upper or a lower threshold follows from its

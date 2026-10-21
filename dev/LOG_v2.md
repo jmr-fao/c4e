@@ -20,8 +20,8 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 9 | Survey side | ✔ done | #2 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack |
 | 10 | Export and inspection | ✔ done | #3 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack |
 | 11 | Wrappers and presets | ✔ done | #4 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack; also the cv safeguard, README and topics |
-| 12 | Grid methods and wrappers | 🔄 in progress | | 2026-10-20 | | complete on branch `chunk-12-grid`; needs push and a pull request into `main` |
-| 13 | Deprecations and removals | ☐ | | | | |
+| 12 | Grid methods and wrappers | ✔ done | | 2026-10-20 | 2026-10-20 | merged into `main` by a direct push (no pull request); CI green on `main` |
+| 13 | Removal of the v1 functions | 🔄 in progress | | 2026-10-21 | | complete on branch `chunk-13-v1-removal` (from `main`); needs push and a pull request |
 | 14 | Package hygiene | ☐ | | | | |
 | 15 | Quick start and canonical vignettes | ☐ | | | | |
 | 16 | Country case studies | ☐ | | | | |
@@ -29,17 +29,19 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** 12, grid methods and wrappers, is complete on branch
-`chunk-12-grid` (cut from `main`); it needs a push and a pull request.
-`main` is protected: R-CMD-check must pass before the merge.
+**Current chunk:** 13, removal of the v1 functions, is complete on branch
+`chunk-13-v1-removal` (cut from `main`); it needs a push and a pull
+request. `main` is protected for everyone, admins included: changes
+arrive only by pull request, after R-CMD-check passes.
 
 **Next steps (in order):**
-1. Push `chunk-12-grid` and open its pull request into `main`; merge when
-   R-CMD-check is green.
-2. Next chunk: 13, removing the v1 functions after saving their reference
-   outputs (plan §8 row 13, as changed on 2026-10-20: no deprecation
-   wrappers). Grid follow-ups, if needed: `tapp()` fast paths for spells
-   (a C++ run-length would be the next step), seasons as periods.
+1. Push `chunk-13-v1-removal`, open its pull request into `main`, merge
+   when R-CMD-check is green.
+2. Next chunk: 14, package hygiene (plan §8 row 14): Imports pruned
+   (`sf`, `stringi`, `tidyterra`, `exactextractr` to Suggests where
+   possible), `globalVariables`/`.data` for the NSE notes, `@family` and
+   `@inheritParams`, `_pkgdown.yml` and its workflow, every example
+   runnable, the R CMD check notes listed below.
 3. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
    template of a wrapper's chain, not code that re-evaluates: the survey and
    raster inputs are not in it and `window` prints as a list. Make it
@@ -159,6 +161,10 @@ States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ d
 | 2026-10-20 | §13 | Grid layers are named `<indicator>_<period>` (`day_abv_30_sum_2021`, `spi_3_2021-07`, `day_90p_07`); the registry, the series unit and the call are kept in URL-encoded GeoTIFF tags (`c4e_grid*`); `extract_by_coord()` and `extract_by_poly()` rebuild the long table | the extracted table equals the table path, registry included |
 | 2026-10-20 | §13 | `grid_controls()` builds the density window in kilometres at the raster's mean latitude on lon/lat rasters; layers on other grids are resampled onto the first (bilinear, nearest, sum by kind) | `focalMat()` takes degrees on lon/lat rasters |
 | 2026-10-20 | §13 | `grid_first` in `weather_extremes()` not built | per-interview windows need daily values; extracting `grid_indicators()` serves many surveys over one raster |
+| 2026-10-21 | §15 | The protection of `main` applies to admins too ("Do not allow bypassing") | chunk 12 reached `main` by a direct push that skipped the pull request |
+| 2026-10-21 | §8 chunk 13 | v1 references are recorded through `v1_ref(name, expr)` in the tests, stored in one file `fixtures/v1_reference.rds` (155 kB, xz); the expression stays in the test as a record, evaluated only with `C4E_RECORD_V1=true` | one mechanism for every comparison; re-recording needs only a commit where the v1 functions exist |
+| 2026-10-21 | §8 chunk 13 | Kept as internal functions, not removed: `filter_by_interview()` (used by `select_by_interview()`), `find_merge_var()` (by `merge_by_common()` and `get_poly_attr_for_point()`), `read_GAUL()` and `read_geoBoundaries()` (by `read_boundaries()`), `sum_na_check()`, `mean_na_check()`, `max_na_check()` (by the window summaries) and `to_date()` | v2 calls them; folding them in is chunk 14 work if wanted |
+| 2026-10-21 | §8 chunk 13 | `inst/bench/bench-kernel.R` calls the v1 side from `climatic4economist` | the benchmark stays runnable without the v1 functions in c4e |
 
 ### Open R CMD check NOTEs (for chunk 14)
 
@@ -188,6 +194,22 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-21 — chunk 13 (laptop: FAO-Win, session: Claude)
+- Did: confirmed `main` green on GitHub after chunk 12. Branch
+  `chunk-13-v1-removal` from `main`. `v1_ref()` helper and
+  `fixtures/v1_reference.rds` (21 references, recorded with the v1
+  functions present and checked again from the file), committed first;
+  then 32 v1 functions and 7 v1-only test files removed, v1 tests dropped
+  from 10 mixed files, 8 v1 helpers made internal, links to removed
+  functions turned into plain text, `data.table` out of Imports, the
+  kernel benchmark pointed at `climatic4economist`.
+- Found: chunk 12 reached `main` by a direct push from this folder
+  (admins could bypass the protection; now they cannot). The country
+  vignettes still use v1 names; they are ported in chunks 15 and 16.
+- Tests: 1137 expectations, 0 failures (the v1-only tests account for the
+  drop from 1389). Exports from 121 to 81.
+- Next: see Next steps above.
 
 ### 2026-10-20 — chunk 12 (laptop: FAO-Win, session: Claude)
 - Did: `main` protected on GitHub (pull request and R-CMD-check required);

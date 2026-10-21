@@ -36,5 +36,5 @@ list_df <- list(
 merged_list <- merge_by_common(list_df)
 }
 \seealso{
-\code{\link[dplyr]{full_join}}, \code{\link{find_merge_var}}
+\code{\link[dplyr]{full_join}}, \code{find_merge_var()}
 }

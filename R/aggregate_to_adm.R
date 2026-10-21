@@ -3,7 +3,7 @@
 #' Averages cell-level indicators within each administrative division,
 #' weighting each cell by the share of it inside the division
 #' (`coverage_fraction` from [extract_cell_by_poly()]). Replaces
-#' [agg_to_adm_div()].
+#' `agg_to_adm_div()`.
 #'
 #' Rows are grouped by the division and, when present, by `lag`, the date,
 #' `month` or `period`. On daily flags this gives the share of the division's

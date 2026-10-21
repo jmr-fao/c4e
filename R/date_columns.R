@@ -9,13 +9,13 @@
 #' A date column starts with its year. Anchoring on that is what separates the
 #' two: no survey variable begins with four digits, while `income_2019` and
 #' `hh_size_2020` both contain them. An unanchored pattern pulls those in, and
-#' because [to_date()] rewrites `_` to `-`, `lubridate::ymd(truncated = 2)`
+#' because `to_date()` rewrites `_` to `-`, `lubridate::ymd(truncated = 2)`
 #' then reads `income-2019` as 1 January 2019 — the household's income enters
 #' the series as a weather observation, with no error and no `NA`.
 #'
 #' The optional `X` is not decoration. R cannot name a column with a leading
 #' digit, so `make.names()` and `haven::read_dta()` prefix one: a table read
-#' from Stata arrives with `X2022.01.01`, which is the very form [to_date()]
+#' from Stata arrives with `X2022.01.01`, which is the very form `to_date()`
 #' exists to undo. Dropping `X?` would make the pattern miss the normal case.
 #'
 #' Nothing after the year is required, so year-only (`"2022"`), year-month

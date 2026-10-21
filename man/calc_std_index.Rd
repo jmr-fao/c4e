@@ -51,8 +51,8 @@ registered with the index and scale.
 \description{
 Computes the Standardized Precipitation Index (SPI) or the Standardized
 Precipitation-Evapotranspiration Index (SPEI) for every unit, at one or
-more accumulation scales in months. Replaces \code{\link[=compute_spi]{compute_spi()}},
-\code{\link[=compute_spei]{compute_spei()}} and \code{\link[=compute_water_balance]{compute_water_balance()}}.
+more accumulation scales in months. Replaces \code{compute_spi()} of climatic4economist,
+\code{compute_spei()} and \code{compute_water_balance()}.
 }
 \details{
 The data must be monthly. Daily rasters are aggregated first with

@@ -4,7 +4,7 @@
 #' values over all years of the baseline, e.g. the 90th percentile of
 #' maximum temperature in July. These are the relative thresholds that
 #' [calc_percentile_day()] compares each day with. Replaces
-#' [calc_pct_day()].
+#' `calc_pct_day()`.
 #'
 #' Use `exclude_below` to leave out values, for instance days with less than
 #' 0.1 mm of rain, so the percentiles describe wet days only. A unit and
@@ -117,7 +117,7 @@ calc_percentile.default <- function(x, p, exclude_below = NULL, exclude_above = 
 #' Compares each day with the percentile of its unit and calendar month from
 #' [calc_percentile()]: a day above the 90th percentile of July is flagged
 #' `day_abv_90p`, and its distance above goes in `<unit>_abv_90p`. Replaces
-#' [find_extr_rel_day()].
+#' `find_extr_rel_day()`.
 #'
 #' Whether a percentile is an upper or a lower threshold follows from its
 #' probability (0.5 and above are upper), unless `tail` says otherwise; the
