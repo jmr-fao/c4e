@@ -51,7 +51,9 @@ c4e_labels <- function(x) {
     vapply(labels, truncate_label, character(1))
 }
 
-#' "displaced up to 2/5/10 km (DHS rule)", short enough for a Stata label
+#' "displaced up to 2/5/10 km (DHS rule)", short enough for a Stata label;
+#' with a population target, "displaced 2/5/10 km (DHS), radius set for 5000
+#' people"
 #' @noRd
 describe_displacement <- function(record) {
     km <- function(m) format(m / 1000, trim = TRUE)
@@ -60,7 +62,13 @@ describe_displacement <- function(record) {
     } else {
         paste(km(record$rural), km(record$rural_far), sep = "/")
     }
-    paste0("displaced up to ", limits, " km (", record$rule %||% "DHS", " rule)")
+    rule <- record$rule %||% "DHS"
+    if (!is.null(record$population)) {
+        return(paste0("displaced ", limits, " km (", rule, "), radius set for ",
+                      format(round(record$population$min_people), big.mark = ",", trim = TRUE),
+                      " people"))
+    }
+    paste0("displaced up to ", limits, " km (", rule, " rule)")
 }
 
 truncate_label <- function(label, width = 80) {

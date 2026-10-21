@@ -4,8 +4,6 @@
 #' following the rule of the Demographic and Health Surveys (DHS): urban
 #' locations by up to 2 km, rural ones by up to 5 km, and a random 1% of the
 #' rural ones by up to 10 km. Households that share a location move together.
-#' With `boundaries`, a location stays inside the administrative division it
-#' started in, so division-level variables are not affected.
 #'
 #' Run it before sharing a file with coordinates, or before any variable is
 #' computed from them when the team itself should not hold the true
@@ -14,14 +12,34 @@
 #' is small for smooth climate fields and division averages, and larger for
 #' short distances such as to the nearest road.
 #'
+#' @section Where a location may land:
+#' Three options restrict or adapt the displacement, alone or together:
+#' * `boundaries`: a location stays inside the administrative division it
+#'   started in, so division-level variables are not affected.
+#' * `water`: a location never lands in a water body, where no household
+#'   lives and where extracted values (temperature over a lake, distance to
+#'   the shore) would be wrong. This costs no privacy, since nobody lives
+#'   there anyway. Use `min_water_area` to keep only large water bodies.
+#' * `population` and `min_people`: the limit of each location becomes the
+#'   radius within which at least `min_people` people live (inside its
+#'   division and outside water, when those are given), between
+#'   `min_scale` and `max_scale` times its DHS limit. Sparse places then
+#'   move further and dense ones less, so every respondent hides among about
+#'   the same number of people. With the default `min_scale = 1` the DHS
+#'   limits are a floor, as many data agreements require; a smaller
+#'   `min_scale` lets dense places move less than the DHS rule. A location
+#'   that reaches `max_scale` holds fewer people than asked, and a warning
+#'   says how many.
+#'
 #' @section What changes in the table:
 #' * The coordinate columns hold the displaced coordinates.
 #' * Location identifiers built from coordinates ([prepare_coord()] with
 #'   `id_rule = "coordinates"`) are rebuilt from the displaced ones, since the
 #'   old identifiers would reveal the true locations.
-#' * The context records the rule and the limits (not the seed). Labels, the
-#'   Stata codebook and printed tables then say that the coordinates are
-#'   displaced, and later tables built from these locations carry the record.
+#' * The context records the rule, the limits and the options used (not the
+#'   seed). Labels, the Stata codebook and printed tables then say that the
+#'   coordinates are displaced, and later tables built from these locations
+#'   carry the record.
 #'
 #' Keep `seed` private: with the seed, the displacement can be undone.
 #'
@@ -37,9 +55,18 @@
 #' @param share_far Share of rural locations displaced by up to `rural_far`.
 #' @param boundaries Optional administrative divisions (`SpatVector` of
 #'   polygons) a location must stay inside.
+#' @param water Optional water bodies (`SpatVector` of polygons, such as
+#'   lakes and reservoirs) a location must not land in.
+#' @param min_water_area Smallest water body kept from `water`, in km2.
+#' @param population Optional raster of people per cell (`SpatRaster` or a
+#'   path), such as WorldPop counts. Requires `min_people`.
+#' @param min_people Number of people that must live within the limit of
+#'   each location.
+#' @param min_scale,max_scale With `population`, the smallest and largest
+#'   limit, as multiples of the DHS limit of each location.
 #' @param seed Optional seed, for a displacement that can be repeated. Keep it
 #'   private.
-#' @param max_tries Draws allowed per location to land inside its division.
+#' @param max_tries Draws allowed per location to land in its allowed area.
 #'
 #' @return `x` with displaced coordinates, as a `c4e_tbl`.
 #'
@@ -59,10 +86,20 @@
 #'                          lonlat = TRUE, pairwise = TRUE) / 1000
 #' summary(moved)
 #' c4e_labels(displaced)
+#'
+#' # a lake to avoid, and a radius holding at least 5,000 people
+#' lake <- terra::buffer(terra::vect(cbind(30.6, -0.4), crs = "EPSG:4326"), 8000)
+#' people <- terra::rast(adm_div, resolution = 0.01)
+#' terra::values(people) <- 50 * terra::values(terra::cellSize(people, unit = "km"))
+#' displaced <- displace_coord(coord, boundaries = adm_div, water = lake,
+#'                             population = people, min_people = 5000, seed = 1)
 displace_coord <- function(x, lat = NULL, lon = NULL, type = NULL,
                            urban = 2000, rural = 5000, rural_far = 10000,
-                           share_far = 0.01, boundaries = NULL, seed = NULL,
-                           max_tries = 100) {
+                           share_far = 0.01, boundaries = NULL,
+                           water = NULL, min_water_area = 0,
+                           population = NULL, min_people = NULL,
+                           min_scale = 1, max_scale = 3,
+                           seed = NULL, max_tries = 100) {
     started <- Sys.time()
     for (arg in c("urban", "rural", "rural_far")) {
         value <- get(arg)
@@ -72,6 +109,9 @@ displace_coord <- function(x, lat = NULL, lon = NULL, type = NULL,
     }
     if (!is.numeric(share_far) || length(share_far) != 1 || share_far < 0 || share_far > 1) {
         cli::cli_abort("{.arg share_far} must be a number between 0 and 1.")
+    }
+    if (!is.null(population)) {
+        population <- check_population(population, min_people, min_scale, max_scale)
     }
     if (!is.null(seed)) {
         restore_seed <- local_seed(seed)
@@ -112,9 +152,25 @@ displace_coord <- function(x, lat = NULL, lon = NULL, type = NULL,
         limit[far] <- rural_far
     }
 
-    division <- if (!is.null(boundaries)) {
-        boundaries <- as_spat_vector(boundaries)
-        division_of(lon0, lat0, boundaries)
+    division <- rep(NA_integer_, length(lon0))
+    if (!is.null(boundaries)) {
+        boundaries <- terra::project(as_spat_vector(boundaries), "EPSG:4326")
+        division <- division_of(lon0, lat0, boundaries)
+    }
+    if (!is.null(water)) {
+        water <- water_bodies(water, min_water_area)
+        n_wet <- sum(in_water(lon0[known], lat0[known], water))
+        if (n_wet > 0) {
+            cli::cli_warn("{n_wet} true location{?s} {?lies/lie} in {.arg water};
+                           {?it is/they are} moved out of it.")
+        }
+    }
+
+    adapted <- NULL
+    if (!is.null(population)) {
+        adapted <- people_limits(lon0, lat0, limit, known, division, boundaries,
+                                 water, population, min_people, min_scale, max_scale)
+        limit <- adapted$limit
     }
 
     lon1 <- lon0
@@ -125,21 +181,24 @@ displace_coord <- function(x, lat = NULL, lon = NULL, type = NULL,
         moved <- move_points(lon0[todo], lat0[todo], limit[todo])
         lon1[todo] <- moved$lon
         lat1[todo] <- moved$lat
-        if (is.null(boundaries)) {
-            todo <- integer()
-        } else {
+        stays <- rep(TRUE, length(todo))
+        if (!is.null(boundaries)) {
             # a location outside every division has no division to stay in
             landed <- division_of(lon1[todo], lat1[todo], boundaries)
             stays <- is.na(division[todo]) |
                 (!is.na(landed) & landed == division[todo])
-            todo <- todo[!stays]
         }
+        if (!is.null(water)) {
+            stays <- stays & !in_water(lon1[todo], lat1[todo], water)
+        }
+        todo <- todo[!stays]
     }
     if (length(todo) > 0) {
         n_left <- length(todo)
-        cli::cli_abort(c("{n_left} location{?s} could not be kept inside {?its/their}
-                          division in {max_tries} draws.",
-                         "i" = "Check that {.arg boundaries} cover the survey, or raise
+        cli::cli_abort(c("{n_left} location{?s} could not be placed in {?its/their}
+                          allowed area in {max_tries} draws.",
+                         "i" = "Check that {.arg boundaries} cover the survey and that
+                                {.arg water} leaves land nearby, or raise
                                 {.arg max_tries}."))
     }
 
@@ -153,14 +212,21 @@ displace_coord <- function(x, lat = NULL, lon = NULL, type = NULL,
     record <- list(rule = "DHS", urban = urban, rural = rural, rural_far = rural_far,
                    share_far = share_far, n_locations = sum(known),
                    n_far = n_far, typed = !is.null(type_name),
-                   within_boundaries = !is.null(boundaries))
+                   within_boundaries = !is.null(boundaries),
+                   off_water = !is.null(water),
+                   population = adapted$record)
     survey <- meta$survey %||% list(lon = lon_name, lat = lat_name)
     survey$displaced <- record
     meta <- modify_meta(meta, list(survey = survey))
     meta <- c4e_record(meta, "displace_coord",
                        list(urban = urban, rural = rural, rural_far = rural_far,
                             share_far = share_far,
-                            boundaries = if (!is.null(boundaries)) "given"),
+                            boundaries = if (!is.null(boundaries)) "given",
+                            water = if (!is.null(water)) "given",
+                            population = if (!is.null(population)) "given",
+                            min_people = min_people,
+                            min_scale = if (!is.null(population)) min_scale,
+                            max_scale = if (!is.null(population)) max_scale),
                        started)
     new_c4e_tbl(data, meta)
 }
@@ -203,6 +269,114 @@ is_urban <- function(type) {
                        call = rlang::caller_env(2))
     }
     value %in% c("urban", "u")
+}
+
+# ==== Water and population ================================================ ----
+
+#' The polygons of `water` of at least `min_area` km2, in WGS84
+#' @noRd
+water_bodies <- function(water, min_area, call = rlang::caller_env()) {
+    water <- as_spat_vector(water)
+    if (terra::geomtype(water) != "polygons") {
+        cli::cli_abort("{.arg water} must be polygons, such as lakes.", call = call)
+    }
+    water <- terra::project(water, "EPSG:4326")
+    water[terra::expanse(water, unit = "km") >= min_area]
+}
+
+in_water <- function(lon, lat, water) {
+    if (nrow(water) == 0 || length(lon) == 0) return(rep(FALSE, length(lon)))
+    points <- terra::vect(cbind(lon, lat), crs = "EPSG:4326")
+    rowSums(terra::relate(points, water, "intersects")) > 0
+}
+
+check_population <- function(population, min_people, min_scale, max_scale,
+                             call = rlang::caller_env()) {
+    if (is.character(population)) population <- terra::rast(population)
+    if (!inherits(population, "SpatRaster") || terra::nlyr(population) != 1) {
+        cli::cli_abort("{.arg population} must be one raster layer of people per cell.",
+                       call = call)
+    }
+    if (!is.numeric(min_people) || length(min_people) != 1 || is.na(min_people) ||
+        min_people <= 0) {
+        cli::cli_abort("With {.arg population}, give {.arg min_people}, a number of
+                        people above 0.", call = call)
+    }
+    if (!is.numeric(min_scale) || !is.numeric(max_scale) || length(min_scale) != 1 ||
+        length(max_scale) != 1 || min_scale <= 0 || max_scale < min_scale) {
+        cli::cli_abort("{.arg min_scale} and {.arg max_scale} must be numbers with
+                        0 < {.arg min_scale} <= {.arg max_scale}.", call = call)
+    }
+    population
+}
+
+#' The limit of each location that holds `min_people`, and the record
+#'
+#' The raster is cropped once to the reach of the survey, so each search
+#' reads only a small window.
+#' @noRd
+people_limits <- function(lon, lat, limit, known, division, boundaries, water,
+                          population, min_people, min_scale, max_scale,
+                          call = rlang::caller_env()) {
+    idx <- which(known & limit > 0)
+    if (length(idx) > 0) {
+        reach <- terra::buffer(terra::vect(cbind(lon[idx], lat[idx]), crs = "EPSG:4326"),
+                               max_scale * limit[idx])
+        reach <- terra::project(reach, terra::crs(population))
+        population <- tryCatch(
+            terra::crop(population, reach, snap = "out"),
+            error = \(e) cli::cli_abort("{.arg population} does not cover the survey
+                                        locations.", call = call))
+        c4e_inform("Finding the radius that holds {round(min_people)} people for
+                    {length(idx)} location{?s}.")
+    }
+    old <- limit
+    for (i in idx) {
+        own <- if (!is.na(division[i])) boundaries[division[i]]
+        limit[i] <- people_radius(lon[i], lat[i], limit[i], own, water, population,
+                                  min_people, min_scale, max_scale)
+    }
+    n_capped <- sum(limit[idx] >= max_scale * old[idx])
+    if (n_capped > 0) {
+        cli::cli_warn("{n_capped} location{?s} reached {.arg max_scale} = {max_scale}
+                       with fewer than {round(min_people)} people within {?its/their} limit.",
+                      call = call)
+    }
+    record <- list(min_people = min_people, min_scale = min_scale,
+                   max_scale = max_scale,
+                   n_widened = sum(limit[idx] > old[idx]),
+                   n_narrowed = sum(limit[idx] < old[idx]),
+                   n_capped = n_capped)
+    list(limit = limit, record = record)
+}
+
+#' The radius within which `min_people` live, inside the division `own` and
+#' outside `water`, between `min_scale` and `max_scale` times `limit`
+#'
+#' The number of people grows with the radius, so the root is unique.
+#' @noRd
+people_radius <- function(lon, lat, limit, own, water, population, min_people,
+                          min_scale, max_scale) {
+    point <- terra::vect(cbind(lon, lat), crs = "EPSG:4326")
+    people <- function(r) {
+        area <- terra::buffer(point, r, quadsegs = 30)
+        if (!is.null(own)) area <- terra::intersect(area, own)
+        if (!is.null(water) && nrow(water) > 0 && nrow(area) > 0) {
+            area <- terra::erase(area, water)
+        }
+        if (nrow(area) == 0) return(0)
+        if (!terra::same.crs(area, population)) {
+            area <- terra::project(area, terra::crs(population))
+        }
+        sum(terra::extract(population, area, fun = sum, exact = TRUE,
+                           na.rm = TRUE, ID = FALSE)[[1]])
+    }
+    lower <- min_scale * limit
+    upper <- max_scale * limit
+    gap <- function(r) people(r) - min_people
+    if (gap(lower) >= 0) return(lower)
+    if (gap(upper) <= 0) return(upper)
+    stats::uniroot(gap, c(lower, upper), tol = 10)$root
 }
 
 #' Set the seed and return a function restoring the previous random state

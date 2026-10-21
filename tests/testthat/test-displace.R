@@ -120,3 +120,91 @@ test_that("bad input is refused clearly", {
     expect_error(displace_coord(x, lat = lat, lon = lon, rural = -1), "rural")
     expect_error(displace_coord(data.frame(a = 1)), "lat")
 })
+
+# a lake and a population raster over the fixture's area
+lake_at <- function(lon = 30.6, lat = -0.4, r = 15000) {
+    terra::buffer(terra::vect(cbind(lon, lat), crs = "EPSG:4326"), r, quadsegs = 60)
+}
+people_per_km2 <- function(density = 100) {
+    pop <- terra::rast(xmin = 29.8, xmax = 31.4, ymin = -1.2, ymax = 0.4,
+                       resolution = 0.005, crs = "EPSG:4326")
+    terra::values(pop) <- density * terra::values(terra::cellSize(pop, unit = "km"))[, 1]
+    pop
+}
+
+test_that("locations never land in a water body", {
+    x <- many_points(300)
+    lake <- lake_at()
+    x <- x[!in_water(x$lon, x$lat, water_bodies(lake, 0)), ]
+    out <- quiet(displace_coord(x, lat = lat, lon = lon, rural = 20000,
+                                water = lake, seed = 9))
+    expect_false(any(in_water(out$lon, out$lat, water_bodies(lake, 0))))
+    expect_true(c4e_meta(out)$survey$displaced$off_water)
+
+    # a true location in the water is moved out of it, with a warning
+    wet <- data.frame(lon = 30.6, lat = -0.4)
+    expect_warning(out <- quiet(displace_coord(wet, lat = lat, lon = lon, rural = 20000,
+                                               water = lake, seed = 1)),
+                   "in `water`")
+    expect_false(in_water(out$lon, out$lat, water_bodies(lake, 0)))
+})
+
+test_that("min_water_area keeps only the large water bodies", {
+    ponds <- rbind(lake_at(r = 15000), lake_at(30.2, 0, r = 300))
+    expect_equal(nrow(water_bodies(ponds, 0)), 2)
+    expect_equal(nrow(water_bodies(ponds, 1)), 1)
+    expect_error(displace_coord(many_points(5), lat = lat, lon = lon,
+                                water = terra::vect(cbind(30.5, -0.5), crs = "EPSG:4326")),
+                 "polygons")
+})
+
+test_that("the population radius holds min_people", {
+    pop <- people_per_km2(100)
+    # 100 people per km2: 11,310 people live within 6 km
+    k <- pi * 6^2 * 100
+    r <- people_radius(30.6, -0.4, 5000, NULL, NULL, pop, k, 1, 3)
+    expect_equal(r, 6000, tolerance = 0.01)
+    # dense enough already: the DHS limit is the floor, or min_scale below it
+    expect_equal(people_radius(30.6, -0.4, 5000, NULL, NULL, pop, 100, 1, 3), 5000)
+    expect_equal(people_radius(30.6, -0.4, 5000, NULL, NULL, pop, 100, 0.5, 3), 2500)
+    # water holds nobody, so a lake next to the location widens the radius
+    lake <- water_bodies(lake_at(30.6, -0.45, r = 3000), 0)
+    expect_gt(people_radius(30.6, -0.4, 5000, NULL, lake, pop, k, 1, 3), 6000)
+})
+
+test_that("population widens sparse locations and records it", {
+    x <- many_points(40)
+    pop <- people_per_km2(100)
+    # 10,936 people live within 5.9 km, below three times the 2 km urban limit
+    k <- round(pi * 5.9^2 * 100)
+    out <- quiet(displace_coord(x, lat = lat, lon = lon, type = area, share_far = 0,
+                                population = pop, min_people = k, seed = 10))
+    moved <- moved_m(x, out)
+    rural <- x$area == "rural"
+    expect_true(all(moved[rural] <= 5900 * 1.02))
+    expect_true(any(moved[rural] > 5000 * 1.005))
+    expect_true(all(moved[!rural] <= 5900 * 1.02))
+    record <- c4e_meta(out)$survey$displaced$population
+    expect_equal(record$min_people, k)
+    expect_equal(record$n_widened, 40)
+    expect_match(c4e_labels(out)[["lon"]], "radius set for 10,936 people")
+
+    # too few people even at max_scale: a warning, and the cap holds
+    expect_warning(quiet(displace_coord(x, lat = lat, lon = lon, type = area,
+                                        population = pop, min_people = 1e7, seed = 11)),
+                   "max_scale")
+})
+
+test_that("population options are checked", {
+    x <- many_points(5)
+    pop <- people_per_km2()
+    expect_error(displace_coord(x, lat = lat, lon = lon, population = pop), "min_people")
+    expect_error(displace_coord(x, lat = lat, lon = lon, population = c(pop, pop),
+                                min_people = 10), "one raster layer")
+    expect_error(displace_coord(x, lat = lat, lon = lon, population = pop,
+                                min_people = 10, min_scale = 2, max_scale = 1), "min_scale")
+    far_away <- terra::rast(xmin = 0, xmax = 1, ymin = 0, ymax = 1, resolution = 0.1,
+                            crs = "EPSG:4326", vals = 1)
+    expect_error(quiet(displace_coord(x, lat = lat, lon = lon, population = far_away,
+                                      min_people = 10)), "does not cover")
+})

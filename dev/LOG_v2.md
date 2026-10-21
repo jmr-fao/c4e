@@ -24,17 +24,21 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 13 | Removal of the v1 functions | ✔ done | #5 | 2026-10-21 | 2026-10-21 | merged into `main` |
 | 14 | Package hygiene | ✔ done | #6 | 2026-10-21 | 2026-10-21 | merged into `main`; README and title in #7, #8; site live |
 | 15 | Quick start and canonical vignettes | ✔ done | #9 | 2026-10-21 | 2026-10-21 | merged into `main`; site live with Get started and six articles |
-| 16 | Privacy and case studies | 🔄 in progress | | 2026-10-21 | | `displace_coord()` complete on branch `chunk-16-displace`; the case studies move to a separate tutorial site |
+| 16 | Privacy and case studies | 👀 in review | #10 | 2026-10-21 | | `displace_coord()` with division, water and population options in #10; the case studies move to a separate tutorial site |
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** 16. `displace_coord()` is complete on branch
-`chunk-16-displace` (cut from `main`); it needs a push and a pull request.
+**Current chunk:** 16. `displace_coord()` is in PR #10 (branch
+`chunk-16-displace`), now with options for divisions, water bodies and a
+population target; the new commit needs a push.
 
 **Next steps (in order):**
-1. Push `chunk-16-displace`, open its pull request into `main`, merge when
-   both checks are green.
+1. Push `chunk-16-displace` (the water and population options) to PR #10;
+   merge when both checks are green. Then rebase `joss-paper` onto `main`
+   and mention the options in the paper's privacy sentence. Possible later:
+   a minimum displacement ("donut") and recording which indicators were
+   computed before displacement.
 2. Chunk 17, the release (plan §8 row 17): a GitHub release only, for
    colleagues to test; r-universe after their feedback, CRAN later. Jan: the author's full name for `DESCRIPTION`.
 3. Separately: the tutorial website `jmr-fao/c4e-tutorials` (Quarto, GitHub
@@ -178,6 +182,7 @@ States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ d
 | 2026-10-21 | §8 rows 16, 17 | Release on GitHub and r-universe now, CRAN later; case studies on a separate tutorial website, not in the package; the six workflow articles stay on the package site; `displace_coord()` in the package | Jan's choice: a lean package; r-universe gives `install.packages()` without CRAN's review |
 | 2026-10-21 | §8 row 17 | The first release goes to GitHub only, for colleagues to test with `remotes::install_github()`; r-universe follows their feedback | Jan's choice: test with a small group before wider publication |
 | 2026-10-21 | §8 row 16 | `displace_coord()` draws the distance uniformly up to the limit and the direction uniformly (the DHS rule), moves all households of a location together, redraws a location until it lands in its own division, rebuilds coordinate identifiers (the old ones reveal the true place), and records the rule in `survey$displaced` but never the seed (the seed undoes the displacement) | privacy holds only if no trace of the true location survives |
+| 2026-10-21 | §8 row 16 | `displace_coord()` gains `water` (with `min_water_area`): a location never lands in a water body; and `population` with `min_people`: each limit becomes the radius within which `min_people` live (inside the division, outside water), between `min_scale` (default 1, so the DHS limits are a floor) and `max_scale` (default 3) times the DHS limit. Area compensation (growing the radius to give back area lost to divisions and lakes) and LSMS cluster means were tried on synthetic data and left out | Jan's request. Water: 7% of synthetic households landed in a lake under the plain rule, and avoiding it costs no privacy. Population: privacy depends on the people a respondent hides among, not on km2; on synthetic data it gave every EA at least k people and the smallest error in a distance control, while area compensation moved lakeshore points further without helping sparse places |
 
 ### Open R CMD check NOTEs
 
@@ -206,6 +211,21 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-21 — chunk 16, displacement options (laptop: FAO-Win, session: Claude)
+- Did: `displace_coord()` options `water`, `min_water_area`, `population`,
+  `min_people`, `min_scale`, `max_scale`; the record (`off_water`,
+  `population`), the label ("radius set for k people"), the codebook line;
+  NEWS; 12 new tests. Compared on synthetic data (80 EAs, lakes, a
+  population raster): plain DHS, water exclusion, area compensation, LSMS EA
+  means, population target (see decisions).
+- Found: the LSMS-ISA displaces EA means with the DHS limits and computes
+  its geovariables on the true coordinates; a rule keeping points in their
+  district is likely but was not confirmed.
+- Tests: `test-displace.R` 51 expectations; full suite 1190, 0 failures;
+  `rcmdcheck`: 0 errors, 0 warnings, 2 notes (new submission with the
+  vignette index; time server on this laptop).
+- Next: see Next steps above.
 
 ### 2026-10-21 — chunk 16, displace_coord() (laptop: FAO-Win, session: Claude)
 - Did: chunk 15 merged (#9), site checked (articles live, agent pages gone).

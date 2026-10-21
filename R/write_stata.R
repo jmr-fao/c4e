@@ -110,7 +110,10 @@ write_codebook <- function(x, original, stata, label_of, path) {
         if (!is.null(meta$window)) paste0("- Window: ", describe_window(meta$window)),
         if (!is.null(meta$key)) paste0("- One row per: ", paste(c(meta$key, meta$unit_cols), collapse = ", ")),
         if (!is.null(meta$survey$displaced)) {
-            paste0("- Coordinates: ", describe_displacement(meta$survey$displaced),
+            displaced <- meta$survey$displaced
+            paste0("- Coordinates: ", describe_displacement(displaced),
+                   if (isTRUE(displaced$within_boundaries)) ", within their division",
+                   if (isTRUE(displaced$off_water)) ", off water bodies",
                    "; every variable computed from them uses the displaced locations")
         }
     )

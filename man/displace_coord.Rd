@@ -14,6 +14,12 @@ displace_coord(
   rural_far = 10000,
   share_far = 0.01,
   boundaries = NULL,
+  water = NULL,
+  min_water_area = 0,
+  population = NULL,
+  min_people = NULL,
+  min_scale = 1,
+  max_scale = 3,
   seed = NULL,
   max_tries = 100
 )
@@ -37,10 +43,24 @@ rural, the larger displacement.}
 \item{boundaries}{Optional administrative divisions (\code{SpatVector} of
 polygons) a location must stay inside.}
 
+\item{water}{Optional water bodies (\code{SpatVector} of polygons, such as
+lakes and reservoirs) a location must not land in.}
+
+\item{min_water_area}{Smallest water body kept from \code{water}, in km2.}
+
+\item{population}{Optional raster of people per cell (\code{SpatRaster} or a
+path), such as WorldPop counts. Requires \code{min_people}.}
+
+\item{min_people}{Number of people that must live within the limit of
+each location.}
+
+\item{min_scale, max_scale}{With \code{population}, the smallest and largest
+limit, as multiples of the DHS limit of each location.}
+
 \item{seed}{Optional seed, for a displacement that can be repeated. Keep it
 private.}
 
-\item{max_tries}{Draws allowed per location to land inside its division.}
+\item{max_tries}{Draws allowed per location to land in its allowed area.}
 }
 \value{
 \code{x} with displaced coordinates, as a \code{c4e_tbl}.
@@ -50,8 +70,6 @@ Moves every survey location in a random direction by a random distance,
 following the rule of the Demographic and Health Surveys (DHS): urban
 locations by up to 2 km, rural ones by up to 5 km, and a random 1\% of the
 rural ones by up to 10 km. Households that share a location move together.
-With \code{boundaries}, a location stays inside the administrative division it
-started in, so division-level variables are not affected.
 }
 \details{
 Run it before sharing a file with coordinates, or before any variable is
@@ -61,6 +79,29 @@ controls) are then based on the displaced locations: the error this adds
 is small for smooth climate fields and division averages, and larger for
 short distances such as to the nearest road.
 }
+\section{Where a location may land}{
+
+Three options restrict or adapt the displacement, alone or together:
+\itemize{
+\item \code{boundaries}: a location stays inside the administrative division it
+started in, so division-level variables are not affected.
+\item \code{water}: a location never lands in a water body, where no household
+lives and where extracted values (temperature over a lake, distance to
+the shore) would be wrong. This costs no privacy, since nobody lives
+there anyway. Use \code{min_water_area} to keep only large water bodies.
+\item \code{population} and \code{min_people}: the limit of each location becomes the
+radius within which at least \code{min_people} people live (inside its
+division and outside water, when those are given), between
+\code{min_scale} and \code{max_scale} times its DHS limit. Sparse places then
+move further and dense ones less, so every respondent hides among about
+the same number of people. With the default \code{min_scale = 1} the DHS
+limits are a floor, as many data agreements require; a smaller
+\code{min_scale} lets dense places move less than the DHS rule. A location
+that reaches \code{max_scale} holds fewer people than asked, and a warning
+says how many.
+}
+}
+
 \section{What changes in the table}{
 
 \itemize{
@@ -68,9 +109,10 @@ short distances such as to the nearest road.
 \item Location identifiers built from coordinates (\code{\link[=prepare_coord]{prepare_coord()}} with
 \code{id_rule = "coordinates"}) are rebuilt from the displaced ones, since the
 old identifiers would reveal the true locations.
-\item The context records the rule and the limits (not the seed). Labels, the
-Stata codebook and printed tables then say that the coordinates are
-displaced, and later tables built from these locations carry the record.
+\item The context records the rule, the limits and the options used (not the
+seed). Labels, the Stata codebook and printed tables then say that the
+coordinates are displaced, and later tables built from these locations
+carry the record.
 }
 
 Keep \code{seed} private: with the seed, the displacement can be undone.
@@ -89,6 +131,13 @@ moved <- terra::distance(as.matrix(coord[c("lon", "lat")]),
                          lonlat = TRUE, pairwise = TRUE) / 1000
 summary(moved)
 c4e_labels(displaced)
+
+# a lake to avoid, and a radius holding at least 5,000 people
+lake <- terra::buffer(terra::vect(cbind(30.6, -0.4), crs = "EPSG:4326"), 8000)
+people <- terra::rast(adm_div, resolution = 0.01)
+terra::values(people) <- 50 * terra::values(terra::cellSize(people, unit = "km"))
+displaced <- displace_coord(coord, boundaries = adm_div, water = lake,
+                            population = people, min_people = 5000, seed = 1)
 }
 \seealso{
 \code{\link[=prepare_coord]{prepare_coord()}}

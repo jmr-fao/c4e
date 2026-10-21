@@ -80,7 +80,10 @@ tracked in `dev/LOG_v2.md`.
 
 * `displace_coord()` displaces survey coordinates before they are shared,
   following the DHS rule (urban up to 2 km, rural up to 5 km, 1% of rural
-  up to 10 km), keeping each location inside its administrative division.
+  up to 10 km). Options keep each location inside its administrative
+  division (`boundaries`), out of water bodies (`water`), and set each
+  radius so that at least `min_people` live within it (`population`, e.g.
+  WorldPop), with the DHS limits as a floor by default.
   Households at a location move together, coordinate identifiers are
   rebuilt, and the displacement is recorded in the context, the labels and
   the Stata codebook (the seed is not).
