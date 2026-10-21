@@ -101,12 +101,19 @@ for each location, into seasonal weather variables, and the World Bank's
 `GeoLink` [@geolink] attaches many geospatial layers to survey files over a
 single date range.
 
-What none of these combines is the survey-linkage layer that `c4e`
-provides: windows defined by each household's interview date, extremes and
-drought indices computed from the rasters, spatial controls at the location
-or averaged over administrative divisions, context and units carried from
-one step to the next, output prepared for Stata, and the displacement of
-coordinates. Adding this layer to one of the packages above would change its
+Each of these tools covers part of the work and expects its own inputs:
+series already extracted for each location, a single remote source, plain
+vectors, or polygons and calendar periods. An economist combining them
+writes the connecting code by hand: extracting the rasters, converting
+units, aligning the dates of each window, reshaping the tables and labelling
+the variables for Stata. Each of these hand-offs is a place where an error
+passes silently. What none of the tools combines is the survey-linkage layer
+that `c4e` provides, as one pipeline with checks at every step: windows
+defined by each household's interview date, extremes and drought indices
+computed from the rasters, spatial controls at the location or averaged over
+administrative divisions, context and units carried from one step to the
+next, output prepared for Stata, and the displacement of coordinates.
+Adding this layer to one of the packages above would change its
 core data model, built around crop-trial points, calendar periods or a
 single survey-wide date range; `c4e` instead reuses `terra`,
 `exactextractr` and `SPEI` rather than reimplementing them. The same
@@ -132,11 +139,12 @@ because silent defaults recreate the errors the context is meant to prevent;
 an explicit argument that contradicts the context is refused with a pointer
 to the step that resolves it, such as a unit conversion.
 
-For speed, indicators are computed on a units-by-dates matrix rather than on
-long tables, and converted to the long, tidy form only at the end. On
-synthetic data with 1,000 to 10,000 locations, this makes the daily
-indicators 4 to 900 times faster than `climatic4economist`, with identical
-results. Grid outputs reuse the same step functions on blocks of raster rows
+Indicators are computed on a matrix of locations by dates rather than on
+long tables, and converted to the long, tidy form only at the end; this uses
+far less memory than long tables, and jobs larger than the memory available
+are split into pieces with progress messages. The results are tested to be
+identical to those of `climatic4economist`.
+Grid outputs reuse the same step functions on blocks of raster rows
 instead of reimplementing each indicator for rasters: every cell's result
 equals the result the table functions give at that location, at the cost of
 speed; a faster path through `terra`'s compiled routines is kept for the
