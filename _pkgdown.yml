@@ -129,3 +129,14 @@ reference:
   - title: Package
     contents:
       - c4e-package
+
+articles:
+  - title: Workflows
+    navbar: Workflows
+    contents:
+      - articles/household-extremes
+      - articles/relative-extremes
+      - articles/administrative-divisions
+      - articles/drought-indices
+      - articles/spatial-controls
+      - articles/grid-indicators

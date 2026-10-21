@@ -1,0 +1,90 @@
+---
+title: "Administrative divisions"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+When household coordinates are not available, or not precise enough, the
+indicators are computed for the household's administrative division: every
+raster cell in the division contributes, weighted by the share of the cell
+that lies inside it. This needs the `exactextractr` and `sf` packages.
+
+```{r setup}
+library(c4e)
+```
+
+## Reading the boundaries
+
+`read_boundaries()` reads the FAO GAUL or geoBoundaries files of one or more
+countries and returns the divisions with an `ID_adm_div` identifier. To keep
+this article self-contained, it writes a miniature GAUL folder first, from
+the three divisions that ship with the package.
+
+```{r boundaries}
+root <- file.path(tempdir(), "gaul")
+dir.create(file.path(root, "MWI", "MWI_ADM2"), recursive = TRUE, showWarnings = FALSE)
+divisions <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+# GAUL's own field names
+terra::values(divisions) <- data.frame(iso3_code = "MWI",
+                                       gaul1_name = divisions$adm_div_1,
+                                       gaul2_name = divisions$adm_div_2)
+terra::writeVector(divisions, file.path(root, "MWI", "MWI_ADM2", "MWI_ADM2.geojson"),
+                   filetype = "GeoJSON", overwrite = TRUE)
+
+adm <- read_boundaries(root, iso = "MWI", level = 2)
+adm
+```
+
+```{r map}
+tmax <- read_climate(system.file("extdata", "tmax_daily.tif", package = "c4e"))
+terra::plot(tmax[[200]], main = "Maximum temperature, one day, with the divisions")
+terra::plot(adm, add = TRUE, border = "white", lwd = 2)
+```
+
+## Cells of each division
+
+`extract_cell_by_poly()` returns every cell of every division with the share
+of the cell inside it (`coverage_fraction`). Indicators are then computed
+cell by cell, exactly as for households.
+
+```{r cells}
+cells <- extract_cell_by_poly(convert_unit(tmax, "C"), adm)
+cells[1:3, 1:7]
+
+hot <- calc_threshold_day(cells, above = 30)
+```
+
+## From cells to divisions
+
+`aggregate_to_adm()` takes the coverage-weighted mean over the cells of each
+division. A daily flag becomes the share of the division's area above the
+threshold that day.
+
+```{r aggregate}
+by_division <- aggregate_to_adm(hot)
+head(by_division, 4)
+```
+
+The daily table can be summarised by year or month with
+`summarise_by_period()`, for a panel of divisions:
+
+```{r panel}
+summarise_by_period(by_division, "year")
+```
+
+## Households in divisions
+
+`weather_extremes()` does this in one call with `boundaries`: each household
+gets the indicators of the division its coordinates fall in.
+
+```{r wrapper}
+survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+survey$interview <- as.Date(survey$interview)
+
+heat <- weather_extremes(survey, system.file("extdata", "tmax_daily.tif", package = "c4e"),
+                         id = hhid, interview = interview, preset = "heat",
+                         boundaries = adm, control = extremes_control(verbose = FALSE))
+print(heat, n = 4)
+```

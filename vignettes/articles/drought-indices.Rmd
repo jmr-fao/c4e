@@ -1,0 +1,96 @@
+---
+title: "Drought indices: SPI and SPEI"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+The standardised precipitation index (SPI) says how unusual the precipitation
+of the last months is, in standard deviations, compared with the same months
+in other years at the same place. An SPI of -1.5 over three months means a
+dry spell of a severity seen about once every 15 years. The SPEI does the
+same with the water balance: precipitation minus potential
+evapotranspiration.
+
+```{r setup}
+library(c4e)
+
+survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+survey$interview <- as.Date(survey$interview)
+coord <- prepare_coord(survey, lat_var = lat, lon_var = lon,
+                       id = hhid, interview = interview)
+```
+
+## Monthly data, a long series
+
+The indices need monthly data and many years: the package ships forty years
+of monthly precipitation. Daily data are first summed to months with
+`aggregate_time()`.
+
+```{r data}
+pre <- read_climate(system.file("extdata", "pre_monthly.tif", package = "c4e"))
+raster_meta(pre)[c("variable", "unit", "time_step", "date_range")]
+extracted <- extract_by_coord(pre, georef_coord(coord))
+```
+
+## The index
+
+`calc_std_index()` fits the index at one or more accumulation scales, in
+months. Each series is fitted on its own location's history.
+
+```{r spi}
+spi <- calc_std_index(extracted, scale = c(3, 12))
+dplyr::filter(spi, ID == ID[1], date >= as.Date("2022-01-01")) |> head(6)
+```
+
+```{r plot}
+one <- dplyr::filter(spi, ID == ID[1], date >= as.Date("2015-01-01"))
+plot(one$date, one$spi_3, type = "h", col = ifelse(one$spi_3 < 0, "firebrick", "steelblue"),
+     xlab = NULL, ylab = "SPI-3", main = "Three-month SPI at one location")
+abline(h = c(-1, -1.5), lty = 2)
+```
+
+## Drought months and spells
+
+`calc_std_threshold()` flags the months beyond index thresholds. The sign
+stays in the column name, so `spi3_blw_-1.5` is the months with a
+three-month SPI below -1.5. The flags work with spells like any other.
+
+```{r thresholds}
+dry <- calc_std_threshold(spi, below = c(-1, -1.5))
+dry <- calc_spell(dry, min_spell = 2)
+names(dry)
+```
+
+## Before each interview
+
+```{r summary}
+summary <- summarise_by_interview(coord, dry, window = window_lag("1 year"))
+print(summary, n = 4)
+c4e_labels(summary)[c("spi_3_mean", "spi3_blw_-1.5_sum")]
+```
+
+## The SPEI
+
+With potential evapotranspiration, the same function gives the SPEI. Here a
+constant 60 mm a month stands in for it; ERA5 records evapotranspiration as
+a negative number, and either sign is accepted.
+
+```{r spei}
+pet <- dplyr::mutate(extracted, dplyr::across(dplyr::matches("^\\d{4}-"), \(v) v * 0 + 60))
+spei <- calc_std_index(extracted, scale = 3, index = "spei", pet = pet)
+names(spei)
+```
+
+## In one call
+
+`climate_indices()` runs the chain from the survey and the raster; daily
+precipitation is summed to months by itself.
+
+```{r wrapper}
+drought <- climate_indices(survey, system.file("extdata", "pre_monthly.tif", package = "c4e"),
+                           id = hhid, interview = interview, scale = c(3, 12),
+                           control = indices_control(verbose = FALSE))
+print(drought, n = 4)
+```

@@ -40,9 +40,10 @@ root <- file.path(tempdir(), "gaul")
 dir.create(file.path(root, "MWI", "MWI_ADM2"), recursive = TRUE,
            showWarnings = FALSE)
 adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
-adm_div$iso3_code <- "MWI"
-adm_div$gaul1_name <- c("North", "North", "South")
-adm_div$gaul2_name <- c("Alpha", "Beta", "Gamma")
+# GAUL's own field names
+terra::values(adm_div) <- data.frame(iso3_code = "MWI",
+                                     gaul1_name = c("North", "North", "South"),
+                                     gaul2_name = c("Alpha", "Beta", "Gamma"))
 terra::writeVector(adm_div, file.path(root, "MWI", "MWI_ADM2", "MWI_ADM2.geojson"),
                    filetype = "GeoJSON", overwrite = TRUE)
 

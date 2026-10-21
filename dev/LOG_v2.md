@@ -22,40 +22,34 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 11 | Wrappers and presets | ✔ done | #4 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack; also the cv safeguard, README and topics |
 | 12 | Grid methods and wrappers | ✔ done | | 2026-10-20 | 2026-10-20 | merged into `main` by a direct push (no pull request); CI green on `main` |
 | 13 | Removal of the v1 functions | ✔ done | #5 | 2026-10-21 | 2026-10-21 | merged into `main` |
-| 14 | Package hygiene | 🔄 in progress | | 2026-10-21 | | complete on branch `chunk-14-hygiene` (from `main`); needs push and a pull request |
-| 15 | Quick start and canonical vignettes | ☐ | | | | |
+| 14 | Package hygiene | ✔ done | #6 | 2026-10-21 | 2026-10-21 | merged into `main`; README and title in #7, #8; site live |
+| 15 | Quick start and canonical vignettes | 🔄 in progress | | 2026-10-21 | | complete on branch `chunk-15-articles` (from `main`); needs push and a pull request |
 | 16 | Country case studies | ☐ | | | | |
 | 17 | Release 2.0.0 | ☐ | | | | |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** 14, package hygiene, is complete on branch
-`chunk-14-hygiene` (cut from `main`); it needs a push and a pull request.
-`main` is protected for everyone: changes arrive only by pull request,
-after R-CMD-check passes. Push the chunk branch, never `main`.
+**Current chunk:** 15, quick start and canonical vignettes, is complete on
+branch `chunk-15-articles` (cut from `main`); it needs a push and a pull
+request. The website (https://jmr-fao.github.io/c4e/) publishes from `main`
+on every merge.
 
 **Next steps (in order):**
-1. Push `chunk-14-hygiene`, open its pull request into `main`, merge when
+1. Push `chunk-15-articles`, open its pull request into `main`, merge when
    R-CMD-check and pkgdown are green.
-2. Jan: once the pkgdown workflow has run on `main` (it creates the
-   `gh-pages` branch), turn on GitHub Pages: Settings, Pages, Deploy from a
-   branch, `gh-pages`, `/ (root)`. The site is then at
-   https://jmr-fao.github.io/c4e/, and the URL note of R CMD check goes.
-3. Next chunk: 15, quick start and canonical vignettes (plan §8 row 15,
-   §7): package articles in `vignettes/` built on `inst/extdata`.
-4. Chunk 16, as changed on 2026-10-21 (plan §8 row 16): three case-study
+2. Next chunk: 16, as changed on 2026-10-21 (plan §8 row 16): three case-study
    articles on synthetic data (one country with household coordinates and
    division controls; several countries with `purrr::map()`; a narrow
    coordinates project with distances) and the new `displace_coord()`
    (DHS rule) used in one of them. The other country scripts stay in
    `case_studies/`, not ported.
-5. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
+3. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
    template of a wrapper's chain, not code that re-evaluates: the survey and
    raster inputs are not in it and `window` prints as a list. Make it
    evaluable (record windows as `window_lag(...)` calls, data arguments as
    placeholders) alongside chunk 12 or in chunk 14. Also not built:
    `climate_indices(wide = TRUE)` and a `baseline` for SPI.
-6. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
+4. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
    empty_meta()`, `started <- Sys.time()`, resolve each argument with
    `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
    is given, wrap heavy work in `with_chunks()` with a `mem_estimate`, and
@@ -179,6 +173,8 @@ after R-CMD-check passes. Push the chunk branch, never `main`.
 | 2026-10-21 | §5 | pkgdown builds on every pull request and publishes from `main` to the `gh-pages` branch | the workflow pushes to `gh-pages`, which the protection of `main` does not cover |
 | 2026-10-21 | §7, §8 row 16 | Chunk 16 writes three case-study articles instead of porting the 20 country scripts: one country with household coordinates and division controls, several countries with `purrr::map()`, a narrow project with distances; on the bundled synthetic data, run on every build; the scripts stay in `case_studies/` | Jan's choice: fewer, maintained examples; synthetic data shows output, is checked by CI and carries no privacy risk |
 | 2026-10-21 | §8 row 16 | New step function `displace_coord()` (DHS displacement: urban up to 2 km, rural up to 5 km, 1% of rural up to 10 km, kept within the administrative unit), recorded in the context and shown in labels and the codebook | sharing georeferenced survey data needs it, and the case studies teach it as part of the workflow |
+| 2026-10-21 | §7, §8 row 15 | Vignettes in R Markdown, not Quarto: `vignettes/c4e.Rmd` (*Get started*, built by R CMD build) and six articles in `vignettes/articles/` (build-ignored, rendered by pkgdown) | knitr needs nothing more in CI; articles keep R CMD check fast while the website still runs every one on each pull request |
+| 2026-10-21 | §8 row 15 | The `_targets.R` example is a non-run chunk in *Get started*, not a file | `targets` is not a dependency; the chunk shows the pattern where readers look for it |
 
 ### Open R CMD check NOTEs
 
@@ -207,6 +203,25 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-21 — chunk 15 (laptop: FAO-Win, session: Claude)
+- Did: after #6 (chunk 14) and the README and title (#7, #8) were merged,
+  GitHub Pages turned on (https://jmr-fao.github.io/c4e/) and the About
+  panel given the website. Branch `chunk-15-articles` from `main`: knitr as
+  vignette builder, *Get started* (`vignettes/c4e.Rmd`), six articles in
+  `vignettes/articles/`, an Articles menu in `_pkgdown.yml`; the
+  `read_boundaries()` example writes GAUL's own field names.
+- Found: the miniature GAUL file in the example and the article clashed with
+  the fixture's `adm_div_*` columns (terra renamed them with a warning).
+- Tests: every article renders on the bundled data with no error or warning;
+  `pkgdown::build_site()` builds the whole site locally (CRAN lookups stubbed,
+  the FAO network blocks them); local `rcmdcheck` with CI's arguments: 0
+  errors, 0 warnings, 0 notes.
+- Also: the pkgdown workflow removes `CLAUDE.md` and `AGENTS.md` from its
+  checkout before building (pkgdown publishes every top-level `.md`, and
+  they were on the live site) and deploys with `clean: true`; the README
+  logo has alt text.
+- Next: see Next steps above.
 
 ### 2026-10-21 — chunk 14 (laptop: FAO-Win, session: Claude)
 - Did: branch `chunk-14-hygiene` from `main` (chunk 13 merged as #5, chunk

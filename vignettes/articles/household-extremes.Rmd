@@ -1,0 +1,130 @@
+---
+title: "Household extremes, step by step"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+`weather_extremes()` is a chain of step functions. This article runs the chain
+one step at a time, so each step can be inspected and changed. Each table
+carries its context to the next step: once the raster is read, its variable,
+unit and dates travel with the data, and no later step asks for them again.
+
+```{r setup}
+library(c4e)
+```
+
+## The survey
+
+The households need coordinates and an interview date. `prepare_coord()`
+keeps one row per household and gives each distinct location an identifier
+built from its coordinates, so the same place gets the same identifier in
+every wave and file.
+
+```{r survey}
+survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+survey$interview <- as.Date(survey$interview)
+
+coord <- prepare_coord(survey, lat_var = lat, lon_var = lon,
+                       id = hhid, interview = interview)
+head(coord, 4)
+```
+
+`georef_coord()` turns the distinct locations into points. The coordinate
+columns and their reference system come from the table; the assumption of
+longitude and latitude in WGS84 is announced.
+
+```{r points}
+points <- georef_coord(coord)
+points
+```
+
+## The climate data
+
+`read_climate()` reads a raster with its dates, variable and unit, from the
+file or from the conventions of common sources (ERA5, CHIRPS, WFDE5).
+
+```{r read}
+tmax <- read_climate(system.file("extdata", "tmax_daily.tif", package = "c4e"))
+raster_meta(tmax)[c("variable", "unit", "time_step", "date_range")]
+```
+
+The thresholds below are in Celsius, so the raster is converted first.
+`convert_unit()` knows the usual conversions (kelvin and Celsius, metres
+and millimetres, rates per second and per day) and records the new unit.
+
+```{r convert}
+tmax <- convert_unit(tmax, "C")
+```
+
+## Extraction
+
+`extract_by_coord()` reads the value of each day at each location: one row
+per location, one column per day. Locations outside the raster, or on cells
+missing in every layer, are reported.
+
+```{r extract}
+extracted <- extract_by_coord(tmax, points)
+extracted[1:3, 1:6]
+```
+
+## Daily indicators
+
+`calc_threshold_day()` flags the days beyond each threshold and records how
+far beyond they are. The table becomes long, one row per location and day,
+and every new column is registered with what it measures.
+
+```{r thresholds}
+days <- calc_threshold_day(extracted, above = c(30, 35))
+days[1:3, ]
+```
+
+The unit was not typed: it came from the table. `calc_spell()` then finds
+the runs of flagged days. It needs no argument either; it follows every
+flag that is registered, and takes two days as the shortest spell.
+
+```{r spells}
+spells <- calc_spell(days)
+dplyr::filter(spells, !is.na(spell_abv_30)) |> head(3)
+```
+
+## Summaries before each interview
+
+`summarise_by_interview()` sums the flagged days and summarises the spells
+(longest, mean, total, number) over a window before each household's
+interview. The window is an object: here the year before the interview and
+the year before that.
+
+```{r summary}
+summary <- summarise_by_interview(coord, spells,
+                                  window = window_lag("1 year", n_lags = 1))
+print(summary, n = 4)
+```
+
+Other windows are a season (`window_season(6, 9)` for June to September),
+a fixed period (`window_fixed()`) or the time since an event
+(`window_since()`). A window short of data gives a missing value rather than
+a zero: `min_coverage` sets the share of days that must be present.
+
+## What the table knows
+
+The table keeps the steps that produced it and what every column means.
+`c4e_labels()` writes a label for each column from that context, which
+`write_stata()` uses:
+
+```{r context}
+c4e_history(summary)
+c4e_labels(summary)[c("day_abv_30_sum", "spell_abv_35_max")]
+```
+
+```{r stata}
+write_stata(summary, file.path(tempdir(), "household_extremes.dta"))
+```
+
+`validate_c4e()` checks a table for duplicate rows, empty indicators, units
+without data and gaps in the dates:
+
+```{r validate}
+validate_c4e(summary)
+```

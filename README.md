@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="man/figures/logo.png" width="200">
+  <img src="man/figures/logo.png" width="200" alt="c4e logo">
 </p>
 
 # c4e

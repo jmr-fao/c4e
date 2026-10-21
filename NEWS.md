@@ -72,10 +72,16 @@ tracked in `dev/LOG_v2.md`.
 * Every example runs on the bundled data; a pkgdown site with the reference
   grouped by task; GPL-2 licence text in `LICENSE.md`.
 
+* Documentation: a *Get started* vignette with the six one-call wrappers, and
+  six articles on the website (household extremes step by step, relative
+  extremes, administrative divisions, drought indices, climatic parameters
+  and spatial controls, grid indicators and maps), all run on the bundled
+  data at every build.
+
 ## Planned
 
-* The quick start and canonical vignettes, the country case studies on the
-  new names (now in `case_studies/`), and the first release.
+* Three case-study articles and `displace_coord()` for privacy, then the
+  first release.
 
 # climatic4economist 0.1.0
 

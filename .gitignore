@@ -53,3 +53,11 @@ vignettes/.DS_Store
 
 # v1 reference outputs for the tests (dev/make_references.R)
 !tests/testthat/fixtures/*.rds
+
+# pkgdown site and rendered vignettes (built in CI)
+docs/
+inst/doc
+vignettes/*.html
+vignettes/*_files
+vignettes/articles/*.html
+vignettes/articles/*_files

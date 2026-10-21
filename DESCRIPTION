@@ -39,9 +39,12 @@ Suggests:
     exactextractr,
     furrr,
     haven,
+    knitr,
+    rmarkdown,
     sf,
     testthat (>= 3.0.0),
     withr
+VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 URL: https://jmr-fao.github.io/c4e/, https://github.com/jmr-fao/c4e

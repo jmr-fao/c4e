@@ -1,0 +1,94 @@
+---
+title: "Relative extremes: percentiles and spells"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+A fixed threshold, such as 30 C, means different things in different places.
+A relative threshold compares each day with what is usual for that place and
+that time of year: a day is extreme when it is above the 95th percentile of
+the same calendar month at the same location. This article computes such
+indicators for precipitation.
+
+```{r setup}
+library(c4e)
+
+survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+survey$interview <- as.Date(survey$interview)
+coord <- prepare_coord(survey, lat_var = lat, lon_var = lon,
+                       id = hhid, interview = interview)
+
+pre <- read_climate(system.file("extdata", "pre_daily.tif", package = "c4e"))
+extracted <- extract_by_coord(pre, georef_coord(coord))
+```
+
+## Percentiles by location and month
+
+`calc_percentile()` computes, for each location and calendar month, the
+percentiles of the daily values. For precipitation, dry days would pull the
+percentiles to zero, so days below 0.1 mm are left out: the percentiles
+describe wet days. A `baseline` restricts the dates used, so a reference
+period can be kept apart from the period studied.
+
+```{r percentiles}
+pct <- calc_percentile(extracted, p = c(0.9, 0.95), exclude_below = 0.1,
+                       baseline = c("2021-01-01", "2022-12-31"))
+head(pct, 4)
+```
+
+The result is a lookup table: one row per location and month. It records
+which percentile each column holds and which days it was computed on.
+
+## Days beyond the percentiles
+
+`calc_percentile_day()` compares each day with its location's percentile
+for that month. The direction follows the percentile: above for high ones,
+below for low ones.
+
+```{r rel-days}
+days <- calc_percentile_day(extracted, pct)
+dplyr::filter(days, day_abv_95p) |> head(3)
+```
+
+`mm_abv_95p` is how far above the percentile each day is, in millimetres:
+the excess rainfall.
+
+## Spells and their length
+
+Spells of days above the percentile work as for fixed thresholds.
+`calc_spell_percentile()` then asks how long a spell usually is, by location
+and month, and `calc_spell_excess()` counts the days by which each spell
+goes beyond that usual length.
+
+```{r spells}
+spells <- calc_spell(days, min_spell = 2)
+spell_pct <- calc_spell_percentile(spells, p = 0.9)
+spell_excess <- calc_spell_excess(spells, spell_pct)
+names(spell_excess)
+```
+
+## Before each interview
+
+The window summaries treat every indicator by its kind: days are counted,
+excesses summed, spells summarised.
+
+```{r summary}
+summary <- summarise_by_interview(coord, spell_excess, window = window_lag("1 year"))
+print(summary, n = 4)
+c4e_labels(summary)[c("day_abv_95p_sum", "mm_abv_95p_sum")]
+```
+
+## In one call
+
+`weather_extremes()` does the same with a preset: `wet_days_p95` asks for
+the 95th and 99th percentiles of wet days. Here the same call with
+`p = 0.95` and the spell excess switched on:
+
+```{r wrapper}
+wet <- weather_extremes(survey, system.file("extdata", "pre_daily.tif", package = "c4e"),
+                        id = hhid, interview = interview, p = 0.95,
+                        control = extremes_control(spell_excess = TRUE, verbose = FALSE))
+names(wet)
+```
