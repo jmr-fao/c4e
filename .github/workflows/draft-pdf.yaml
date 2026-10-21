@@ -1,0 +1,34 @@
+# Renders the JOSS paper (paper/paper.md) to the journal's PDF, as an
+# artifact of the run, whenever the paper changes.
+on:
+  push:
+    paths:
+      - paper/**
+      - .github/workflows/draft-pdf.yaml
+  pull_request:
+    paths:
+      - paper/**
+  workflow_dispatch:
+
+name: Draft PDF
+
+permissions: read-all
+
+jobs:
+  paper:
+    runs-on: ubuntu-latest
+    name: Paper draft
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build draft PDF
+        uses: openjournals/openjournals-draft-action@master
+        with:
+          journal: joss
+          paper-path: paper/paper.md
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper
+          path: paper/paper.pdf
