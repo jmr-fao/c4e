@@ -34,15 +34,10 @@ remain unchanged. The replacement value is computed using the
 specified function applied over the defined window of neighboring cells.
 }
 \examples{
-
-\dontrun{
-library(terra)
-r <- rast(nrows = 10, ncols = 10)
-values(r) <- runif(ncell(r))
-r[sample(1:ncell(r), 10)] <- NA  # insert some missing values
-r_filled <- fill_missing_rast(r, w = 3, fun = "mean")
-plot(c(r, r_filled))
-}
+r <- terra::rast(nrows = 10, ncols = 10, vals = seq_len(100))
+r[c(12, 45, 78)] <- NA
+filled <- fill_missing_rast(r, w = 3, fun = "mean")
+terra::values(filled)[c(12, 45, 78)]
 }
 \seealso{
 \link[terra:focal]{terra::focal}

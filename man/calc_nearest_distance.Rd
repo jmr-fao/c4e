@@ -37,13 +37,12 @@ If CRS differ, \code{y} is automatically reprojected to the CRS of \code{x}.
 }
 }
 \examples{
-\dontrun{
-x_with_dist <- calc_nearest_distance(
-  x = polygons,
-  y = roads,
-  method = "haversine"
-)
-}
+adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+points <- terra::vect(survey, geom = c("lon", "lat"), crs = "EPSG:4326")
+
+# distance from each household to the nearest division border
+calc_nearest_distance(points, terra::as.lines(adm_div))
 
 }
 \seealso{

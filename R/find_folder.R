@@ -17,14 +17,15 @@
 #' `c4e::find_subfolder()`) if no matching folder is found.
 #'
 #' @examples
-#' \dontrun{
-#' find_folder("Documents")
+#' root <- file.path(tempdir(), "c4e_example")
+#' dir.create(file.path(root, "data", "weather"), recursive = TRUE,
+#'            showWarnings = FALSE)
 #'
-#' find_folder(
-#'   folder_name = "sp_repository",
-#'   root = "Users"
-#' )
-#' }
+#' # from a working directory inside root, find "weather" below it
+#' old <- setwd(file.path(root, "data"))
+#' find_folder("weather", root = "c4e_example")
+#' setwd(old)
+#'
 #' @export
 
 find_folder <- function(folder_name, root = "Users") {

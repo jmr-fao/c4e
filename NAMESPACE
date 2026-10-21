@@ -125,5 +125,6 @@ export(window_since)
 export(write_stata)
 importFrom(rlang,
   "%||%",
+  ":=",
   .data
 )

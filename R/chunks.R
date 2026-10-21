@@ -181,6 +181,9 @@ with_chunks <- function(x, fn, by = NULL, chunk = "auto", mem_estimate = NULL,
         if (single) piece[[1]] else piece
     })
 
+    if (.parallel) {
+        rlang::check_installed("furrr", reason = "to run the pieces in parallel.")
+    }
     results <- if (.parallel) {
         furrr::future_map(pieces, fn, .options = furrr::furrr_options(seed = TRUE))
     } else {

@@ -16,11 +16,8 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' v <- terra::vect(system.file("ex/lux.shp", package = "terra"))
-#' utm_crs <- get_utm_crs(v)
-#' print(utm_crs)
-#' }
+#' adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+#' get_utm_crs(adm_div)
 
 get_utm_crs <- function(vector) {
     if (!inherits(vector, "SpatVector")) stop("Input must be a SpatVector")

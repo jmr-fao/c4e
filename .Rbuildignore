@@ -7,3 +7,8 @@
 ^\.github$
 ^AGENTS\.md$
 ^inst/bench$
+^LICENSE\.md$
+^case_studies$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$

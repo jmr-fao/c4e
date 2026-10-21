@@ -41,15 +41,12 @@ If one level does not exist, the function stops and reports:
 This is useful for debugging typos or incorrect file structures.
 }
 \examples{
-\dontrun{
+root <- file.path(tempdir(), "project")
+dir.create(file.path(root, "data"), recursive = TRUE, showWarnings = FALSE)
 
-check_path(
-  "project",
-  "data",
-  "geo",
-  "file.txt"
-)
+check_path(root, "data")
 
-}
+# a missing part is named, with the contents of the last folder found
+try(check_path(root, "dta"))
 
 }

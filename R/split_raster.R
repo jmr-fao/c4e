@@ -21,20 +21,14 @@
 #'   original raster. Tile names follow the pattern `"tile_001"`, `"tile_002"`, etc.
 #'
 #' @examples
-#' \dontrun{
-#' library(terra)
-#' r <- rast(ncols = 100, nrows = 100)
-#' values(r) <- runif(ncell(r))
+#' r <- terra::rast(nrows = 100, ncols = 100, vals = stats::runif(10000))
 #'
-#' # Split into a 4x4 grid without overlap
+#' # a 4 x 4 grid of tiles
 #' tiles <- split_raster(r, n_x = 4, n_y = 4)
+#' length(tiles)
 #'
-#' # Split into a 2x2 grid with 10-meter overlap
-#' tiles_overlap <- split_raster(r, n_x = 2, n_y = 2, overlap = 10)
-#'
-#' # Plot one of the tiles
-#' plot(tiles[[1]])
-#' }
+#' # a 2 x 2 grid with tiles overlapping by 10 map units
+#' split_raster(r, n_x = 2, n_y = 2, overlap = 10)[[1]]
 #'
 #' @export
 #'

@@ -25,12 +25,17 @@ rlang's \code{rlib_message_verbosity = "quiet"} also silences the messages.
 or a string such as \code{"8GB"}. Steps whose estimated size exceeds it are
 split by unit and run piece by piece. The default is half of the free
 memory.
+\item \code{c4e.grid_rows}: raster rows per block in the grid functions; by
+default from the memory budget.
+\item \code{c4e.grid_fast}: \code{FALSE} sends sums of fixed-threshold days through
+the block engine instead of \code{terra::tapp()}; for checking.
 }
 }
 
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://jmr-fao.github.io/c4e/}
   \item \url{https://github.com/jmr-fao/c4e}
   \item Report bugs at \url{https://github.com/jmr-fao/c4e/issues}
 }

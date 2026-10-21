@@ -54,6 +54,7 @@ extract_cell_by_poly <- function(raster, poly, id = NULL, label = NULL,
     } else {
         as.character(seq_len(nrow(poly)))
     }
+    need_exactextractr()
     poly_sf <- sf::st_as_sf(poly)
 
     extract_fn <- function(layers, first) {

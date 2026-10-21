@@ -80,7 +80,11 @@ extract_by_poly <- function(raster, poly, fn_agg = NULL, na_rm = TRUE,
         pkg <- "exactextractr"
     }
     if (is.null(pkg)) {
-        pkg <- if (nrow(poly) > 1000) "exactextractr" else "terra"
+        pkg <- if (nrow(poly) > 1000 && rlang::is_installed(c("exactextractr", "sf"))) {
+            "exactextractr"
+        } else {
+            "terra"
+        }
     }
     pkg <- match.arg(pkg, c("exactextractr", "terra"))
 
@@ -91,6 +95,7 @@ extract_by_poly <- function(raster, poly, fn_agg = NULL, na_rm = TRUE,
             name_value_columns(raster)
         out <- dplyr::bind_cols(dplyr::as_tibble(terra::values(poly)), values)
     } else {
+        need_exactextractr()
         out <- exactextractr::exact_extract(raster, sf::st_as_sf(poly),
                                             fun = fn_agg,
                                             append_cols = names(poly),

@@ -21,7 +21,7 @@
 #'
 #' @details
 #' The function performs an exact spatial intersection. If no intersection is found,
-#' it finds the nearest polygon using `sf::st_nearest_feature()` and merges its attributes.
+#' it finds the nearest polygon with [terra::nearest()] and merges its attributes.
 #
 #' @export
 
@@ -55,19 +55,12 @@ get_poly_attr_for_point <- function(point,
             dplyr::select(setdiff(comm_var, geom))
         cat("The points are:", unlist(point_out_id))
 
-        sf_points <- point_out |>
-            terra::vect(geom = geom, crs = crs, keepgeom = TRUE) |>
-            sf::st_as_sf()
-        sf_polygons <- sf::st_as_sf(poly) |>
-            sf::st_make_valid()
+        points_out <- terra::vect(point_out, geom = geom, crs = crs, keepgeom = TRUE)
+        valid <- terra::makeValid(poly)
+        nearest_idx <- terra::values(terra::nearest(points_out, valid))$to_id
+        nearest_attrs <- terra::values(valid)[nearest_idx, , drop = FALSE]
 
-        nearest_idx <- sf::st_nearest_feature(sf_points, sf_polygons)
-        nearest_attrs <- sf_polygons[nearest_idx, ] |>
-            sf::st_drop_geometry()
-
-        attrs_out <- sf_points |>
-            sf::st_drop_geometry() |>
-            cbind(nearest_attrs)
+        attrs_out <- cbind(point_out, nearest_attrs)
 
         out <- rbind(attrs_in, attrs_out)
     } else {

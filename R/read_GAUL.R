@@ -36,22 +36,20 @@
 #'
 read_GAUL <- function(path_to_files, iso, lvl = 2, file_format = "geojson") {
     if (length(iso) > 1) iso <- paste(iso, collapse = "|")
-    iso_name <- stringi::stri_split_fixed(iso, "|") |> unlist() |> sort()
+    iso_name <- sort(unlist(strsplit(iso, "|", fixed = TRUE)))
 
+    tidy <- function(x) {
+        x <- vect_rename(x, c(iso = "iso3_code", adm_div_1 = "gaul1_name",
+                              adm_div_2 = "gaul2_name"))
+        x <- x[, grepl("adm_div|iso", names(x))]
+        with_adm_id(x)
+    }
     out <- list.files(path_to_files, pattern = iso, full.names = TRUE) |>
         lapply(list.files, full.names = TRUE, pattern = paste0("ADM", lvl)) |>
         lapply(list.files, pattern = paste0("ADM[012]\\.", file_format), full.names = TRUE) |>
         lapply(terra::vect) |>
-        lapply(tidyterra::rename,
-               iso = iso3_code) |>
-        lapply(tidyterra::rename_with,
-               .cols = dplyr::any_of(c("gaul1_name", "gaul2_name")),
-               .fn = ~ paste0("adm_div_", gsub("gaul|_name", "", .x))) |>
-        lapply(tidyterra::select, dplyr::matches("adm_div|iso")) |>
-        lapply(\(x) tidyterra::mutate(x,
-                                      ID_adm_div = as.character(1:dplyr::n()),
-                                      .before = 1)) |>
-        setNames(iso_name)
+        lapply(tidy) |>
+        stats::setNames(iso_name)
 
     if (length(out) == 1) return(out[[1]])
     out

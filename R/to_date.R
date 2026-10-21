@@ -13,6 +13,5 @@
 to_date <- function(x) {
     # anchored: a bare "X" strips the first one anywhere, so a name such as
     # "MAX_2020" would come back as "MA-2020"
-    stringi::stri_replace_first_regex(x, "^X", "") |>
-        stringi::stri_replace_all_regex("[_./]", "-")
+    gsub("[_./]", "-", sub("^X", "", x))
 }

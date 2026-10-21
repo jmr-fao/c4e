@@ -1,0 +1,131 @@
+url: https://jmr-fao.github.io/c4e/
+
+template:
+  bootstrap: 5
+
+home:
+  title: "c4e: climate data for economists"
+
+reference:
+  - title: One call per question
+    desc: >
+      Wrappers that run the whole chain from a survey and a raster, with
+      presets and a short argument list.
+    contents:
+      - weather_extremes
+      - climate_indices
+      - static_controls
+      - time_varying_controls
+      - list_presets
+      - extremes_control
+
+  - title: Every cell of a raster
+    desc: Indicators, parameters and controls returned as rasters.
+    contents:
+      - grid_indicators
+      - grid_controls
+      - grid_methods
+
+  - title: Reading rasters and boundaries
+    contents:
+      - read_climate
+      - raster_meta
+      - list_sources
+      - register_source
+      - read_boundaries
+      - aggregate_time
+      - select_by_dates
+      - select_by_season
+      - convert_unit
+      - list_units
+      - register_unit
+
+  - title: The survey side
+    contents:
+      - prepare_coord
+      - georef_coord
+      - window_lag
+      - select_by_interview
+
+  - title: Extraction
+    contents:
+      - extract_by_coord
+      - extract_by_poly
+      - extract_cell_by_poly
+      - extract_weighted_by_poly
+      - aggregate_to_adm
+
+  - title: Daily indicators
+    contents:
+      - calc_threshold_day
+      - calc_condition
+      - calc_percentile
+      - calc_percentile_day
+      - calc_spell
+      - calc_spell_percentile
+      - calc_spell_excess
+      - calc_heatwave
+
+  - title: Standardised indices and parameters
+    contents:
+      - calc_std_index
+      - calc_std_threshold
+      - calc_par
+
+  - title: Summaries over windows and periods
+    contents:
+      - summarise_by_interview
+      - summarise_by_period
+      - merge_with_survey
+      - merge_by_common
+
+  - title: Tables with context
+    contents:
+      - c4e_tbl
+      - bind_indicators
+      - c4e_history
+      - c4e_labels
+      - validate_c4e
+      - summary.c4e_tbl
+
+  - title: Export
+    contents:
+      - write_stata
+      - to_stata_format
+
+  - title: Spatial helpers
+    contents:
+      - crop_with_buffer
+      - fill_missing_rast
+      - split_raster
+      - align_count_rast
+      - calc_distance
+      - calc_nearest_distance
+      - calc_weighted_distance
+      - calc_road_density
+      - erase_water_bodies
+      - get_poly_attr_for_point
+      - get_utm_crs
+      - compare_adm_div
+
+  - title: Statistics and dates
+    contents:
+      - cv
+      - skewness
+      - calc_mode
+      - find_lag
+      - check_dates_complete
+      - filter_between
+
+  - title: Files and folders
+    contents:
+      - check_path
+      - find_folder
+      - find_nested_folder
+      - find_root_directory
+      - find_subfolder
+      - find_year_file
+
+  - title: Package
+    contents:
+      - c4e-package

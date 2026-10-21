@@ -262,6 +262,9 @@ spi_matrix <- function(values, scale, index = c("spi", "spei"),
                                      verbose = FALSE, na.rm = TRUE)))
     }
     rows <- seq_len(nrow(values))
+    if (.parallel) {
+        rlang::check_installed("furrr", reason = "to fit the series in parallel.")
+    }
     fitted_rows <- if (.parallel) {
         furrr::future_map(rows, one, .options = furrr::furrr_options(seed = TRUE))
     } else {

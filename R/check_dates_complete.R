@@ -19,10 +19,11 @@
 #'   }
 #'
 #' @examples
-#' \dontrun{
 #' dates <- seq.Date(as.Date("2020-01-01"), as.Date("2021-12-31"), by = "day")
 #' check_dates_complete(dates)
-#' }
+#'
+#' # a missing day is reported
+#' check_dates_complete(dates[-45], return_missing = TRUE)
 #'
 #' @export
 check_dates_complete <- function(dates, freq = c("year", "month", "day"), return_missing = FALSE) {

@@ -64,10 +64,18 @@ tracked in `dev/LOG_v2.md`.
   `read_geoBoundaries()`, `sum_na_check()`, `mean_na_check()`,
   `max_na_check()`, `to_date()`. `data.table` is no longer imported.
 
+* Lighter installation: `sf`, `exactextractr` and `furrr` move to
+  Suggests and are asked for only by coverage-weighted extraction
+  (`extract_cell_by_poly()`, `extract_weighted_by_poly()`,
+  `extract_by_poly(weights = "coverage")`) and by `.parallel = TRUE`;
+  `stringi`, `tidyterra` and `raster` are no longer used.
+* Every example runs on the bundled data; a pkgdown site with the reference
+  grouped by task; GPL-2 licence text in `LICENSE.md`.
+
 ## Planned
 
-* Package hygiene, the quick start and canonical vignettes, the country case
-  studies on the new names, and the first release.
+* The quick start and canonical vignettes, the country case studies on the
+  new names (now in `case_studies/`), and the first release.
 
 # climatic4economist 0.1.0
 

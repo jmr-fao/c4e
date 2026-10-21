@@ -31,16 +31,15 @@ Computes road network density (length per unit area) for each polygon
 by intersecting a line road network with polygon geometries.
 }
 \examples{
-\dontrun{
-polygons <- terra::vect("admin.shp")
-roads    <- terra::vect("roads.shp")
+adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+roads <- terra::vect(c("LINESTRING (30 -0.5, 31.2 -0.5)",
+                       "LINESTRING (30.6 -1, 30.6 0.2)"), crs = "EPSG:4326")
 
-# Return tibble (default)
-result_tbl <- calc_road_density(polygons, roads)
+# a tibble (default)
+calc_road_density(adm_div, roads)
 
-# Return SpatVector with geometries
-result_vect <- calc_road_density(polygons, roads, return_geometry = TRUE)
-}
+# a SpatVector with the geometries
+calc_road_density(adm_div, roads, return_geometry = TRUE)
 }
 \seealso{
 \link[terra:intersect]{terra::intersect} \link[terra:perim]{terra::perim}

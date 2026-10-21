@@ -21,8 +21,10 @@ Starting from a given path (default: current working directory), this function
 walks up the directory tree until it finds a folder matching one of the specified names.
 }
 \examples{
-\dontrun{
-find_root_directory(start = getwd(), root_directories = c("OneDirive", ".git"))
-}
+root <- file.path(tempdir(), "c4e_example")
+dir.create(file.path(root, "a", "b"), recursive = TRUE, showWarnings = FALSE)
+
+find_root_directory(start = file.path(root, "a", "b"),
+                    root_directories = "c4e_example")
 
 }

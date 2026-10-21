@@ -18,9 +18,18 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' adm2 <- read_boundaries("path/to/GAUL", iso = "MWI", level = 2)
-#' }
+#' # a miniature GAUL folder: <root>/<ISO>/<ISO>_ADM2/<ISO>_ADM2.geojson
+#' root <- file.path(tempdir(), "gaul")
+#' dir.create(file.path(root, "MWI", "MWI_ADM2"), recursive = TRUE,
+#'            showWarnings = FALSE)
+#' adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+#' adm_div$iso3_code <- "MWI"
+#' adm_div$gaul1_name <- c("North", "North", "South")
+#' adm_div$gaul2_name <- c("Alpha", "Beta", "Gamma")
+#' terra::writeVector(adm_div, file.path(root, "MWI", "MWI_ADM2", "MWI_ADM2.geojson"),
+#'                    filetype = "GeoJSON", overwrite = TRUE)
+#'
+#' read_boundaries(root, iso = "MWI", level = 2)
 read_boundaries <- function(path, iso, level = 2,
                             source = c("gaul", "geoboundaries"),
                             file_format = "geojson") {

@@ -62,11 +62,13 @@
 #' grouped name lists but is not exported.
 #'
 #' @examples
-#' \dontrun{
+#' x <- data.frame(adm_div_1 = c("North", "North", "South"),
+#'                 adm_div_2 = c("Alpha", "Beta", "Gamma"))
+#' y <- data.frame(adm_div_1 = c("North", "North", "South"),
+#'                 adm_div_2 = c("Alpha", "Betta", "Gamma"))
+#'
 #' compare_adm_div(x, y, level = 1)
 #' compare_adm_div(x, y, level = 2)
-#' compare_adm_div(x, y, level = 3)
-#' }
 #'
 #' @export
 compare_adm_div <- function(x, y, level = 1) {

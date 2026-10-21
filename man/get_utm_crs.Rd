@@ -23,9 +23,6 @@ centroids, determines the UTM zone and hemisphere, and returns a \code{terra::cr
 object corresponding to the WGS84 UTM projection.
 }
 \examples{
-\dontrun{
-v <- terra::vect(system.file("ex/lux.shp", package = "terra"))
-utm_crs <- get_utm_crs(v)
-print(utm_crs)
-}
+adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+get_utm_crs(adm_div)
 }

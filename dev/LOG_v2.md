@@ -21,27 +21,28 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 10 | Export and inspection | ✔ done | #3 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack |
 | 11 | Wrappers and presets | ✔ done | #4 | 2026-10-20 | 2026-10-20 | merged into `main` with the stack; also the cv safeguard, README and topics |
 | 12 | Grid methods and wrappers | ✔ done | | 2026-10-20 | 2026-10-20 | merged into `main` by a direct push (no pull request); CI green on `main` |
-| 13 | Removal of the v1 functions | 🔄 in progress | | 2026-10-21 | | complete on branch `chunk-13-v1-removal` (from `main`); needs push and a pull request |
-| 14 | Package hygiene | ☐ | | | | |
+| 13 | Removal of the v1 functions | ✔ done | #5 | 2026-10-21 | 2026-10-21 | merged into `main` |
+| 14 | Package hygiene | 🔄 in progress | | 2026-10-21 | | complete on branch `chunk-14-hygiene` (from `main`); needs push and a pull request |
 | 15 | Quick start and canonical vignettes | ☐ | | | | |
 | 16 | Country case studies | ☐ | | | | |
 | 17 | Release 2.0.0 | ☐ | | | | |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** 13, removal of the v1 functions, is complete on branch
-`chunk-13-v1-removal` (cut from `main`); it needs a push and a pull
-request. `main` is protected for everyone, admins included: changes
-arrive only by pull request, after R-CMD-check passes.
+**Current chunk:** 14, package hygiene, is complete on branch
+`chunk-14-hygiene` (cut from `main`); it needs a push and a pull request.
+`main` is protected for everyone: changes arrive only by pull request,
+after R-CMD-check passes. Push the chunk branch, never `main`.
 
 **Next steps (in order):**
-1. Push `chunk-13-v1-removal`, open its pull request into `main`, merge
-   when R-CMD-check is green.
-2. Next chunk: 14, package hygiene (plan §8 row 14): Imports pruned
-   (`sf`, `stringi`, `tidyterra`, `exactextractr` to Suggests where
-   possible), `globalVariables`/`.data` for the NSE notes, `@family` and
-   `@inheritParams`, `_pkgdown.yml` and its workflow, every example
-   runnable, the R CMD check notes listed below.
+1. Push `chunk-14-hygiene`, open its pull request into `main`, merge when
+   R-CMD-check and pkgdown are green.
+2. Jan: once the pkgdown workflow has run on `main` (it creates the
+   `gh-pages` branch), turn on GitHub Pages: Settings, Pages, Deploy from a
+   branch, `gh-pages`, `/ (root)`. The site is then at
+   https://jmr-fao.github.io/c4e/, and the URL note of R CMD check goes.
+3. Next chunk: 15, quick start and canonical vignettes (plan §8 row 15,
+   §7): package articles in `vignettes/` built on `inst/extdata`.
 3. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
    template of a wrapper's chain, not code that re-evaluates: the survey and
    raster inputs are not in it and `window` prints as a list. Make it
@@ -165,15 +166,19 @@ arrive only by pull request, after R-CMD-check passes.
 | 2026-10-21 | §8 chunk 13 | v1 references are recorded through `v1_ref(name, expr)` in the tests, stored in one file `fixtures/v1_reference.rds` (155 kB, xz); the expression stays in the test as a record, evaluated only with `C4E_RECORD_V1=true` | one mechanism for every comparison; re-recording needs only a commit where the v1 functions exist |
 | 2026-10-21 | §8 chunk 13 | Kept as internal functions, not removed: `filter_by_interview()` (used by `select_by_interview()`), `find_merge_var()` (by `merge_by_common()` and `get_poly_attr_for_point()`), `read_GAUL()` and `read_geoBoundaries()` (by `read_boundaries()`), `sum_na_check()`, `mean_na_check()`, `max_na_check()` (by the window summaries) and `to_date()` | v2 calls them; folding them in is chunk 14 work if wanted |
 | 2026-10-21 | §8 chunk 13 | `inst/bench/bench-kernel.R` calls the v1 side from `climatic4economist` | the benchmark stays runnable without the v1 functions in c4e |
+| 2026-10-21 | §5 | Imports are checkmate, cli, clock, dplyr, lifecycle, lubridate, purrr, rlang, SPEI, stringr, terra, tibble, tidyr, vctrs; `sf`, `exactextractr`, `furrr` are Suggests asked for with `check_installed()`; `stringi`, `tidyterra`, `raster` are gone | lighter installation; coverage weights and parallel runs are the only users of the optional packages |
+| 2026-10-21 | §5, §7 | The Quarto case studies moved from `vignettes/` to `case_studies/` (build-ignored) | pkgdown would build every `.qmd` under `vignettes/` as an article, and these need external data; `vignettes/` is kept for the package articles of chunk 15 |
+| 2026-10-21 | §5 | NSE column names are declared in `utils::globalVariables()` rather than rewritten with `.data$` | one place, no change to the legacy helpers' code |
+| 2026-10-21 | §5 | `@family` and `@inheritParams` not added across the reference | the pkgdown index groups the topics by task; left for a later pass |
+| 2026-10-21 | §5 | pkgdown builds on every pull request and publishes from `main` to the `gh-pages` branch | the workflow pushes to `gh-pages`, which the protection of `main` does not cover |
 
-### Open R CMD check NOTEs (for chunk 14)
+### Open R CMD check NOTEs
 
-- Tarball is about 19.8 MB: vignette HTML and images are not build-ignored.
-- All declared Imports are used since chunk 2.
-- Many "no visible binding for global variable" notes (NSE columns) and unqualified sf/sp/raster calls in `ave_*` (removed in chunk 13).
-- `AGENTS.md` and `figures/` at top level (`AGENTS.md` is now build-ignored).
-- `extract_cell_by_poly()` example takes about 6 s because of the `raster::brick()` conversion (removed in chunk 5).
-- FAO GAUL URL in `read_GAUL.Rd` answers 403 to the checker.
+- New submission; the site URL answers 404 until GitHub Pages is on.
+- "unable to verify current time" and "README.md or NEWS.md cannot be
+  checked without pandoc": this laptop only (no internet time server,
+  pandoc not on the PATH). For pkgdown here, set
+  `RSTUDIO_PANDOC="C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools"`.
 
 ## How to run things on a machine without R on the PATH
 
@@ -194,6 +199,22 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-21 — chunk 14 (laptop: FAO-Win, session: Claude)
+- Did: branch `chunk-14-hygiene` from `main` (chunk 13 merged as #5, chunk
+  branches deleted). Imports pruned (see decisions), terra-only SpatVector
+  helpers (`R/vect_helpers.R`), `get_poly_attr_for_point()` on
+  `terra::nearest()`, `globalVariables()`, `:=` imported, 15 examples
+  rewritten to run, `LICENSE.md`, logo to `man/figures/logo.png`,
+  `case_studies/`, `_pkgdown.yml` (reference by task, wrappers first) and
+  `.github/workflows/pkgdown.yaml`, the site URL in `DESCRIPTION`.
+- Found: `merge_by_common()` on a SpatVector worked only through
+  tidyterra's dplyr methods (now `vect_join()`); the tarball was 20 MB
+  because of the case studies; pkgdown needs pandoc, which RStudio ships.
+- Tests: 1137 expectations, 0 failures; `pkgdown::check_pkgdown()` clean;
+  local `rcmdcheck` with CI's arguments: 0 errors, 0 warnings, 3 notes
+  (new submission and site URL, and two that are this laptop only).
+- Next: see Next steps above.
 
 ### 2026-10-21 — chunk 13 (laptop: FAO-Win, session: Claude)
 - Did: confirmed `main` green on GitHub after chunk 12. Branch

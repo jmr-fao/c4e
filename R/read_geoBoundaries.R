@@ -36,32 +36,28 @@
 #'
 read_geoBoundaries <- function(path_to_files, iso, lvl = 2, file_format = "geojson") {
     if (length(iso) > 1) iso <- paste(iso, collapse = "|")
-    iso_name <- stringi::stri_split_fixed(iso, "|") |> unlist() |> sort()
+    iso_name <- sort(unlist(strsplit(iso, "|", fixed = TRUE)))
 
     adm_div_1 <- list.files(path_to_files, pattern = iso, full.names = TRUE) |>
         lapply(list.files, full.names = TRUE) |>
         lapply(list.files, pattern = paste0("ADM1.", file_format), full.names = TRUE) |>
         lapply(terra::vect) |>
-        lapply(tidyterra::rename,
-               adm_div_1 = shapeName,
-               iso = shapeGroup,
-               lvl = shapeType) |>
-        lapply(tidyterra::select, c(iso, adm_div_1)) |>
-        setNames(iso_name)
+        lapply(vect_rename, c(adm_div_1 = "shapeName", iso = "shapeGroup",
+                              lvl = "shapeType")) |>
+        lapply(vect_select, c("iso", "adm_div_1")) |>
+        stats::setNames(iso_name)
 
     out <- adm_div_1
 
     if (lvl == 2) {
-        adm_div_1 <- lapply(adm_div_1, tidyterra::select, adm_div_1)
+        adm_div_1 <- lapply(adm_div_1, vect_select, "adm_div_1")
         adm_div_2_poly <- list.files(path_to_files, pattern = iso, full.names = TRUE) |>
             lapply(list.files, full.names = TRUE) |>
             lapply(list.files, pattern = paste0("ADM2.", file_format), full.names = TRUE) |>
             lapply(terra::vect) |>
-            lapply(tidyterra::rename,
-                   adm_div_2 = shapeName,
-                   iso = shapeGroup) |>
-            lapply(tidyterra::select, c(iso, adm_div_2)) |>
-            setNames(iso_name)
+            lapply(vect_rename, c(adm_div_2 = "shapeName", iso = "shapeGroup")) |>
+            lapply(vect_select, c("iso", "adm_div_2")) |>
+            stats::setNames(iso_name)
 
         adm_div_2_info <- adm_div_2_poly |>
             purrr::map(terra::centroids, inside = TRUE) |>
@@ -69,17 +65,14 @@ read_geoBoundaries <- function(path_to_files, iso, lvl = 2, file_format = "geojs
                         terra::intersect) |>
             purrr::map(terra::values)
 
-        adm_div_2 <- purrr::map2(adm_div_2_poly, adm_div_2_info, merge_by_common) |>
-            purrr::map(tidyterra::relocate, iso, adm_div_1, adm_div_2)
+        adm_div_2 <- purrr::map2(adm_div_2_poly, adm_div_2_info, vect_join) |>
+            purrr::map(vect_front, c("iso", "adm_div_1", "adm_div_2"))
 
         out <- adm_div_2
     }
 
     # ID_adm_div is assigned once here, for whichever level was built
-    adm_div_out <- out |>
-        lapply(\(x) tidyterra::mutate(x,
-                                      ID_adm_div = as.character(1:dplyr::n()),
-                                      .before = 1))
+    adm_div_out <- lapply(out, with_adm_id)
     if (length(adm_div_out) == 1) return(adm_div_out[[1]])
     adm_div_out
 }

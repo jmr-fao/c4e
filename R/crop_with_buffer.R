@@ -29,12 +29,11 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' r <- terra::rast(system.file("ex/elev.tif", package = "terra"))
-#' v <- terra::vect(system.file("ex/lux.shp", package = "terra"))
-#' cropped <- crop_with_buffer(r, v, buffer = 500)
-#' terra::plot(cropped)
-#' }
+#' tmax <- terra::rast(system.file("extdata", "tmax_daily.tif", package = "c4e"))
+#' adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+#'
+#' # the first division and 10 km around it
+#' crop_with_buffer(tmax[[1]], adm_div[1], buffer = 10000)
 crop_with_buffer <- function(raster, vector, iteration = NULL,
                              buffer = 0, ...) {
     if (!is.null(iteration)) cat("Cropping:", iteration, "\n")

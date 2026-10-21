@@ -75,6 +75,7 @@ extract_weighted_by_poly <- function(raster, poly, stat = c("mean", "mode"),
         weights <- terra::classify(weights, cbind(NA, 0))
     }
 
+    need_exactextractr()
     poly_sf <- sf::st_as_sf(poly)
 
     values <- purrr::map(

@@ -45,8 +45,8 @@ calc_distance <- function(x, y, fun_summ = min, fun_args = list(), use_union = T
 
         d <- apply(d, 1, fun)
 
-        out <- x |>
-            tidyterra::mutate(distance = d)
+        out <- x
+        out$distance <- d
 
         # return as tibble or SpatVector
         if (!return_geometry) {

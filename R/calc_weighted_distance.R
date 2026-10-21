@@ -17,19 +17,12 @@
 #' @export
 #'
 #' @examples
-#' \dontrun{
-#' library(terra)
+#' friction <- terra::rast(nrows = 20, ncols = 20, xmin = 0, xmax = 20,
+#'                         ymin = 0, ymax = 20, crs = "EPSG:32636")
+#' terra::values(friction) <- 1
+#' target <- terra::vect(matrix(c(10.5, 10.5), ncol = 2), crs = "EPSG:32636")
 #'
-#' # Example friction surface
-#' r <- rast(ncols = 100, nrows = 100)
-#' values(r) <- runif(ncell(r), 1, 10)
-#'
-#' # Example target point
-#' pts <- vect(matrix(c(0.5, 0.5), ncol = 2), crs = crs(r))
-#'
-#' dist_raster <- calc_weighted_distance(pts, r)
-#' plot(dist_raster)
-#' }
+#' calc_weighted_distance(target, friction)
 
 calc_weighted_distance <- function(target, friction, origin_value = -999, ...) {
 

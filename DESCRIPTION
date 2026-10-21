@@ -25,28 +25,25 @@ Imports:
     cli,
     clock,
     dplyr (>= 1.1.0),
-    exactextractr,
-    furrr,
     lifecycle,
     lubridate,
     purrr,
     rlang,
-    sf,
     SPEI,
-    stringi,
     stringr,
     terra,
     tibble,
     tidyr,
-    tidyterra,
     vctrs
 Suggests:
+    exactextractr,
+    furrr,
     haven,
-    raster,
+    sf,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-URL: https://github.com/jmr-fao/c4e
+URL: https://jmr-fao.github.io/c4e/, https://github.com/jmr-fao/c4e
 BugReports: https://github.com/jmr-fao/c4e/issues
 Config/roxygen2/version: 8.1.1

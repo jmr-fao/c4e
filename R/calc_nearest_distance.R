@@ -24,13 +24,12 @@
 #' @seealso [terra::nearest] [calc_distance]
 #'
 #' @examples
-#' \dontrun{
-#' x_with_dist <- calc_nearest_distance(
-#'   x = polygons,
-#'   y = roads,
-#'   method = "haversine"
-#' )
-#' }
+#' adm_div <- terra::vect(system.file("extdata", "adm_div.gpkg", package = "c4e"))
+#' survey <- read.csv(system.file("extdata", "survey.csv", package = "c4e"))
+#' points <- terra::vect(survey, geom = c("lon", "lat"), crs = "EPSG:4326")
+#'
+#' # distance from each household to the nearest division border
+#' calc_nearest_distance(points, terra::as.lines(adm_div))
 #'
 #' @export
 
@@ -45,8 +44,8 @@ calc_nearest_distance <- function(x, y, return_geometry = FALSE, ...) {
     nearest_res <- terra::nearest(x, y, pairs = FALSE, ...)
 
     # add distance column (km)
-    out <- x |>
-        tidyterra::mutate(dist_nearest_km = nearest_res$distance / 1000)
+    out <- x
+    out$dist_nearest_km <- nearest_res$distance / 1000
 
     # return as tibble or SpatVector
     if (!return_geometry) {
@@ -57,4 +56,3 @@ calc_nearest_distance <- function(x, y, return_geometry = FALSE, ...) {
 
     return(out)
 }
-

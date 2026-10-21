@@ -41,5 +41,5 @@ the nearest polygon.
 }
 \details{
 The function performs an exact spatial intersection. If no intersection is found,
-it finds the nearest polygon using \code{sf::st_nearest_feature()} and merges its attributes.
+it finds the nearest polygon with \code{\link[terra:nearest]{terra::nearest()}} and merges its attributes.
 }

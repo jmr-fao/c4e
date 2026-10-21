@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="figures/Climat4Economist_Symbol_6.png" width="200">
+  <img src="man/figures/logo.png" width="200">
 </p>
 
 # 🌍 c4e

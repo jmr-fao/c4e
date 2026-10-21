@@ -11,10 +11,11 @@
 #' @return Character vector of matching folder paths. If no match is found, returns `NULL`.
 #'
 #' @examples
-#' \dontrun{
-#' find_subfolder("data", "weather")   # find "weather" folder under "data"
-#' find_subfolder("data", "temp", max_depth = 5, first_only = FALSE)
-#' }
+#' root <- file.path(tempdir(), "c4e_example")
+#' dir.create(file.path(root, "data", "weather"), recursive = TRUE,
+#'            showWarnings = FALSE)
+#'
+#' find_subfolder(root, "weather")
 #'
 #' @export
 find_subfolder <- function(root, target, max_depth = 10, ignore_case = TRUE, first_only = TRUE) {

@@ -30,20 +30,12 @@ This hierarchical search reduces the risk of matching folders with the same
 name elsewhere in the file system.
 }
 \examples{
-\dontrun{
-# Find "adm_div" within "sp_repository"
-find_nested_folder(
-  "sp_repository",
-  "adm_div"
-)
+root <- file.path(tempdir(), "c4e_example")
+dir.create(file.path(root, "data", "raw", "rasters"), recursive = TRUE,
+           showWarnings = FALSE)
 
-# Find a deeper folder hierarchy
-find_nested_folder(
-  "project",
-  "data",
-  "raw",
-  "rasters"
-)
-}
+old <- setwd(root)
+find_nested_folder("data", "raw", "rasters", root = "c4e_example")
+setwd(old)
 
 }
