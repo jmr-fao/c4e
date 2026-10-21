@@ -43,13 +43,19 @@ after R-CMD-check passes. Push the chunk branch, never `main`.
    https://jmr-fao.github.io/c4e/, and the URL note of R CMD check goes.
 3. Next chunk: 15, quick start and canonical vignettes (plan §8 row 15,
    §7): package articles in `vignettes/` built on `inst/extdata`.
-3. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
+4. Chunk 16, as changed on 2026-10-21 (plan §8 row 16): three case-study
+   articles on synthetic data (one country with household coordinates and
+   division controls; several countries with `purrr::map()`; a narrow
+   coordinates project with distances) and the new `displace_coord()`
+   (DHS rule) used in one of them. The other country scripts stay in
+   `case_studies/`, not ported.
+5. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
    template of a wrapper's chain, not code that re-evaluates: the survey and
    raster inputs are not in it and `window` prints as a list. Make it
    evaluable (record windows as `window_lag(...)` calls, data arguments as
    placeholders) alongside chunk 12 or in chunk 14. Also not built:
    `climate_indices(wide = TRUE)` and a `baseline` for SPI.
-4. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
+6. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
    empty_meta()`, `started <- Sys.time()`, resolve each argument with
    `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
    is given, wrap heavy work in `with_chunks()` with a `mem_estimate`, and
@@ -171,6 +177,8 @@ after R-CMD-check passes. Push the chunk branch, never `main`.
 | 2026-10-21 | §5 | NSE column names are declared in `utils::globalVariables()` rather than rewritten with `.data$` | one place, no change to the legacy helpers' code |
 | 2026-10-21 | §5 | `@family` and `@inheritParams` not added across the reference | the pkgdown index groups the topics by task; left for a later pass |
 | 2026-10-21 | §5 | pkgdown builds on every pull request and publishes from `main` to the `gh-pages` branch | the workflow pushes to `gh-pages`, which the protection of `main` does not cover |
+| 2026-10-21 | §7, §8 row 16 | Chunk 16 writes three case-study articles instead of porting the 20 country scripts: one country with household coordinates and division controls, several countries with `purrr::map()`, a narrow project with distances; on the bundled synthetic data, run on every build; the scripts stay in `case_studies/` | Jan's choice: fewer, maintained examples; synthetic data shows output, is checked by CI and carries no privacy risk |
+| 2026-10-21 | §8 row 16 | New step function `displace_coord()` (DHS displacement: urban up to 2 km, rural up to 5 km, 1% of rural up to 10 km, kept within the administrative unit), recorded in the context and shown in labels and the codebook | sharing georeferenced survey data needs it, and the case studies teach it as part of the workflow |
 
 ### Open R CMD check NOTEs
 
