@@ -10,19 +10,35 @@
 
 ## Climate data for economists
 
-c4e links climate rasters to household surveys. It extracts climate data at
-survey locations and administrative divisions, computes weather extreme
-indicators, standardised drought indices and spatial controls, and
-summarises them over the reference period before each interview, ready to
-merge with survey data and export to Stata.
+c4e is built for economists working with household surveys. From the
+location of each household and the date of its interview, it computes:
 
-Tables carry their context from one step to the next: the variable, its
-unit, the time step, the thresholds, percentiles and spell lengths used. A
-value given once is not typed again, and every table can print the steps
-that produced it.
+* **weather extremes**: hot, cold, wet and dry days beyond thresholds or
+  percentiles, their spells, heatwaves and drought indices (SPI, SPEI),
+  over the period before each interview;
+* **spatial controls**: elevation and terrain, agro-ecological zones,
+  distances to roads, markets or borders, population density and climate
+  normals, at the household's location or for its administrative division.
 
-c4e succeeds [climatic4economist](https://github.com/jmr-fao/climatic4economist),
-which stays available unchanged for existing scripts.
+The result is one row per household, ready to merge with the survey and
+export to Stata with labelled variables.
+
+### Built on climatic4economist
+
+c4e builds on [climatic4economist](https://github.com/jmr-fao/climatic4economist)
+(hence the name, c4e) and keeps what it does, while improving two things:
+
+* **The flow between steps.** Tables carry their context from one step to
+  the next: the variable, its unit, the time step, and the thresholds,
+  percentiles and spell lengths used. A value given once is not typed
+  again, and every table can print the steps that produced it.
+* **The safeguards.** Units are checked and converted where they are clearly
+  meant, data that do not match a preset are refused with a fix, windows
+  short of data give missing values rather than zeros, large jobs are split
+  to fit in memory, and a coefficient of variation of temperatures is
+  computed on kelvin.
+
+climatic4economist stays available unchanged for existing scripts.
 
 > **Status:** under development. The design and progress are in
 > `dev/PLAN_v2.md` and `dev/LOG_v2.md`.
