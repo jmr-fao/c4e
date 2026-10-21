@@ -2,7 +2,7 @@
   <img src="man/figures/logo.png" width="200">
 </p>
 
-# 🌍 c4e
+# c4e
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/jmr-fao/c4e/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jmr-fao/c4e/actions/workflows/R-CMD-check.yaml)
@@ -45,11 +45,11 @@ climatic4economist stays available unchanged for existing scripts.
 
 ## 📘 Features
 
-* **One call per question**: `weather_extremes()`, `climate_indices()`,
+* One call per question: `weather_extremes()`, `climate_indices()`,
   `static_controls()` and `time_varying_controls()` run the whole chain from
   a survey and a raster, with named presets (`list_presets()`), a dry run,
   and step-by-step progress
-* **Maps and grid panels**: `grid_indicators()` and `grid_controls()`
+* Maps and grid panels: `grid_indicators()` and `grid_controls()`
   compute the same indicators and controls for every cell of a raster,
   block by block, and write GeoTIFFs that keep their context
 * Read climate rasters with their dates, unit and variable (ERA5, CHIRPS,
