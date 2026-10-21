@@ -44,6 +44,7 @@ reference:
     contents:
       - prepare_coord
       - georef_coord
+      - displace_coord
       - window_lag
       - select_by_interview
 
