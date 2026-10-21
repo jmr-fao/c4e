@@ -37,5 +37,5 @@ dir.create(file.path(root, "a", "b"), recursive = TRUE, showWarnings = FALSE)
 
 find_root_directory(start = file.path(root, "a", "b"),
                     root_directories = "c4e_example")
-#> [1] "/tmp/Rtmp3DZbaj/c4e_example"
+#> [1] "/tmp/RtmptucqwD/c4e_example"
 ```

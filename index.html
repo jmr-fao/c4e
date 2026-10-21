@@ -159,9 +159,130 @@
 <span>  <span class="fu">c4e</span><span class="fu">::</span><span class="fu"><a href="reference/summarise_by_interview.html">summarise_by_interview</a></span><span class="op">(</span><span class="va">coord</span>, x <span class="op">=</span> <span class="va">_</span>, window <span class="op">=</span> <span class="fu">c4e</span><span class="fu">::</span><span class="fu"><a href="reference/window_lag.html">window_lag</a></span><span class="op">(</span><span class="st">"1 year"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
+<h2 id="repeat-coming-from-climatic4economist">🔁 Coming from climatic4economist<a class="anchor" aria-label="anchor" href="#repeat-coming-from-climatic4economist"></a>
+</h2>
+<p>c4e does what climatic4economist did, with new names and a few changes in behaviour. climatic4economist stays available, so existing scripts keep working.</p>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>climatic4economist</th>
+<th>c4e</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>find_extr_abs_day()</code></td>
+<td><code><a href="reference/calc_threshold_day.html">calc_threshold_day()</a></code></td>
+</tr>
+<tr>
+<td><code>calc_pct_day()</code></td>
+<td><code><a href="reference/calc_percentile.html">calc_percentile()</a></code></td>
+</tr>
+<tr>
+<td><code>find_extr_rel_day()</code></td>
+<td><code><a href="reference/calc_percentile_day.html">calc_percentile_day()</a></code></td>
+</tr>
+<tr>
+<td><code>find_spell()</code></td>
+<td><code><a href="reference/calc_spell.html">calc_spell()</a></code></td>
+</tr>
+<tr>
+<td><code>calc_pct_spell()</code></td>
+<td><code><a href="reference/calc_spell_percentile.html">calc_spell_percentile()</a></code></td>
+</tr>
+<tr>
+<td><code>find_extr_spell_rel()</code></td>
+<td><code><a href="reference/calc_spell_excess.html">calc_spell_excess()</a></code></td>
+</tr>
+<tr>
+<td><code>find_wmo_heatwave()</code></td>
+<td><code><a href="reference/calc_heatwave.html">calc_heatwave()</a></code></td>
+</tr>
+<tr>
+<td>
+<code>compute_spi()</code>, <code>compute_spei()</code>, <code>compute_water_balance()</code>
+</td>
+<td><code><a href="reference/calc_std_index.html">calc_std_index()</a></code></td>
+</tr>
+<tr>
+<td><code>extr_std_index()</code></td>
+<td><code><a href="reference/calc_std_threshold.html">calc_std_threshold()</a></code></td>
+</tr>
+<tr>
+<td>
+<code>extr_day_index()</code>, <code>extr_spell_index()</code>, <code>extr_day_by_interview()</code>, <code>extr_spell_by_interview()</code>
+</td>
+<td><code><a href="reference/summarise_by_interview.html">summarise_by_interview()</a></code></td>
+</tr>
+<tr>
+<td><code>agg_to_adm_div()</code></td>
+<td><code><a href="reference/aggregate_to_adm.html">aggregate_to_adm()</a></code></td>
+</tr>
+<tr>
+<td><code>aggregate_frequency()</code></td>
+<td><code><a href="reference/aggregate_time.html">aggregate_time()</a></code></td>
+</tr>
+<tr>
+<td>
+<code>read_GAUL()</code>, <code>read_geoBoundaries()</code>
+</td>
+<td><code><a href="reference/read_boundaries.html">read_boundaries()</a></code></td>
+</tr>
+<tr>
+<td><code>calc_par(pars = , agg_period = )</code></td>
+<td><code>calc_par(fn = , period = )</code></td>
+</tr>
+</tbody>
+</table>
+<p>What changes in practice:</p>
+<ul>
+<li>
+<strong>Context travels with the tables.</strong> The unit, thresholds, percentiles, spell length and window are recorded once and read by the next step, so they are no longer repeated in every call.</li>
+<li>
+<strong>Units are checked.</strong> A threshold in Celsius on data in kelvin is refused with a pointer to <code><a href="reference/convert_unit.html">convert_unit()</a></code>, instead of giving wrong counts.</li>
+<li>
+<strong>Missing data are missing.</strong> A window with too few days of data gives <code>NA</code>, not zero days.</li>
+<li>
+<strong>Stable location identifiers.</strong> <code><a href="reference/prepare_coord.html">prepare_coord()</a></code> builds the identifier from the coordinates, so the same place keeps the same identifier across waves and files.</li>
+<li>
+<strong>Signs are kept.</strong> Index thresholds keep their sign in column names (<code>spi3_blw_-1.5</code>).</li>
+</ul>
+<p>The results are the same: the tests check c4e against stored outputs of climatic4economist. The daily indicators are also faster, measured on synthetic data with 1,000 to 10,000 locations (<code>inst/bench/</code>):</p>
+<table class="table">
+<colgroup>
+<col width="25%">
+<col width="25%">
+<col width="25%">
+<col width="25%">
+</colgroup>
+<thead><tr>
+<th>Indicator</th>
+<th>climatic4economist</th>
+<th>c4e</th>
+<th>Faster by</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Days above thresholds and their spells</td>
+<td>3 to 8 s</td>
+<td>0.4 to 2 s</td>
+<td>4 to 7 times</td>
+</tr>
+<tr>
+<td>Monthly percentiles</td>
+<td>2 min to 1 hour</td>
+<td>1 to 4 s</td>
+<td>100 to 900 times</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
 <h2 id="package-dependencies">📦 Dependencies<a class="anchor" aria-label="anchor" href="#package-dependencies"></a>
 </h2>
-<p>terra, exactextractr, sf, SPEI, the tidyverse (dplyr, tidyr, purrr, tibble), cli, vctrs and lifecycle; haven for the Stata export.</p>
+<p>terra, SPEI, the tidyverse (dplyr, tidyr, purrr, tibble), cli, vctrs and lifecycle. Optional: exactextractr and sf for coverage-weighted extraction over polygons, furrr for parallel runs, and haven for the Stata export.</p>
 </div>
 </div>
 

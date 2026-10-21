@@ -219,7 +219,7 @@ c4e_labels(summary)[c("day_abv_30_sum", "spell_abv_35_max")]
 
 write_stata(summary, file.path(tempdir(), "household_extremes.dta"))
 #> Wrote 40 rows and 14 variables to
-#> /tmp/RtmpP3UA89/household_extremes.dta.
+#> /tmp/RtmpwA9kzq/household_extremes.dta.
 ```
 
 [`validate_c4e()`](https://jmr-fao.github.io/c4e/reference/validate_c4e.md)

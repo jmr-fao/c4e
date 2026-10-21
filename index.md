@@ -115,7 +115,59 @@ hot_days <- c4e::extract_by_coord(tmax, points) |>
   c4e::summarise_by_interview(coord, x = _, window = c4e::window_lag("1 year"))
 ```
 
+## 🔁 Coming from climatic4economist
+
+c4e does what climatic4economist did, with new names and a few changes
+in behaviour. climatic4economist stays available, so existing scripts
+keep working.
+
+| climatic4economist | c4e |
+|----|----|
+| `find_extr_abs_day()` | [`calc_threshold_day()`](https://jmr-fao.github.io/c4e/reference/calc_threshold_day.md) |
+| `calc_pct_day()` | [`calc_percentile()`](https://jmr-fao.github.io/c4e/reference/calc_percentile.md) |
+| `find_extr_rel_day()` | [`calc_percentile_day()`](https://jmr-fao.github.io/c4e/reference/calc_percentile_day.md) |
+| `find_spell()` | [`calc_spell()`](https://jmr-fao.github.io/c4e/reference/calc_spell.md) |
+| `calc_pct_spell()` | [`calc_spell_percentile()`](https://jmr-fao.github.io/c4e/reference/calc_spell_percentile.md) |
+| `find_extr_spell_rel()` | [`calc_spell_excess()`](https://jmr-fao.github.io/c4e/reference/calc_spell_excess.md) |
+| `find_wmo_heatwave()` | [`calc_heatwave()`](https://jmr-fao.github.io/c4e/reference/calc_heatwave.md) |
+| `compute_spi()`, `compute_spei()`, `compute_water_balance()` | [`calc_std_index()`](https://jmr-fao.github.io/c4e/reference/calc_std_index.md) |
+| `extr_std_index()` | [`calc_std_threshold()`](https://jmr-fao.github.io/c4e/reference/calc_std_threshold.md) |
+| `extr_day_index()`, `extr_spell_index()`, `extr_day_by_interview()`, `extr_spell_by_interview()` | [`summarise_by_interview()`](https://jmr-fao.github.io/c4e/reference/summarise_by_interview.md) |
+| `agg_to_adm_div()` | [`aggregate_to_adm()`](https://jmr-fao.github.io/c4e/reference/aggregate_to_adm.md) |
+| `aggregate_frequency()` | [`aggregate_time()`](https://jmr-fao.github.io/c4e/reference/aggregate_time.md) |
+| `read_GAUL()`, `read_geoBoundaries()` | [`read_boundaries()`](https://jmr-fao.github.io/c4e/reference/read_boundaries.md) |
+| `calc_par(pars = , agg_period = )` | `calc_par(fn = , period = )` |
+
+What changes in practice:
+
+- **Context travels with the tables.** The unit, thresholds,
+  percentiles, spell length and window are recorded once and read by the
+  next step, so they are no longer repeated in every call.
+- **Units are checked.** A threshold in Celsius on data in kelvin is
+  refused with a pointer to
+  [`convert_unit()`](https://jmr-fao.github.io/c4e/reference/convert_unit.md),
+  instead of giving wrong counts.
+- **Missing data are missing.** A window with too few days of data gives
+  `NA`, not zero days.
+- **Stable location identifiers.**
+  [`prepare_coord()`](https://jmr-fao.github.io/c4e/reference/prepare_coord.md)
+  builds the identifier from the coordinates, so the same place keeps
+  the same identifier across waves and files.
+- **Signs are kept.** Index thresholds keep their sign in column names
+  (`spi3_blw_-1.5`).
+
+The results are the same: the tests check c4e against stored outputs of
+climatic4economist. The daily indicators are also faster, measured on
+synthetic data with 1,000 to 10,000 locations (`inst/bench/`):
+
+| Indicator | climatic4economist | c4e | Faster by |
+|----|----|----|----|
+| Days above thresholds and their spells | 3 to 8 s | 0.4 to 2 s | 4 to 7 times |
+| Monthly percentiles | 2 min to 1 hour | 1 to 4 s | 100 to 900 times |
+
 ## 📦 Dependencies
 
-terra, exactextractr, sf, SPEI, the tidyverse (dplyr, tidyr, purrr,
-tibble), cli, vctrs and lifecycle; haven for the Stata export.
+terra, SPEI, the tidyverse (dplyr, tidyr, purrr, tibble), cli, vctrs and
+lifecycle. Optional: exactextractr and sf for coverage-weighted
+extraction over polygons, furrr for parallel runs, and haven for the
+Stata export.
