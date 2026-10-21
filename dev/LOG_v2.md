@@ -26,6 +26,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 15 | Quick start and canonical vignettes | ✔ done | #9 | 2026-10-21 | 2026-10-21 | merged into `main`; site live with Get started and six articles |
 | 16 | Privacy and case studies | 🔄 in progress | | 2026-10-21 | | `displace_coord()` complete on branch `chunk-16-displace`; the case studies move to a separate tutorial site |
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
+| 18 | Paper (JOSS) | 🔄 in progress | | 2026-10-21 | | draft in `paper/` on branch `joss-paper` |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
@@ -33,23 +34,27 @@ States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ d
 `chunk-16-displace` (cut from `main`); it needs a push and a pull request.
 
 **Next steps (in order):**
-1. Push `chunk-16-displace`, open its pull request into `main`, merge when
+1. Merge pull request #10 (`chunk-16-displace`) into `main` when
    both checks are green.
 2. Chunk 17, the release (plan §8 row 17): a GitHub release only, for
    colleagues to test; r-universe after their feedback, CRAN later. Jan: the author's full name for `DESCRIPTION`.
-3. Separately: the tutorial website `jmr-fao/c4e-tutorials` (Quarto, GitHub
+3. The JOSS paper (plan §8 row 18): draft on branch `joss-paper`
+   (stacked on `chunk-16-displace`). Jan: ORCID, affiliation, the projects
+   that used c4e or climatic4economist (research impact), acknowledgements;
+   then the release DOI (Zenodo) and submission.
+4. Separately: the tutorial website `jmr-fao/c4e-tutorials` (Quarto, GitHub
    Pages) with the three case studies (one country with household
    coordinates and division controls; several countries with
    `purrr::map()`; a narrow project with distances and the cost of
    displacement) and the scripts of `case_studies/`, which then leave this
    repository.
-4. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
+5. Left from chunk 11 (see decisions): `c4e_history()` prints a readable
    template of a wrapper's chain, not code that re-evaluates: the survey and
    raster inputs are not in it and `window` prints as a list. Make it
    evaluable (record windows as `window_lag(...)` calls, data arguments as
    placeholders) alongside chunk 12 or in chunk 14. Also not built:
    `climate_indices(wide = TRUE)` and a `baseline` for SPI.
-5. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
+6. Step functions follow this pattern: `meta <- c4e_meta(x) %||%
    empty_meta()`, `started <- Sys.time()`, resolve each argument with
    `c4e_default()`, announce with `c4e_progress_step()` only when a `label`
    is given, wrap heavy work in `with_chunks()` with a `mem_estimate`, and
@@ -177,6 +182,7 @@ States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ d
 | 2026-10-21 | §8 row 15 | The `_targets.R` example is a non-run chunk in *Get started*, not a file | `targets` is not a dependency; the chunk shows the pattern where readers look for it |
 | 2026-10-21 | §8 rows 16, 17 | Release on GitHub and r-universe now, CRAN later; case studies on a separate tutorial website, not in the package; the six workflow articles stay on the package site; `displace_coord()` in the package | Jan's choice: a lean package; r-universe gives `install.packages()` without CRAN's review |
 | 2026-10-21 | §8 row 17 | The first release goes to GitHub only, for colleagues to test with `remotes::install_github()`; r-universe follows their feedback | Jan's choice: test with a small group before wider publication |
+| 2026-10-21 | §8 row 18 | A paper in the Journal of Open Source Software (about 1,000 words, open review on GitHub, a DOI) rather than a longer journal article | presents the package and gives it a citation at little cost; reviewers test the package as the colleagues do |
 | 2026-10-21 | §8 row 16 | `displace_coord()` draws the distance uniformly up to the limit and the direction uniformly (the DHS rule), moves all households of a location together, redraws a location until it lands in its own division, rebuilds coordinate identifiers (the old ones reveal the true place), and records the rule in `survey$displaced` but never the seed (the seed undoes the displacement) | privacy holds only if no trace of the true location survives |
 
 ### Open R CMD check NOTEs
@@ -206,6 +212,14 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-21 — JOSS paper draft (laptop: FAO-Win, session: Claude)
+- Did: branch `joss-paper` stacked on `chunk-16-displace` (#10 open):
+  `paper/paper.md` (Summary, Statement of need, State of the field, Software
+  design, Research impact and AI disclosure as placeholders), `paper/paper.bib`
+  (13 references), `.github/workflows/draft-pdf.yaml`, `^paper$` build-ignored.
+- Found: nothing blocking; the placeholders need Jan's input.
+- Next: see Next steps above.
 
 ### 2026-10-21 — chunk 16, displace_coord() (laptop: FAO-Win, session: Claude)
 - Did: chunk 15 merged (#9), site checked (articles live, agent pages gone).

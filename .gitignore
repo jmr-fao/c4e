@@ -61,3 +61,5 @@ vignettes/*.html
 vignettes/*_files
 vignettes/articles/*.html
 vignettes/articles/*_files
+paper/paper.pdf
+paper/paper.jats
