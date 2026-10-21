@@ -73,7 +73,8 @@ displaces coordinates following the rule of the Demographic and Health
 Surveys [@burgert2013], keeps each location within its administrative
 division, and records the displacement in the variable labels and the
 codebook, so that users of a shared file know which variables come from
-displaced locations.
+displaced locations, a known source of measurement error when weather is
+linked to surveys [@michler2022].
 
 The package is intended for applied economists and survey teams, who are not
 necessarily specialists in geospatial data. `c4e` builds on the author's
@@ -82,25 +83,37 @@ reorganises around the shared context described above.
 
 # State of the field
 
-General-purpose tools provide the building blocks: `terra` [@terra] and
-`exactextractr` [@exactextractr] read and extract raster data, `SPEI`
-[@spei_package] fits standardised drought indices, and `climate4R`
-[@iturbide2019] accesses and post-processes climate data for climate
-science applications. None of them addresses the survey side of the problem:
-windows defined by each household's interview date, indicators summarised
-over those windows, administrative divisions, and output prepared for
-econometric software.
+Each building block of `c4e` exists elsewhere. General-purpose tools read
+and extract raster data (`terra` [@terra], `exactextractr`
+[@exactextractr]) and fit drought indices (`SPEI` [@spei_package]). The
+extreme indices themselves are standard: `xclim` [@bourgault2023] offers a far
+larger set in Python, with mature handling of units and metadata, and
+`climate4R` [@iturbide2019] serves climate-science workflows in R. Closer to
+applied work, `climatrends` [@desousa2023] computes temperature and rainfall
+indices over windows that start on a different date for each location, and
+`chirps` [@desousa2020] retrieves CHIRPS rainfall with precipitation
+indices; both are organised around crop trials and a single remote data
+source. `stagg` [@liddell2025] and `xagg` [@schwarzwald2024] aggregate
+gridded data to polygons by calendar period, with transformations and
+weights suited to climate-impact regressions. For household surveys, the
+Stata module `wxsum` [@michler_wxsum] turns daily series, already extracted
+for each location, into seasonal weather variables, and the World Bank's
+`GeoLink` [@geolink] attaches many geospatial layers to survey files over a
+single date range.
 
-Contributing this layer to one of these packages was not a good fit. The
-survey side depends on concepts (households, interview dates, reference
-windows, Stata labels) that lie outside the scope of general raster or
-climate-science tools, and it needs all of them at once: `c4e` uses `terra`,
-`exactextractr` and `SPEI` internally rather than replacing them. A new
-package was also preferred over extending `climatic4economist`
-[@climatic4economist], whose functions pass bare data frames and therefore
-cannot carry context from one step to the next; adding it required changing
-every function signature. `climatic4economist` remains available for
-existing scripts.
+What none of these combines is the survey-linkage layer that `c4e`
+provides: windows defined by each household's interview date, extremes and
+drought indices computed from the rasters, spatial controls at the location
+or averaged over administrative divisions, context and units carried from
+one step to the next, output prepared for Stata, and the displacement of
+coordinates. Adding this layer to one of the packages above would change its
+core data model, built around crop-trial points, calendar periods or a
+single survey-wide date range; `c4e` instead reuses `terra`,
+`exactextractr` and `SPEI` rather than reimplementing them. The same
+argument led to a new package rather than an extension of the author's
+`climatic4economist` [@climatic4economist], whose functions pass bare data
+frames and cannot carry context from one step to the next.
+`climatic4economist` remains available for existing scripts.
 
 # Software design
 
