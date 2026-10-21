@@ -1,6 +1,6 @@
 Package: c4e
 Type: Package
-Title: Climate Data for Economists: Linking Climate Rasters to Surveys
+Title: Climate Data for Economists: Linking Geospatial Data to Surveys
 Version: 0.1.0.9000
 Authors@R: c(
     person(
