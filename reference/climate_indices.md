@@ -130,13 +130,13 @@ climate_indices(survey,
 #>   window: 1 month before the interview
 #>   12 locations, 20 survey units
 #> ℹ Extracting precipitation
-#> ✔ Extracting precipitation [39ms]
+#> ✔ Extracting precipitation [37ms]
 #> 
 #> ℹ Computing SPI
-#> ✔ Computing SPI [213ms]
+#> ✔ Computing SPI [219ms]
 #> 
 #> ℹ Summarising over the reference windows
-#> ✔ Summarising over the reference windows [82ms]
+#> ✔ Summarising over the reference windows [83ms]
 #> 
 #> # A tibble: 20 × 6
 #> # Context:  pre [mm/month], month, summary; key hhid; 4 indicators

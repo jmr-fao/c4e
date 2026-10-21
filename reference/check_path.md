@@ -54,16 +54,16 @@ root <- file.path(tempdir(), "project")
 dir.create(file.path(root, "data"), recursive = TRUE, showWarnings = FALSE)
 
 check_path(root, "data")
-#> [1] "/tmp/RtmpqrI6ZE/project/data"
+#> [1] "/tmp/RtmpWDOetL/project/data"
 
 # a missing part is named, with the contents of the last folder found
 try(check_path(root, "dta"))
 #> Error : Path does not exist.
 #> Problem occurred at:
-#>   /tmp/RtmpqrI6ZE/project/dta
+#>   /tmp/RtmpWDOetL/project/dta
 #> 
 #> Last existing directory:
-#>   /tmp/RtmpqrI6ZE/project
+#>   /tmp/RtmpWDOetL/project
 #> 
 #> Available files and folders:
 #>   .

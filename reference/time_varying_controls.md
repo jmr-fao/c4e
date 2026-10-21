@@ -146,7 +146,7 @@ time_varying_controls(survey, list(pop = pop), id = hhid,
 #>   survey years: 2023
 #>   12 locations, 20 survey units
 #> ℹ Extracting 1 yearly layer
-#> ✔ Extracting 1 yearly layer [97ms]
+#> ✔ Extracting 1 yearly layer [108ms]
 #> 
 #> # A tibble: 20 × 5
 #> # Context:  summary; key hhid; 2 indicators

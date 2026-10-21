@@ -1,4 +1,4 @@
-# 🌍 c4e
+# c4e
 
 ![](reference/figures/logo.png)
 
@@ -42,7 +42,7 @@ climatic4economist stays available unchanged for existing scripts.
 
 ## 📘 Features
 
-- **One call per question**:
+- One call per question:
   [`weather_extremes()`](https://jmr-fao.github.io/c4e/reference/weather_extremes.md),
   [`climate_indices()`](https://jmr-fao.github.io/c4e/reference/climate_indices.md),
   [`static_controls()`](https://jmr-fao.github.io/c4e/reference/static_controls.md)
@@ -51,7 +51,7 @@ climatic4economist stays available unchanged for existing scripts.
   run the whole chain from a survey and a raster, with named presets
   ([`list_presets()`](https://jmr-fao.github.io/c4e/reference/list_presets.md)),
   a dry run, and step-by-step progress
-- **Maps and grid panels**:
+- Maps and grid panels:
   [`grid_indicators()`](https://jmr-fao.github.io/c4e/reference/grid_indicators.md)
   and
   [`grid_controls()`](https://jmr-fao.github.io/c4e/reference/grid_controls.md)
