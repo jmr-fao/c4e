@@ -10,10 +10,10 @@ tags:
 authors:
   - name: Jan Martin Rossi
     orcid: 0000-0000-0000-0000  # TODO: Jan's ORCID
-    affiliation: 1
+    affiliation: '1'
 affiliations:
-  - name: Food and Agriculture Organization of the United Nations (FAO), Rome, Italy  # TODO: confirm the division or office
-    index: 1
+  - index: 1
+    name: Food and Agriculture Organization of the United Nations, Italy  # TODO: confirm the division or office
 date: 21 October 2026
 bibliography: paper.bib
 ---
@@ -89,32 +89,67 @@ General-purpose tools provide the building blocks: `terra` [@terra] and
 science applications. None of them addresses the survey side of the problem:
 windows defined by each household's interview date, indicators summarised
 over those windows, administrative divisions, and output prepared for
-econometric software. `c4e` uses these packages internally and adds that
-layer, with presets that encode common definitions of heat, cold, heavy rain,
-dry spells and drought.
+econometric software.
+
+Contributing this layer to one of these packages was not a good fit. The
+survey side depends on concepts (households, interview dates, reference
+windows, Stata labels) that lie outside the scope of general raster or
+climate-science tools, and it needs all of them at once: `c4e` uses `terra`,
+`exactextractr` and `SPEI` internally rather than replacing them. A new
+package was also preferred over extending `climatic4economist`
+[@climatic4economist], whose functions pass bare data frames and therefore
+cannot carry context from one step to the next; adding it required changing
+every function signature. `climatic4economist` remains available for
+existing scripts.
 
 # Software design
 
-The package has three layers. Step functions (`read_climate()`,
-`extract_by_coord()`, `calc_threshold_day()`, `calc_spell()`,
-`summarise_by_interview()` and others) each perform one operation and return
-a tibble subclass that carries the context in an attribute; `dplyr` verbs
-keep it [@wickham2019]. Indicators are computed on a units-by-dates matrix
-rather than on long tables, which makes the daily indicators one to three
-orders of magnitude faster than the earlier package on the same data.
-Wrappers (`weather_extremes()`, `climate_indices()`, `static_controls()`,
-`time_varying_controls()`) run the whole chain with named presets and record
-each step, so that `c4e_history()` prints the equivalent step-by-step code.
-Grid methods run the same step functions on blocks of raster rows, so that
-every cell's result equals the result at an extracted location, and keep the
-context in GeoTIFF tags. The package works with common climate sources such
-as ERA5 [@hersbach2020] and CHIRPS [@funk2015].
+The central design choice is where the context of a table lives. Keeping it
+in column names, as many scripts do, is fragile and forces later steps to
+parse names back into thresholds; keeping it in a separate configuration
+object lets the two drift apart. `c4e` stores it in an attribute of a
+subclass of the tibble, and implements the `dplyr` extension methods so that
+common verbs keep it [@wickham2019]. The cost is that operations outside
+`dplyr`, such as base `merge()`, drop the attribute; every package function
+therefore rebuilds the context on output, and a plain data frame is upgraded
+after one step when its context is given explicitly.
+
+Defaults read from the context are announced rather than applied silently,
+because silent defaults recreate the errors the context is meant to prevent;
+an explicit argument that contradicts the context is refused with a pointer
+to the step that resolves it, such as a unit conversion.
+
+For speed, indicators are computed on a units-by-dates matrix rather than on
+long tables, and converted to the long, tidy form only at the end. On
+synthetic data with 1,000 to 10,000 locations, this makes the daily
+indicators 4 to 900 times faster than `climatic4economist`, with identical
+results. Grid outputs reuse the same step functions on blocks of raster rows
+instead of reimplementing each indicator for rasters: every cell's result
+equals the result the table functions give at that location, at the cost of
+speed; a faster path through `terra`'s compiled routines is kept for the
+simplest indicators, and tested to give the same rasters.
+
+Finally, the package offers two levels: step functions that each perform one
+operation, and wrappers that run the whole chain with named presets of common
+definitions (heat, cold, heavy rain, dry spells, drought). The wrappers record
+every step, so that `c4e_history()` prints the equivalent step-by-step code:
+users start with one call and can move to the steps when a project needs it.
+The package reads common climate sources such as ERA5 [@hersbach2020] and
+CHIRPS [@funk2015] with their dates and units.
 
 # Research impact statement
 
-<!-- TODO: projects and papers that used c4e or climatic4economist (FAO
-surveys, World Bank projects, ...), with citations or links. JOSS asks for
-evidence that the software is used, or is likely to be used, in research. -->
+<!-- TODO: realised impact. Projects and papers that used c4e or
+climatic4economist (FAO surveys, World Bank projects, ...), with citations
+or links; colleagues testing the first release. -->
+
+The package is ready for use by others: each exported function is tested on
+synthetic data shipped with the package, and the indicators that replace
+`climatic4economist` functions are tested against stored outputs of that
+package; continuous integration runs the tests and the package checks on
+every change; and a documentation website renders, on every change, an
+introduction and six worked articles that run on the bundled data. Reference
+benchmarks are distributed with the source.
 
 # AI usage disclosure
 
