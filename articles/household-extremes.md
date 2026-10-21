@@ -202,7 +202,7 @@ uses:
 ``` r
 
 c4e_history(summary)
-#> <c4e history: 5 steps, 0.6 s>
+#> <c4e history: 5 steps, 0.7 s>
 #> prepare_coord(id_rule = "coordinates") |>                                                                    # 0.2 s
 #>   extract_by_coord() |>                                                                                      # 0.0 s
 #>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.2 s
@@ -219,7 +219,7 @@ c4e_labels(summary)[c("day_abv_30_sum", "spell_abv_35_max")]
 
 write_stata(summary, file.path(tempdir(), "household_extremes.dta"))
 #> Wrote 40 rows and 14 variables to
-#> /tmp/RtmpYENZEd/household_extremes.dta.
+#> /tmp/RtmpP3UA89/household_extremes.dta.
 ```
 
 [`validate_c4e()`](https://jmr-fao.github.io/c4e/reference/validate_c4e.md)

@@ -149,7 +149,18 @@ progress is tracked in `dev/LOG_v2.md`.
   climatic parameters and spatial controls, grid indicators and maps),
   all run on the bundled data at every build.
 
+- [`displace_coord()`](https://jmr-fao.github.io/c4e/reference/displace_coord.md)
+  displaces survey coordinates before they are shared, following the DHS
+  rule (urban up to 2 km, rural up to 5 km, 1% of rural up to 10 km).
+  Options keep each location inside its administrative division
+  (`boundaries`), out of water bodies (`water`), and set each radius so
+  that at least `min_people` live within it (`population`, e.g.
+  WorldPop), with the DHS limits as a floor by default. Households at a
+  location move together, coordinate identifiers are rebuilt, and the
+  displacement is recorded in the context, the labels and the Stata
+  codebook (the seed is not).
+
 ### Planned
 
-- Three case-study articles and `displace_coord()` for privacy, then the
-  first release.
+- The first release, on GitHub for testing, then r-universe. Case
+  studies move to a separate tutorial website.

@@ -188,6 +188,8 @@ Indicators, parameters and controls returned as rasters.
   : Prepare ID for unique occurrences
 - [`georef_coord()`](https://jmr-fao.github.io/c4e/reference/georef_coord.md)
   : Georeference based on coordinates and coordinate reference system
+- [`displace_coord()`](https://jmr-fao.github.io/c4e/reference/displace_coord.md)
+  : Displace survey coordinates to protect respondents
 - [`window_lag()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
   [`window_season()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
   [`window_fixed()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)

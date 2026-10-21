@@ -165,13 +165,13 @@ of them. Every table can print the steps that produced it, ready to copy
 and adapt:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/c4e_history.html">c4e_history</a></span><span class="op">(</span><span class="va">heat</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;c4e history: 6 steps, 0.5 s&gt;</span></span>
+<span><span class="co">#&gt; &lt;c4e history: 6 steps, 0.6 s&gt;</span></span>
 <span><span class="co">#&gt; prepare_coord(id_rule = "coordinates") |&gt;                                                                    # 0.1 s</span></span>
-<span><span class="co">#&gt;   extract_by_coord() |&gt;                                                                                      # 0.0 s</span></span>
+<span><span class="co">#&gt;   extract_by_coord() |&gt;                                                                                      # 0.1 s</span></span>
 <span><span class="co">#&gt;   convert_unit(to = "C", from = "K") |&gt;                                                                      # 0.1 s</span></span>
-<span><span class="co">#&gt;   calc_threshold_day(above = c(30, 35), unit = "C") |&gt;                                                       # 0.1 s</span></span>
+<span><span class="co">#&gt;   calc_threshold_day(above = c(30, 35), unit = "C") |&gt;                                                       # 0.2 s</span></span>
 <span><span class="co">#&gt;   calc_spell(min_spell = 2L) |&gt;                                                                              # 0.0 s</span></span>
-<span><span class="co">#&gt;   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 0L), min_coverage = 0.8)  # 0.1 s</span></span></code></pre></div>
+<span><span class="co">#&gt;   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 0L), min_coverage = 0.8)  # 0.2 s</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="drought-before-each-interview">Drought before each interview<a class="anchor" aria-label="anchor" href="#drought-before-each-interview"></a>

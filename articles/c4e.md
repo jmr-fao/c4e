@@ -101,13 +101,13 @@ print the steps that produced it, ready to copy and adapt:
 ``` r
 
 c4e_history(heat)
-#> <c4e history: 6 steps, 0.5 s>
+#> <c4e history: 6 steps, 0.6 s>
 #> prepare_coord(id_rule = "coordinates") |>                                                                    # 0.1 s
-#>   extract_by_coord() |>                                                                                      # 0.0 s
+#>   extract_by_coord() |>                                                                                      # 0.1 s
 #>   convert_unit(to = "C", from = "K") |>                                                                      # 0.1 s
-#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.1 s
+#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.2 s
 #>   calc_spell(min_spell = 2L) |>                                                                              # 0.0 s
-#>   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 0L), min_coverage = 0.8)  # 0.1 s
+#>   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 0L), min_coverage = 0.8)  # 0.2 s
 ```
 
 ## Drought before each interview

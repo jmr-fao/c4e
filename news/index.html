@@ -63,10 +63,11 @@
 <li><p>Lighter installation: <code>sf</code>, <code>exactextractr</code> and <code>furrr</code> move to Suggests and are asked for only by coverage-weighted extraction (<code><a href="../reference/extract_cell_by_poly.html">extract_cell_by_poly()</a></code>, <code><a href="../reference/extract_weighted_by_poly.html">extract_weighted_by_poly()</a></code>, <code>extract_by_poly(weights = "coverage")</code>) and by <code>.parallel = TRUE</code>; <code>stringi</code>, <code>tidyterra</code> and <code>raster</code> are no longer used.</p></li>
 <li><p>Every example runs on the bundled data; a pkgdown site with the reference grouped by task; GPL-2 licence text in <code>LICENSE.md</code>.</p></li>
 <li><p>Documentation: a <em>Get started</em> vignette with the six one-call wrappers, and six articles on the website (household extremes step by step, relative extremes, administrative divisions, drought indices, climatic parameters and spatial controls, grid indicators and maps), all run on the bundled data at every build.</p></li>
+<li><p><code><a href="../reference/displace_coord.html">displace_coord()</a></code> displaces survey coordinates before they are shared, following the DHS rule (urban up to 2 km, rural up to 5 km, 1% of rural up to 10 km). Options keep each location inside its administrative division (<code>boundaries</code>), out of water bodies (<code>water</code>), and set each radius so that at least <code>min_people</code> live within it (<code>population</code>, e.g. WorldPop), with the DHS limits as a floor by default. Households at a location move together, coordinate identifiers are rebuilt, and the displacement is recorded in the context, the labels and the Stata codebook (the seed is not).</p></li>
 </ul></div>
 <div class="section level3">
 <h3 id="planned-development-version">Planned<a class="anchor" aria-label="anchor" href="#planned-development-version"></a></h3>
-<ul><li>Three case-study articles and <code>displace_coord()</code> for privacy, then the first release.</li>
+<ul><li>The first release, on GitHub for testing, then r-universe. Case studies move to a separate tutorial website.</li>
 </ul></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
