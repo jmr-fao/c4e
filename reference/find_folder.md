@@ -40,6 +40,6 @@ dir.create(file.path(root, "data", "weather"), recursive = TRUE,
 # from a working directory inside root, find "weather" below it
 old <- setwd(file.path(root, "data"))
 find_folder("weather", root = "c4e_example")
-#> [1] "/tmp/RtmptucqwD/c4e_example/data/weather"
+#> [1] "/tmp/RtmpM4F3fw/c4e_example/data/weather"
 setwd(old)
 ```

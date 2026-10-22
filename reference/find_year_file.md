@@ -88,8 +88,8 @@ find_year_file(dir, 2013:2016, year_regex = "(?<=pop_)\\d{4}")
 #> # A tibble: 4 × 3
 #>    year src_year file                                   
 #>   <int>    <int> <chr>                                  
-#> 1  2013     2015 /tmp/RtmptucqwD/series/pop_2015_1km.tif
-#> 2  2014     2015 /tmp/RtmptucqwD/series/pop_2015_1km.tif
-#> 3  2015     2015 /tmp/RtmptucqwD/series/pop_2015_1km.tif
-#> 4  2016     2016 /tmp/RtmptucqwD/series/pop_2016_1km.tif
+#> 1  2013     2015 /tmp/RtmpM4F3fw/series/pop_2015_1km.tif
+#> 2  2014     2015 /tmp/RtmpM4F3fw/series/pop_2015_1km.tif
+#> 3  2015     2015 /tmp/RtmpM4F3fw/series/pop_2015_1km.tif
+#> 4  2016     2016 /tmp/RtmpM4F3fw/series/pop_2016_1km.tif
 ```
