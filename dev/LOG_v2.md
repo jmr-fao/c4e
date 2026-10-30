@@ -26,17 +26,21 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 15 | Quick start and canonical vignettes | ✔ done | #9 | 2026-10-21 | 2026-10-21 | merged into `main`; site live with Get started and six articles |
 | 16 | Privacy and case studies | ✔ done | #10 | 2026-10-21 | 2026-10-21 | `displace_coord()` with division, water and population options merged into `main`; the case studies move to a separate tutorial site |
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
-| 18 | Paper (JOSS) | 👀 in review | #12 | 2026-10-21 | | draft in `paper/`, branch `joss-paper`; placeholders wait for Jan's input |
+| 18 | Paper (JOSS) | 🔄 in progress | #12 | 2026-10-21 | | draft merged into `main` (#12); placeholders wait for Jan's input |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** 18, the paper. Chunk 16 (#10) and the README section for
-climatic4economist users (#11) are merged into `main`; `joss-paper` has
-`main` merged in and is pull request #12.
+**Current chunk:** before the release, a comparison of c4e with
+climatic4economist on real data: `dev/compare/compare-v1.R` on branch
+`compare-v1` (identical on the fixtures, 53 of 53 columns); it needs Jan's
+data paths. The paper draft (#12) is merged.
 
 **Next steps (in order):**
-1. Merge pull request #12 (`joss-paper`) into `main` when R-CMD-check is
-   green. Possible later for `displace_coord()`: a minimum displacement
+1. Run `dev/compare/compare-v1.R` on one real project (copy
+   `dev/compare/config-example.R` to `config-local.R`, ignored by git):
+   survey with coordinates and interview dates, a daily and a monthly
+   raster, divisions. Investigate every column marked DIFFERENT before the
+   release. Possible later for `displace_coord()`: a minimum displacement
    ("donut") and recording which indicators were computed before
    displacement.
 2. Chunk 17, the release (plan §8 row 17): a GitHub release only, for
@@ -216,6 +220,23 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-30 — comparison with climatic4economist (laptop: FAO-Win, session: Claude)
+- Did: #12 (paper draft) merged and `joss-paper` deleted. Branch
+  `compare-v1`: `dev/compare/compare-v1.R` runs each package's own chain on
+  the same survey and rasters (locations, extraction, thresholds, spells,
+  monthly percentiles and percentile days, WMO heatwave, interview-window
+  sums and spells with and without `min_coverage`, `weather_extremes()`
+  against the steps, SPI, cell extraction by division), joins the outputs on
+  the coordinates and writes a report with no household rows
+  (`dev/compare/out/`, ignored); `config-example.R` for real data. The v1
+  side loads `../climatic4economist` (the installed 0.1.0 lacks
+  `extr_day_by_interview()`).
+- Found: on the fixtures every column agrees exactly (53 of 53; 68 of 68
+  with lower thresholds and a 95th percentile). v1 names date columns
+  `X2021_01_01` and `find_spell()` drops the day flags.
+- Tests: package unchanged; the script ran end to end twice on the fixtures.
+- Next: see Next steps above.
 
 ### 2026-10-21 — branches tidied (laptop: FAO-Win, session: Claude)
 - Did: #10 and #11 merged on GitHub; `main` merged into `joss-paper` (the
