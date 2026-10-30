@@ -20,19 +20,24 @@
 
 defaults <- list(
     name = "bundled fixtures",
-    # the survey: a .dta, .csv or .rds file with one row per household
+    # the survey: a .dta, .csv or .rds file (rows per person are reduced to
+    # one per household)
     survey = system.file("extdata", "survey.csv", package = "c4e"),
     id = "hhid", lat = "lat", lon = "lon", interview = "interview",
-    # a daily raster (temperature or precipitation) and the unit to compare in
+    sample_locations = NULL,          # a number keeps that many random locations
+    # a daily raster (temperature or precipitation; several files are stacked)
+    # and the unit to compare in
     daily = system.file("extdata", "tmax_daily.tif", package = "c4e"),
-    daily_to_unit = "C",              # NULL keeps the raster's unit; "C" from K, "mm" from m
+    daily_to_unit = "C",              # NULL keeps the raster's unit; "C" from K,
+                                      # "mm" from m, "mm/day" from kg/m2/s
     from = NULL, to = NULL,           # optional dates to keep, e.g. "1991-01-01"
     above = c(30, 35), below = NULL,  # thresholds in daily_to_unit
     min_spell = 2,
     p = c(0.1, 0.9), exclude_below = NULL,   # percentiles; exclude_below for wet days
     heatwave = TRUE,                  # WMO heatwave, temperature only
     interval = "1 year", n_lags = 1,
-    # a monthly precipitation raster for SPI (NULL to skip)
+    # a monthly precipitation raster for SPI (NULL to skip; "from daily" sums
+    # the daily precipitation raster by month, once, for both packages)
     monthly = system.file("extdata", "pre_monthly.tif", package = "c4e"),
     scale = c(1, 3),
     # administrative divisions for the cell extraction (NULL to skip)
@@ -73,7 +78,11 @@ options(c4e.verbose = FALSE)
 timings <- list()
 timed <- function(step, side, expr) {
     started <- Sys.time()
-    value <- suppressMessages(suppressWarnings(expr))
+    message(format(started, "%H:%M:%S"), " ", step, " (", side, ")")
+    value <- withCallingHandlers(
+        suppressMessages(suppressWarnings(expr)),
+        error = \(e) message("  failed in ", step, " (", side, "): ", conditionMessage(e),
+                             "\n  call: ", paste(deparse(conditionCall(e)), collapse = " ")))
     timings[[length(timings) + 1]] <<- data.frame(
         step = step, side = side,
         secs = as.numeric(difftime(Sys.time(), started, units = "secs")))
@@ -97,10 +106,15 @@ compare <- function(step, a, b, keys, cols, note = "") {
         }
         both <- !is.na(x) & !is.na(y)
         diff <- abs(x[both] - y[both])
+        # equal infinities (an SPI of a month drier than any fitted) agree;
+        # their difference is NaN
+        same <- x[both] == y[both] |
+            (is.finite(diff) & diff <= config$tolerance * pmax(1, abs(y[both])))
+        finite <- diff[is.finite(diff)]
         results[[length(results) + 1]] <<- data.frame(
             step = step, column = col, compared = sum(both),
-            agree = sum(diff <= config$tolerance * pmax(1, abs(y[both]))),
-            max_diff = if (any(both)) signif(max(diff), 3) else NA_real_,
+            agree = sum(same),
+            max_diff = if (length(finite) > 0) signif(max(finite), 3) else 0,
             na_c4e_only = sum(is.na(x) & !is.na(y)),
             na_v1_only = sum(!is.na(x) & is.na(y)),
             note = note)
@@ -118,16 +132,29 @@ read_survey <- function(path) {
     keep <- unlist(config[c("id", "lat", "lon", "interview")])
     missing <- setdiff(keep, names(data))
     if (length(missing) > 0) stop("Survey columns not found: ", toString(missing))
-    data <- data[keep]
-    names(data) <- c("hhid", "lat", "lon", "interview")
-    data$hhid <- as.character(data$hhid)
+    # several id columns (e.g. survey and household) are joined into one key
+    hhid <- do.call(paste, c(lapply(data[config$id], as.character), sep = "_"))
+    data <- data[c(config$lat, config$lon, config$interview)]
+    names(data) <- c("lat", "lon", "interview")
+    data <- tibble::add_column(data, hhid = hhid, .before = 1)
     data$interview <- as.Date(data$interview)
-    data[!is.na(data$lat) & !is.na(data$lon), ]
+    data <- dplyr::distinct(data[!is.na(data$lat) & !is.na(data$lon), ])
+    if (anyDuplicated(data$hhid)) {
+        stop("Some households have more than one location or interview date.")
+    }
+    if (!is.null(config$sample_locations)) {
+        set.seed(1)
+        places <- dplyr::distinct(data[c("lat", "lon")])
+        n <- min(config$sample_locations, nrow(places))
+        places <- places[sample.int(nrow(places), n), ]
+        data <- dplyr::semi_join(data, places, by = c("lat", "lon"))
+    }
+    data
 }
 
 # v1 reads a raster with terra and names the layers by their dates
 v1_raster <- function(path) {
-    raster <- terra::rast(path)
+    raster <- if (inherits(path, "SpatRaster")) path else terra::rast(path)
     dates <- as.Date(terra::time(raster))
     if (anyNA(dates)) stop("The raster ", path, " has no dates in terra::time().")
     names(raster) <- as.character(dates)
@@ -154,8 +181,11 @@ v1_convert <- function(wide, from, to) {
         wide[dates] <- wide[dates] - 273.15
     } else if (from == "m" && to == "mm") {
         wide[dates] <- wide[dates] * 1000
+    } else if (from == "kg/m2/s" && to == "mm/day") {
+        wide[dates] <- wide[dates] * 86400
     } else {
-        stop("The v1 side converts only K to C and m to mm; set daily_to_unit = NULL.")
+        stop("The v1 side converts only K to C, m to mm and kg/m2/s to mm/day;
+             set daily_to_unit = NULL.")
     }
     wide
 }
@@ -194,8 +224,20 @@ to_c4e_id <- function(x) {
 
 # ==== Daily indicators ==================================================== ----
 
-daily_c4e <- timed("read daily", "c4e", keep_dates(c4e::read_climate(config$daily)))
-daily_v1 <- timed("read daily", "v1", keep_dates(v1_raster(config$daily)))
+# both packages read the same raster, cut to the dates kept and to the area
+# of the survey (one degree around it), so a global file stays small
+survey_box <- terra::ext(min(survey$lon) - 1, max(survey$lon) + 1,
+                         min(survey$lat) - 1, max(survey$lat) + 1)
+shared_raster <- function(path) {
+    raster <- keep_dates(terra::rast(path))
+    cropped <- terra::crop(raster, survey_box, snap = "out")
+    # crop() drops the units
+    terra::units(cropped) <- terra::units(raster)
+    cropped
+}
+daily_raw <- timed("read daily", "shared", shared_raster(config$daily))
+daily_c4e <- timed("read daily", "c4e", c4e::read_climate(daily_raw))
+daily_v1 <- timed("read daily", "v1", v1_raster(daily_raw))
 unit_from <- terra::units(daily_c4e)[1]
 unit <- config$daily_to_unit %||% unit_from
 
@@ -210,6 +252,23 @@ wide_v1 <- timed("extract", "v1", {
 })
 compare("extraction", wide_to_long(wide, "value"),
         wide_to_long(to_c4e_id(wide_v1), "value"), c("ID", "date"), "value")
+
+# locations on cells with no data (sea, lakes, outside a land-only grid)
+empty_v1 <- rowSums(!is.na(as.matrix(wide_v1[date_columns(wide_v1)]))) == 0
+notes <- c(if (any(empty_v1)) paste0(sum(empty_v1), " of ", length(empty_v1),
+                                     " locations fall on cells with no data."))
+
+#' Run a v1 step on the whole table; if v1 fails, say so and run it again
+#' without the locations that have no data, so the rest can be compared
+v1_with_fallback <- function(step, f) {
+    tryCatch(timed(step, "v1", f(wide_v1)), error = \(e) {
+        notes <<- c(notes, paste0("v1 failed in ", step, " (", conditionMessage(e),
+                                  "); it was run again without the ", sum(empty_v1),
+                                  " locations with no data."))
+        if (!any(empty_v1)) stop(e)
+        timed(step, "v1", f(wide_v1[!empty_v1, ]))
+    })
+}
 
 days <- timed("thresholds", "c4e", {
     c4e::calc_threshold_day(wide, above = config$above, below = config$below)
@@ -231,9 +290,8 @@ if (length(config$p) > 0) {
     pct <- timed("percentiles", "c4e", {
         c4e::calc_percentile(wide, p = config$p, exclude_below = config$exclude_below)
     })
-    pct_v1 <- timed("percentiles", "v1", {
-        climatic4economist::calc_pct_day(wide_v1, p = config$p,
-                                         l_thresh = config$exclude_below)
+    pct_v1 <- v1_with_fallback("percentiles", \(w) {
+        climatic4economist::calc_pct_day(w, p = config$p, l_thresh = config$exclude_below)
     })
     pct_cols <- grep("^day_\\d+p$", names(pct), value = TRUE)
     compare("monthly percentiles", pct, to_c4e_id(pct_v1), c("ID", "month"), pct_cols)
@@ -241,17 +299,17 @@ if (length(config$p) > 0) {
     rel <- timed("percentile days", "c4e", c4e::calc_percentile_day(wide, pct))
     upper <- config$p[config$p >= 0.5]
     lower <- config$p[config$p < 0.5]
-    rel_v1 <- timed("percentile days", "v1", {
+    rel_v1 <- v1_with_fallback("percentile days", \(w) {
         out <- NULL
         if (length(upper) > 0) {
             out <- climatic4economist::find_extr_rel_day(
-                wide_v1, u_thresh = climatic4economist::calc_pct_day(
-                    wide_v1, p = upper, l_thresh = config$exclude_below), unit = unit)
+                w, u_thresh = climatic4economist::calc_pct_day(
+                    w, p = upper, l_thresh = config$exclude_below), unit = unit)
         }
         if (length(lower) > 0) {
             low <- climatic4economist::find_extr_rel_day(
-                wide_v1, l_thresh = climatic4economist::calc_pct_day(
-                    wide_v1, p = lower, l_thresh = config$exclude_below), unit = unit)
+                w, l_thresh = climatic4economist::calc_pct_day(
+                    w, p = lower, l_thresh = config$exclude_below), unit = unit)
             out <- if (is.null(out)) low else
                 dplyr::left_join(tibble::as_tibble(out),
                                  dplyr::select(tibble::as_tibble(low), -value),
@@ -266,8 +324,9 @@ if (length(config$p) > 0) {
 is_temperature <- unit %in% c("C", "K", "F")
 if (isTRUE(config$heatwave) && identical(unit, "C")) {
     hw <- timed("heatwave", "c4e", c4e::calc_heatwave(wide, excess = 5, min_spell = 2))
-    hw_v1 <- timed("heatwave", "v1",
-                   climatic4economist::find_wmo_heatwave(wide_v1, excess = 5, min_spell = 2))
+    hw_v1 <- v1_with_fallback("heatwave", \(w) {
+        climatic4economist::find_wmo_heatwave(w, excess = 5, min_spell = 2)
+    })
     compare("WMO heatwave", hw, to_c4e_id(hw_v1), c("ID", "date"), "spell_wmo")
 }
 
@@ -324,8 +383,24 @@ compare("weather_extremes() vs steps", wrapper, step_chain, c("hhid", "lag"),
 # ==== Standardised precipitation index ==================================== ----
 
 if (!is.null(config$monthly)) {
-    monthly_c4e <- timed("read monthly", "c4e", keep_dates(c4e::read_climate(config$monthly)))
-    monthly_v1 <- timed("read monthly", "v1", keep_dates(v1_raster(config$monthly)))
+    monthly_raw <- timed("read monthly", "shared", {
+        if (identical(config$monthly, "from daily")) {
+            # monthly totals of the daily precipitation, the same for both
+            factor <- switch(unit_from, "kg/m2/s" = 86400, "mm/day" = 1, "mm" = 1,
+                             stop("`monthly = \"from daily\"` needs daily precipitation."))
+            months <- format(as.Date(terra::time(daily_raw)), "%Y-%m")
+            out <- terra::tapp(daily_raw, months, "sum") * factor
+            terra::time(out) <- as.Date(paste0(sort(unique(months)), "-01"))
+            terra::units(out) <- "mm/month"
+            names(out) <- as.character(terra::time(out))
+            out
+        } else {
+            shared_raster(config$monthly)
+        }
+    })
+    monthly_c4e <- timed("read monthly", "c4e",
+                         c4e::read_climate(monthly_raw, variable = "pre", time_step = "month"))
+    monthly_v1 <- timed("read monthly", "v1", v1_raster(monthly_raw))
     pre <- timed("extract monthly", "c4e", c4e::extract_by_coord(monthly_c4e, points))
     pre_v1 <- timed("extract monthly", "v1",
                     climatic4economist::extract_by_coord(monthly_v1, points_v1))
@@ -397,6 +472,7 @@ lines <- c(
     "",
     paste0("**", sum(table$status == "identical"), " of ", nrow(table),
            " columns identical; ", sum(table$status == "DIFFERENT"), " different.**"), "",
+    if (length(notes) > 0) c("## Notes", "", paste0("- ", notes), ""),
     "## Comparison", "",
     paste0("A value agrees when it is within a relative tolerance of ", config$tolerance,
            "; `na_c4e_only` counts values c4e leaves missing where v1 has one."), "",
