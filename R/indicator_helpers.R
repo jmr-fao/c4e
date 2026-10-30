@@ -44,9 +44,13 @@ indicator_frame <- function(x, id = NULL, call = rlang::caller_env()) {
     ids <- ids[do.call(order, c(unname(as.list(ids)), method = "radix")), , drop = FALSE]
     dates <- sort(unique(dates_by_row[!is.na(dates_by_row)]))
 
+    # dates are matched as numbers and each unit and date pair is one number:
+    # matching Dates, or checking a two-column matrix, goes through text
     unit_index <- vctrs::vec_match(data[id_cols], ids)
-    date_index <- match(dates_by_row, dates)
-    if (anyDuplicated(cbind(unit_index, date_index)) > 0) {
+    date_index <- match(unclass(dates_by_row), unclass(dates))
+    pair <- (as.double(unit_index) - 1) * (length(dates) + 1) +
+        ifelse(is.na(date_index), 0, date_index)
+    if (anyDuplicated(pair) > 0) {
         cli::cli_abort("{.arg x} has more than one row for some unit and date.",
                        call = call)
     }
@@ -82,8 +86,8 @@ frame_columns <- function(frame, columns) {
 #' Rows in canonical order: unit, then date (or month)
 #' @noRd
 sort_long <- function(data, order_cols) {
-    data[do.call(order, c(unname(as.list(data[order_cols])), method = "radix")), ,
-         drop = FALSE]
+    vctrs::vec_slice(data, do.call(order, c(unname(as.list(data[order_cols])),
+                                            method = "radix")))
 }
 
 # ==== Names =============================================================== ----

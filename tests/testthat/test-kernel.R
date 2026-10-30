@@ -165,6 +165,33 @@ test_that("percentiles of a unit with no data give the replacement", {
     expect_equal(pct[["50p"]][, "01"], c(2, 0), ignore_attr = TRUE)
 })
 
+test_that("a month with data but nothing beyond the cut-off gets the cut-off", {
+    # a wet month, a dry month (no day of 1 mm or more) and a month with no data
+    m <- rbind(c(0, 5, 10), c(0, 0.2, 0.5), c(NA, NA, NA))
+    dates <- as.Date("2022-01-01") + 0:2
+    pct <- quantile_by_month(m, dates, p = c(0.5, 0.95), exclude_below = 1)
+    expect_equal(pct[["50p"]][, "01"], c(7.5, 1, NA), ignore_attr = TRUE)
+    expect_equal(pct[["95p"]][, "01"], c(9.75, 1, NA), ignore_attr = TRUE)
+
+    # the same rule above, and over the whole year
+    hot <- quantile_by_month(rbind(c(40, 41, 42)), dates, p = 0.5, exclude_above = 35)
+    expect_equal(unname(hot[["50p"]][, "01"]), 35)
+    year <- excluded_quantiles(m, 0.95, exclude_below = 1)
+    expect_equal(year[, 1], c(9.75, 1, NA))
+})
+
+test_that("cut-off percentiles flag the rare wet day of a dry month", {
+    values <- c(0, 0.2, 0.5, 0, 3)
+    x <- update_meta(
+        tibble::tibble(ID = "1", date = as.Date("2022-01-01") + 0:4, value = values),
+        key = "ID", date_col = "date", shape = "long", variable = "pre",
+        unit = "mm/day", time_step = "day")
+    pct <- calc_percentile(x[1:4, ], p = 0.95, exclude_below = 1)
+    expect_equal(pct$day_95p, 1)
+    out <- suppressMessages(calc_percentile_day(x, pct))
+    expect_equal(out$day_abv_95p, values > 1)
+})
+
 # ==== Standardised indices ===================================================
 
 test_that("SPI from the matrix equals compute_spi()", {

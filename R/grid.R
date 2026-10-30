@@ -65,8 +65,9 @@ calc_threshold_day.SpatRaster <- function(x, above = NULL, below = NULL, unit = 
     rlang::check_dots_empty()
     period <- rlang::arg_match(period)
     compute <- function(tables) {
-        calc_threshold_day(tables[[1]], above = above, below = below, unit = unit) |>
-            summarise_by_period(period, min_coverage = min_coverage)
+        without_short_window_warning(
+            calc_threshold_day(tables[[1]], above = above, below = below, unit = unit) |>
+                summarise_by_period(period, min_coverage = min_coverage))
     }
     args <- list(above = above, below = below, unit = unit, period = period)
     if (grid_fast()) {
@@ -321,8 +322,9 @@ grid_indicators <- function(climate, preset = NULL, above = NULL, below = NULL, 
     block_control$chunk <- "auto"
     compute <- function(tables) {
         x <- to_unit(tables[[1]], unit_to)
-        compute_extremes(x, s, spells, exclude_below, baseline, block_control) |>
-            summarise_by_period(period, min_coverage = control$min_coverage)
+        without_short_window_warning(
+            compute_extremes(x, s, spells, exclude_below, baseline, block_control) |>
+                summarise_by_period(period, min_coverage = control$min_coverage))
     }
     args <- list(preset = preset, above = s$above, below = s$below, p = s$p,
                  spells = spells, min_spell = s$min_spell, period = period,

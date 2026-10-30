@@ -198,18 +198,12 @@ row_quantiles <- function(values, p, replace = NA_real_) {
 #' @param p Probabilities, e.g. `c(0.1, 0.9)`.
 #' @param exclude_below,exclude_above Values beyond these are left out, e.g.
 #'   `exclude_below = 0.1` for wet-day percentiles of precipitation.
-#' @param replace Value for a unit and month with no data left.
+#' @param replace Value for a unit and month with no data.
 #' @return A named list, one matrix per probability (names like `"90p"`),
 #'   units by months (`"01"` to `"12"`, the months present in `dates`).
 #' @noRd
 quantile_by_month <- function(values, dates, p, exclude_below = NULL,
                               exclude_above = NULL, replace = NA_real_) {
-    if (!is.null(exclude_below)) {
-        values[!is.na(values) & values < exclude_below] <- NA
-    }
-    if (!is.null(exclude_above)) {
-        values[!is.na(values) & values > exclude_above] <- NA
-    }
     months <- month_label(dates)
     labels <- sort(unique(months))
 
@@ -218,13 +212,42 @@ quantile_by_month <- function(values, dates, p, exclude_below = NULL,
                dimnames = list(rownames(values), labels))
     })
     for (k in seq_along(labels)) {
-        quantiles <- row_quantiles(values[, months == labels[k], drop = FALSE],
-                                   p, replace)
+        quantiles <- excluded_quantiles(values[, months == labels[k], drop = FALSE],
+                                        p, exclude_below, exclude_above, replace)
         for (j in seq_along(p)) {
             out[[j]][, k] <- quantiles[, j]
         }
     }
     names(out) <- paste0(p * 100, "p")
+    out
+}
+
+#' Quantiles of each row after leaving out the values beyond the cut-offs
+#'
+#' A row with data whose values all fall beyond a cut-off (a month with no
+#' wet day) gets that cut-off as its quantiles, as climatic4economist did, so
+#' its days are compared with the cut-off; a row with no data gets
+#' `replace`.
+#' @noRd
+excluded_quantiles <- function(values, p, exclude_below = NULL, exclude_above = NULL,
+                               replace = NA_real_) {
+    present <- !is.na(values)
+    low <- if (!is.null(exclude_below)) present & values < exclude_below
+    high <- if (!is.null(exclude_above)) present & values > exclude_above
+    filtered <- values
+    if (!is.null(low)) filtered[low] <- NA
+    if (!is.null(high)) filtered[high] <- NA
+    out <- row_quantiles(filtered, p, replace)
+
+    emptied <- rowSums(present) > 0 & rowSums(!is.na(filtered)) == 0
+    if (any(emptied)) {
+        n_low <- if (!is.null(low)) rowSums(low) else 0
+        n_high <- if (!is.null(high)) rowSums(high) else 0
+        cut_off <- rep(NA_real_, nrow(values))
+        if (!is.null(exclude_below)) cut_off[n_high == 0] <- exclude_below
+        if (!is.null(exclude_above)) cut_off[n_low == 0] <- exclude_above
+        out[emptied, ] <- cut_off[emptied]
+    }
     out
 }
 

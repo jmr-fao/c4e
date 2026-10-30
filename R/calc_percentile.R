@@ -8,8 +8,11 @@
 #'
 #' Use `exclude_below` to leave out values, for instance days with less than
 #' 0.1 mm of rain, so the percentiles describe wet days only. A unit and
-#' month left with no value gets `replace` (by default `NA`, so no day is
-#' flagged against it).
+#' month whose values all fall beyond the cut-off, such as a dry-season month
+#' with no wet day, gets the cut-off itself as its percentiles, as in
+#' climatic4economist: its days are then compared with the cut-off, so a
+#' rare wet day still counts. A unit and month with no data at all gets
+#' `replace` (by default `NA`, so no day is flagged against it).
 #'
 #' @param x A wide table from `extract_*()`, or a long indicator table.
 #' @param p Probabilities, e.g. `c(0.1, 0.9)`.
@@ -18,7 +21,7 @@
 #'   year (columns `yr_90p`), repeated on every month.
 #' @param baseline Optional dates `c(from, to)` limiting the days used, e.g.
 #'   `c("1991-01-01", "2020-12-31")`.
-#' @param replace Value for a unit and month with no data.
+#' @param replace Value for a unit and month with no data at all.
 #' @inheritParams calc_threshold_day
 #'
 #' @return A `c4e_tbl` lookup table: the unit identifiers, `month` (`"01"` to
@@ -84,10 +87,8 @@ calc_percentile.default <- function(x, p, exclude_below = NULL, exclude_above = 
                                       c(list("pct", p = p[j], period = "month"), common))
         }
         if (yearly) {
-            filtered <- values
-            if (!is.null(exclude_below)) filtered[!is.na(filtered) & filtered < exclude_below] <- NA
-            if (!is.null(exclude_above)) filtered[!is.na(filtered) & filtered > exclude_above] <- NA
-            whole_year <- row_quantiles(filtered, p, replace)
+            whole_year <- excluded_quantiles(values, p, exclude_below, exclude_above,
+                                             replace)
             for (j in seq_along(p)) {
                 col <- paste0("yr_", names(monthly)[j])
                 out[[col]] <- rep(whole_year[, j], each = length(months))

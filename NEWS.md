@@ -88,6 +88,19 @@ tracked in `dev/LOG_v2.md`.
   rebuilt, and the displacement is recorded in the context, the labels and
   the Stata codebook (the seed is not).
 
+* Compared with climatic4economist on a real survey (`dev/compare/`):
+  * `convert_unit()` on a wide table converts every date column at once
+    (from 25-60 s to under 1 s for 300 locations and 29 years of days), and
+    the indicator steps match dates as numbers (thresholds and spells 3 to
+    5 times faster than before).
+  * `calc_percentile()` gives a unit and month whose values all fall beyond
+    `exclude_below` (a month with no wet day) the cut-off itself, as
+    climatic4economist did, so a rare wet day in that month still counts;
+    a unit and month with no data stays `NA`.
+  * `summarise_by_interview()` and `summarise_by_period()` warn how many
+    windows are `NA` because less than `min_coverage` of their days have
+    data, and how many have no data at all.
+
 ## Planned
 
 * The first release, on GitHub for testing, then r-universe. Case studies move to a

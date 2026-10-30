@@ -37,7 +37,7 @@ year (columns \code{yr_90p}), repeated on every month.}
 \item{baseline}{Optional dates \code{c(from, to)} limiting the days used, e.g.
 \code{c("1991-01-01", "2020-12-31")}.}
 
-\item{replace}{Value for a unit and month with no data.}
+\item{replace}{Value for a unit and month with no data at all.}
 
 \item{id}{Optional name of the unit identifier column.}
 
@@ -62,8 +62,11 @@ maximum temperature in July. These are the relative thresholds that
 \details{
 Use \code{exclude_below} to leave out values, for instance days with less than
 0.1 mm of rain, so the percentiles describe wet days only. A unit and
-month left with no value gets \code{replace} (by default \code{NA}, so no day is
-flagged against it).
+month whose values all fall beyond the cut-off, such as a dry-season month
+with no wet day, gets the cut-off itself as its percentiles, as in
+climatic4economist: its days are then compared with the cut-off, so a
+rare wet day still counts. A unit and month with no data at all gets
+\code{replace} (by default \code{NA}, so no day is flagged against it).
 }
 \examples{
 pre <- read_climate(

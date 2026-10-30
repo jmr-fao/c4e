@@ -30,17 +30,22 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** before the release, a comparison of c4e with
-climatic4economist on real data: `dev/compare/compare-v1.R` on branch
-`compare-v1` (identical on the fixtures, 53 of 53 columns); it needs Jan's
-data paths. The paper draft (#12) is merged.
+**Current chunk:** before the release, the comparison of c4e with
+climatic4economist on real data and the fixes it found, on branch
+`compare-v1` (not pushed): the labour survey (six countries, 300 sampled
+locations, WFDE5 1991-2019) agrees on every value both packages compute;
+unit conversion and the long-table frame are faster; wet-day percentiles
+follow v1; short windows warn. The paper draft (#12) is merged.
 
 **Next steps (in order):**
-1. Run `dev/compare/compare-v1.R` on one real project (copy
-   `dev/compare/config-example.R` to `config-local.R`, ignored by git):
-   survey with coordinates and interview dates, a daily and a monthly
-   raster, divisions. Investigate every column marked DIFFERENT before the
-   release. Possible later for `displace_coord()`: a minimum displacement
+1. Push `compare-v1` and open its pull request. Faster thresholds and
+   spells are still 2 to 3 times slower than v1 (the long table and its
+   registry); profile `to_long()` and `finish_frame()` if it matters.
+   Two v1 bugs to fix in climatic4economist if Jan agrees:
+   `quantile_na_check()` with no replacement crashes on a unit and month
+   with no data (`calc_pct_day.R:68`, `:73`: pass `replace = NA_real_`),
+   and `extr_day_index.R:80-81`, `extr_spell_index.R:67-68` need
+   `invalid = "previous"`. Possible later for `displace_coord()`: a minimum displacement
    ("donut") and recording which indicators were computed before
    displacement.
 2. Chunk 17, the release (plan §8 row 17): a GitHub release only, for
@@ -220,6 +225,33 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-31 — comparison on the labour survey and its fixes (laptop: FAO-Win, session: Claude)
+- Did: ran `dev/compare/compare-v1.R` on the labour survey (six LSMS
+  countries, 300 of 2,424 locations sampled, 2,798 households; WFDE5 tmax
+  and precipitation 1991-2019; SPI 1, 3, 6 from monthly totals). Fixed in
+  c4e: `convert_unit.c4e_tbl()` converts the columns in one assignment;
+  `indicator_frame()` matches dates as numbers and checks duplicate unit
+  and date pairs on one number; `sort_long()` uses `vctrs::vec_slice()`;
+  `excluded_quantiles()` gives a unit and month whose values all fall
+  beyond the cut-off the cut-off itself (Jan's choice, as v1); a
+  `c4e_short_windows` warning in the window and period summaries,
+  silenced inside the grid. README speed table rewritten with the public
+  functions (it measured the kernel before).
+- Found: every value both packages compute agrees (extraction,
+  thresholds, spells, percentiles, percentile days, heatwave, window
+  summaries, SPI, `weather_extremes()` against the steps); the only
+  differences were windows below `min_coverage` (by design) and wet-day
+  percentiles of months without a wet day (now as v1). v1 crashes in
+  `calc_pct_day()` on a unit and month with no data. Speed before the fix:
+  conversion 25-60 s (one `[[<-` per date column), thresholds 25-35 s and
+  spells 13-20 s (`match()` on Dates and `anyDuplicated()` on a matrix go
+  through text); after: 0.3 s, 4 s, 3 s (v1 1.4 s and 1.5 s). The survey
+  repeats 39 household ids across countries (key on survey and household);
+  `terra::crop()` drops units.
+- Tests: full suite 1,202 expectations, 0 failures; `rcmdcheck` 0 errors,
+  0 warnings, 1 note (new submission with the vignette index).
+- Next: see Next steps above.
 
 ### 2026-10-30 — comparison with climatic4economist (laptop: FAO-Win, session: Claude)
 - Did: #12 (paper draft) merged and `joss-paper` deleted. Branch

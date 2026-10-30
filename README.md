@@ -144,14 +144,26 @@ What changes in practice:
 * **Signs are kept.** Index thresholds keep their sign in column names
   (`spi3_blw_-1.5`).
 
-The results are the same: the tests check c4e against stored outputs of
-climatic4economist. The daily indicators are also faster, measured on
-synthetic data with 1,000 to 10,000 locations (`inst/bench/`):
+The results are the same. The tests check c4e against stored outputs of
+climatic4economist, and `dev/compare/compare-v1.R` runs both packages on
+the same survey and rasters: on a household survey from six countries
+(300 locations, 29 years of daily WFDE5 data) every value agrees, except
+the windows that c4e leaves missing by design.
 
-| Indicator | climatic4economist | c4e | Faster by |
-|---|---|---|---|
-| Days above thresholds and their spells | 3 to 8 s | 0.4 to 2 s | 4 to 7 times |
-| Monthly percentiles | 2 min to 1 hour | 1 to 4 s | 100 to 900 times |
+Speed, for 300 locations and 29 years of daily data (one run each,
+synthetic data):
+
+| Step | climatic4economist | c4e |
+|---|---|---|
+| Days above thresholds | 1.4 s | 4.1 s |
+| Spells | 1.5 s | 2.9 s |
+| WMO heatwaves | 4.8 s | 5.7 s |
+| Monthly percentiles | 28 s | 5.2 s |
+
+Days and spells take a little longer, because c4e builds a long table that
+records what each column means. Percentiles are much faster, and the gap
+grows with the number of locations: 100 to 900 times for 1,000 to 10,000
+locations (`inst/bench/`).
 
 ## 📦 Dependencies
 

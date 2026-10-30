@@ -1,7 +1,7 @@
 # The four wrappers and the presets (plan §8 chunk 11, §12)
 
 fixture_file <- function(name) system.file("extdata", name, package = "c4e")
-quiet <- function(expr) suppressMessages(expr)
+quiet <- function(expr) suppressMessages(without_short_window_warning(expr))
 
 # progress steps print their duration, which changes from run to run
 scrub_time <- function(lines) gsub("\\[[0-9.]+ ?m?s\\]", "[time]", lines)

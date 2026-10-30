@@ -414,9 +414,13 @@ convert_unit.c4e_tbl <- function(x, to, from = NULL, cols = NULL, ...) {
     level_cols <- setdiff(level_cols, names(registry))
 
     factor_of <- column_factors(conv, data, meta)
-    for (col in level_cols) {
-        data[[col]] <- data[[col]] * factor_of(col) + conv$offset
-    }
+    # one assignment: a wide table has a column per date, and assigning them
+    # one by one copies the table each time
+    columns <- unclass(data)
+    columns[level_cols] <- lapply(level_cols, \(col) {
+        columns[[col]] * factor_of(col) + conv$offset
+    })
+    data <- tibble::new_tibble(columns, nrow = nrow(data))
 
     for (name in names(registry)) {
         entry <- registry[[name]]

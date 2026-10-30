@@ -103,14 +103,25 @@ test_that("window summaries record what they summarised", {
 test_that("windows reaching beyond the data are missing, not zero", {
     coord <- survey_coord()
     indicators <- hot_days()
-    out <- summarise_by_interview(coord, indicators, interval = "1 year", n_lags = 2)
+    # the data start in 2021, so two years before a 2023 interview is
+    # incomplete, and a warning says how many windows that leaves missing
+    expect_warning(
+        out <- summarise_by_interview(coord, indicators, interval = "1 year", n_lags = 2),
+        "20 of 60 household windows are `NA`")
     lag_2 <- dplyr::filter(tibble::as_tibble(out), lag == 2)
-    # the data start in 2021, so two years before a 2023 interview is incomplete
     expect_true(all(is.na(lag_2$day_abv_30_sum)))
+    expect_false(any(c(".short", ".no_data") %in% names(out)))
 
-    all_windows <- summarise_by_interview(coord, indicators, interval = "1 year",
-                                          n_lags = 2, min_coverage = 0)
+    expect_no_warning(all_windows <- summarise_by_interview(
+        coord, indicators, interval = "1 year", n_lags = 2, min_coverage = 0))
     expect_false(anyNA(all_windows$day_abv_30_sum))
+})
+
+test_that("the warning counts windows with no data at all", {
+    coord <- survey_coord()
+    coord$interview <- as.Date("2030-01-01")
+    expect_snapshot(out <- summarise_by_interview(coord, hot_days(), interval = "1 year"))
+    expect_true(all(is.na(out$day_abv_30_sum)))
 })
 
 test_that("households without an interview date are reported and dropped", {

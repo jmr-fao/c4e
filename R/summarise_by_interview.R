@@ -144,6 +144,9 @@ summarise_by_interview <- function(survey, x, window = NULL, interval = NULL,
 
     out <- out[do.call(order, c(unname(as.list(out[c(id_name, "lag")])),
                                 method = "radix")), , drop = FALSE]
+    report_short_windows(out$.short, out$.no_data, min_coverage, "window",
+                         "household window")
+    out <- out[setdiff(names(out), c(".short", ".no_data"))]
     entries <- summary_entries(plans, long_meta, window)
     meta <- modify_meta(empty_meta(), list(
         key = id_name, unit_cols = "lag", shape = "summary",
@@ -193,12 +196,16 @@ summarise_windows <- function(keys, values, window, by, plans, step,
         summaries$.present < min_coverage * summaries$.expected
     stat_cols <- setdiff(names(summaries), c(names(windows), ".present", ".expected"))
     summaries[short, stat_cols] <- NA
+    # carried to the caller, which reports them and drops the columns
+    summaries$.short <- short
+    summaries$.no_data <- is.na(summaries$.present) | summaries$.present == 0
 
     keys |>
         dplyr::select(dplyr::all_of(c(".id", key_cols, extra_names))) |>
-        dplyr::inner_join(summaries[c(group, stat_cols)], by = key_cols,
-                          relationship = "many-to-many") |>
-        dplyr::select(dplyr::all_of(c(".id", "lag", extra_names, stat_cols))) |>
+        dplyr::inner_join(summaries[c(group, stat_cols, ".short", ".no_data")],
+                          by = key_cols, relationship = "many-to-many") |>
+        dplyr::select(dplyr::all_of(c(".id", "lag", extra_names, stat_cols,
+                                      ".short", ".no_data"))) |>
         dplyr::rename(!!id_name := ".id")
 }
 
@@ -287,6 +294,43 @@ summary_entries <- function(plans, meta, window) {
     entries
 }
 
+#' Warn about windows set to NA because too few of their days have data
+#'
+#' Says how many, how many had no data at all (a location on cells without
+#' data, or a window outside the dates of the data) and how to keep partial
+#' windows.
+#' @noRd
+report_short_windows <- function(short, no_data, min_coverage, what, rows,
+                                 call = rlang::caller_env()) {
+    short <- !is.na(short) & short
+    if (!any(short)) {
+        return(invisible(0L))
+    }
+    n_short <- sum(short)
+    n_total <- length(short)
+    n_none <- sum(short & !is.na(no_data) & no_data)
+    pct <- paste0(round(min_coverage * 100), "%")
+    rows <- paste0(rows, if (n_total != 1) "s")
+    are <- if (n_short == 1) "is" else "are"
+    have <- if (n_none == 1) "has" else "have"
+    cli::cli_warn(c(
+        "{n_short} of {n_total} {rows} {are} {.code NA}: less than {pct} of the
+         days have data.",
+        "i" = "{n_none} of them {have} no data at all (a location on cells without
+               data, or a {what} outside the dates of the data).",
+        "i" = "Lower {.arg min_coverage} to keep partial {what}s, e.g.
+               {.code min_coverage = 0.5}."
+    ), class = "c4e_short_windows", call = call)
+    invisible(n_short)
+}
+
+#' Evaluate `expr` without the warning about short windows, for callers that
+#' summarise piece by piece (the grid), where it would repeat for each block
+#' @noRd
+without_short_window_warning <- function(expr) {
+    withCallingHandlers(expr, c4e_short_windows = \(w) tryInvokeRestart("muffleWarning"))
+}
+
 check_min_coverage <- function(min_coverage, call = rlang::caller_env()) {
     if (!is.numeric(min_coverage) || length(min_coverage) != 1 ||
         is.na(min_coverage) || min_coverage < 0 || min_coverage > 1) {
@@ -339,7 +383,9 @@ summarise_by_period <- function(x, period = c("month", "year"), stats = NULL,
     period_end <- lubridate::ceiling_date(out$period, period, change_on_boundary = TRUE) - 1L
     expected <- expected_count(out$period - 1L, period_end, step)
     stat_cols <- setdiff(names(out), c(frame$id_cols, "period", ".present"))
-    out[out$.present < min_coverage * expected, stat_cols] <- NA
+    short <- out$.present < min_coverage * expected
+    out[short, stat_cols] <- NA
+    report_short_windows(short, out$.present == 0, min_coverage, "period", "unit period")
     out$.present <- NULL
     out <- sort_long(out, c(frame$id_cols, "period"))
 
