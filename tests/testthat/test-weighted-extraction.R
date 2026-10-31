@@ -45,6 +45,33 @@ test_that("align_count_rast sums non-nested grids by overlap", {
 
     out <- align_count_rast(pop, template)
     expect_equal(sum(terra::values(out)), 16, tolerance = 0.01)
+    # each 0.4 cell holds 0.16 / 0.09 of a 0.3 cell, whatever the GDAL version
+    expect_equal(as.vector(terra::values(out)), rep(0.16 / 0.09, 9))
+})
+
+test_that("align_count_rast shares counts by the area inside the template", {
+    # 0.3 cells onto 0.4 cells shifted by 0.1: the template reaches 0.1 past
+    # the counts on the right, and leaves the first 0.1 of them out
+    pop <- terra::rast(xmin = 0, xmax = 1.2, ymin = 0, ymax = 1.2, res = 0.3,
+                       crs = "epsg:4326", vals = 1)
+    template <- terra::rast(xmin = 0.1, xmax = 1.3, ymin = 0, ymax = 1.2,
+                            res = 0.4, crs = "epsg:4326", vals = 0)
+    pop2 <- c(pop, pop * 2)
+    names(pop2) <- c("a", "b")
+
+    out <- align_count_rast(pop2, template)
+    per_row <- c(0.4, 0.4, 0.3) / 0.3 * 0.4 / 0.3 # widths with counts, by column
+    expect_equal(as.vector(terra::values(out[["a"]])), rep(per_row, 3))
+    expect_equal(as.vector(terra::values(out[["b"]])), 2 * rep(per_row, 3))
+    expect_equal(sum(terra::values(out[["a"]])), 16 * 1.1 / 1.2)
+})
+
+test_that("align_count_rast gives 0 where the counts do not reach", {
+    pop <- terra::rast(xmin = 0, xmax = 1.2, ymin = 0, ymax = 1.2, res = 0.3,
+                       crs = "epsg:4326", vals = 1)
+    far <- terra::rast(xmin = 5, xmax = 6.2, ymin = 5, ymax = 6.2, res = 0.4,
+                       crs = "epsg:4326", vals = 9)
+    expect_equal(as.vector(terra::values(align_count_rast(pop, far))), rep(0, 9))
 })
 
 test_that("align_count_rast repeats counts onto a finer grid", {

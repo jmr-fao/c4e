@@ -250,6 +250,15 @@ To reproduce the GitHub check locally (same arguments as CI):
   the same results; repeated rows still refused); `rcmdcheck` 0 errors,
   0 warnings, 1 note.
 - Next: see Next steps above.
+- Later the same day: PR #13 failed R-CMD-check on GitHub (R 4.6.2,
+  Ubuntu 26.04): `align_count_rast()` on grids that do not nest summed 16
+  people to 15.5. terra 1.9-50 gives 16 on Windows (GDAL 3.12.1), so the
+  difference is the system GDAL's `"sum"` resampling. `overlap_sum()` now
+  shares each count by its area in each template cell (column overlap ×
+  row overlap, both grids regular and north-up), with tests on the value
+  of every cell, partial overlap, several layers and no overlap. The
+  checkout had been switched to `main` outside the session; the fix was
+  carried back to `compare-v1` before committing.
 
 ### 2026-10-31 — comparison on the labour survey and its fixes (laptop: FAO-Win, session: Claude)
 - Did: ran `dev/compare/compare-v1.R` on the labour survey (six LSMS

@@ -35,7 +35,9 @@ the resolutions:
 cell, so totals are preserved. When the grids nest (the resolution ratio
 is a whole number and the cell edges line up, e.g. 30 arc-seconds into
 5 arc-minutes) the sum is exact, with \code{\link[terra:aggregate]{terra::aggregate()}}; otherwise
-\code{\link[terra:resample]{terra::resample()}} with \code{method = "sum"} shares each count by overlap.
+each count is shared by the area of the count cell inside each template
+cell. (Not \code{\link[terra:resample]{terra::resample()}} with \code{method = "sum"}, whose result
+depends on the GDAL version.)
 \item \code{template} as fine as or finer than \code{count}: each template cell takes the
 count of the cell it falls in (\code{method = "near"}). Totals are not
 preserved, but the relative weights between cells are, which is what a

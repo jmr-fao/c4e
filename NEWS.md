@@ -103,6 +103,11 @@ tracked in `dev/LOG_v2.md`.
     windows are `NA` because less than `min_coverage` of their days have
     data, and how many have no data at all.
 
+* `align_count_rast()` shares counts between grids that do not nest by the
+  area of overlap, computed in c4e: `terra::resample(method = "sum")` gave
+  different totals with different GDAL versions (16 people on Windows, 15.5
+  on Ubuntu 26.04 for the same grids).
+
 ## Planned
 
 * The first release, on GitHub for testing, then r-universe. Case studies move to a
