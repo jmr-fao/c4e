@@ -40,6 +40,12 @@ indicator_frame <- function(x, id = NULL, call = rlang::caller_env()) {
 
     data <- tibble::as_tibble(long)
     dates_by_row <- parse_date_label(data[[date_col]])
+    grid <- regular_grid(data[id_cols], dates_by_row)
+    if (!is.null(grid)) {
+        return(list(data = long, meta = meta, key = key, id_cols = id_cols,
+                    date_col = date_col, ids = grid$ids, dates = grid$dates,
+                    rows = grid$rows, regular = TRUE))
+    }
     ids <- vctrs::vec_unique(data[id_cols])
     ids <- ids[do.call(order, c(unname(as.list(ids)), method = "radix")), , drop = FALSE]
     dates <- sort(unique(dates_by_row[!is.na(dates_by_row)]))
@@ -47,32 +53,80 @@ indicator_frame <- function(x, id = NULL, call = rlang::caller_env()) {
     # dates are matched as numbers and each unit and date pair is one number:
     # matching Dates, or checking a two-column matrix, goes through text
     unit_index <- vctrs::vec_match(data[id_cols], ids)
-    date_index <- match(unclass(dates_by_row), unclass(dates))
-    pair <- (as.double(unit_index) - 1) * (length(dates) + 1) +
-        ifelse(is.na(date_index), 0, date_index)
+    date_index <- match(unclass(dates_by_row), unclass(dates), nomatch = 0L)
+    pair <- (as.double(unit_index) - 1) * (length(dates) + 1) + date_index
     if (anyDuplicated(pair) > 0) {
         cli::cli_abort("{.arg x} has more than one row for some unit and date.",
                        call = call)
     }
     rows <- matrix(NA_integer_, nrow(ids), length(dates))
-    ok <- !is.na(date_index)
+    ok <- date_index > 0L
     rows[cbind(unit_index[ok], date_index[ok])] <- which(ok)
 
     list(data = long, meta = meta, key = key, id_cols = id_cols,
-         date_col = date_col, ids = ids, dates = dates, rows = rows)
+         date_col = date_col, ids = ids, dates = dates, rows = rows,
+         regular = FALSE)
+}
+
+#' The grid of a table already in unit-then-date order, with every date
+#'
+#' The tables c4e writes are laid out this way (`sort_long()` in
+#' `run_indicator()`, and `to_long()`): one block of rows per unit, units
+#' sorted, the same increasing dates in every block. Checking that is cheaper
+#' than matching every row, and the result is the same grid. Any other layout
+#' returns `NULL`, and the rows are matched one by one.
+#' @noRd
+regular_grid <- function(id_data, dates_by_row) {
+    n <- length(dates_by_row)
+    if (n == 0 || anyNA(dates_by_row)) {
+        return(NULL)
+    }
+    day <- unclass(dates_by_row)
+    n_dates <- match(day[[1]], day[-1], nomatch = n) # the next unit starts again
+    if (n %% n_dates != 0) {
+        return(NULL)
+    }
+    n_units <- n %/% n_dates
+    first <- seq_len(n_dates)
+    if (is.unsorted(day[first], strictly = TRUE) ||
+        !all(day == rep.int(day[first], n_units))) {
+        return(NULL)
+    }
+    starts <- (seq_len(n_units) - 1L) * n_dates + 1L
+    ids <- vctrs::vec_slice(id_data, starts)
+    same_unit <- vapply(names(id_data), \(col) {
+        values <- id_data[[col]]
+        identical(values, rep(values[starts], each = n_dates))
+    }, logical(1))
+    sorted <- identical(do.call(order, c(unname(as.list(ids)), method = "radix")),
+                        seq_len(n_units))
+    if (!all(same_unit) || !sorted || vctrs::vec_duplicate_any(ids)) {
+        return(NULL)
+    }
+    list(ids = ids, dates = dates_by_row[first],
+         rows = matrix(seq_len(n), n_units, n_dates, byrow = TRUE))
 }
 
 #' One column of the long table as a units-by-dates matrix
 #' @noRd
 frame_matrix <- function(frame, col) {
-    matrix(tibble::as_tibble(frame$data)[[col]][frame$rows],
-           nrow(frame$rows), ncol(frame$rows))
+    values <- tibble::as_tibble(frame$data)[[col]]
+    if (isTRUE(frame$regular)) {
+        return(matrix(values, nrow(frame$rows), ncol(frame$rows), byrow = TRUE))
+    }
+    matrix(values[frame$rows], nrow(frame$rows), ncol(frame$rows))
 }
 
 #' Put units-by-dates matrices back as columns of the long table
 #' @noRd
 frame_columns <- function(frame, columns) {
     data <- tibble::as_tibble(frame$data)
+    if (isTRUE(frame$regular)) {
+        for (name in names(columns)) {
+            data[[name]] <- as.vector(t(columns[[name]]))
+        }
+        return(data)
+    }
     present <- !is.na(frame$rows)
     for (name in names(columns)) {
         m <- columns[[name]]

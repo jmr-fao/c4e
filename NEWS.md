@@ -92,7 +92,9 @@ tracked in `dev/LOG_v2.md`.
   * `convert_unit()` on a wide table converts every date column at once
     (from 25-60 s to under 1 s for 300 locations and 29 years of days), and
     the indicator steps match dates as numbers (thresholds and spells 3 to
-    5 times faster than before).
+    5 times faster than before). A table already in unit-then-date order
+    with every date, as each step writes it, is read without matching its
+    rows, which takes another third off thresholds and spells.
   * `calc_percentile()` gives a unit and month whose values all fall beyond
     `exclude_below` (a month with no wet day) the cut-off itself, as
     climatic4economist did, so a rare wet day in that month still counts;

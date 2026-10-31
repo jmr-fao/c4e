@@ -38,9 +38,13 @@ unit conversion and the long-table frame are faster; wet-day percentiles
 follow v1; short windows warn. The paper draft (#12) is merged.
 
 **Next steps (in order):**
-1. Push `compare-v1` and open its pull request. Faster thresholds and
-   spells are still 2 to 3 times slower than v1 (the long table and its
-   registry); profile `to_long()` and `finish_frame()` if it matters.
+1. Push `compare-v1` and open its pull request. Thresholds are still
+   about 3 times slower than v1 and spells about 1.3 times (the long
+   table). Later, if a large survey runs out of memory (the long table
+   reaches about 2 GB for thousands of locations over 30 years): a matrix
+   path inside `weather_extremes()` and `climate_indices()`, from
+   extraction to window sums with running totals, never building the long
+   table (about 2.5 s of a 6 s call on 300 locations, and the memory).
    Two v1 bugs to fix in climatic4economist if Jan agrees:
    `quantile_na_check()` with no replacement crashes on a unit and month
    with no data (`calc_pct_day.R:68`, `:73`: pass `replace = NA_real_`),
@@ -225,6 +229,27 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-10-31 — reading tables already in order (laptop: FAO-Win, session: Claude)
+- Did: `indicator_frame()` first checks, through `regular_grid()`, whether
+  the long table is one block of rows per unit, units sorted, the same
+  increasing dates in every block (as `run_indicator()` and `to_long()`
+  write it); if so it builds the grid directly and `frame_matrix()` /
+  `frame_columns()` reshape by row instead of indexing. Any other layout
+  falls back to matching every row. `ifelse()` in the duplicate key
+  replaced by `match(nomatch = 0)`. Jan chose this over a matrix path in
+  the wrappers (kept in Next steps for memory).
+- Found: on 300 locations × 10,592 days, `weather_extremes()` (two
+  thresholds, p90, spells, two lags) 6.2-6.6 s → 4.7-4.9 s with identical
+  output; `calc_threshold_day()` 1.2 → 0.8 s and `calc_spell()` 1.0 →
+  0.6 s after a warm-up call (1.9 s and 1.0 s on a first call, the README
+  table). README speed table rerun: v1 was also faster than when last
+  measured (single runs vary with memory pressure).
+- Tests: full suite 1,215 expectations, 0 failures (new: same grid as
+  matching row by row; shuffled, gapped and reordered tables fall back with
+  the same results; repeated rows still refused); `rcmdcheck` 0 errors,
+  0 warnings, 1 note.
+- Next: see Next steps above.
 
 ### 2026-10-31 — comparison on the labour survey and its fixes (laptop: FAO-Win, session: Claude)
 - Did: ran `dev/compare/compare-v1.R` on the labour survey (six LSMS

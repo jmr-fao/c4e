@@ -155,13 +155,13 @@ synthetic data):
 
 | Step | climatic4economist | c4e |
 |---|---|---|
-| Days above thresholds | 1.4 s | 4.1 s |
-| Spells | 1.5 s | 2.9 s |
-| WMO heatwaves | 4.8 s | 5.7 s |
-| Monthly percentiles | 28 s | 5.2 s |
+| Days above thresholds | 0.6 s | 1.9 s |
+| Spells | 0.7 s | 1.0 s |
+| WMO heatwaves | 2.9 s | 0.8 s |
+| Monthly percentiles | 14 s | 0.8 s |
 
 Days and spells take a little longer, because c4e builds a long table that
-records what each column means. Percentiles are much faster, and the gap
+records what each column means. Heatwaves and percentiles are faster, and the gap
 grows with the number of locations: 100 to 900 times for 1,000 to 10,000
 locations (`inst/bench/`).
 

@@ -242,3 +242,41 @@ test_that("no context argument is typed after extraction", {
                  c("extract_by_coord()", "convert_unit(to = \"C\", from = \"K\")",
                    "calc_threshold_day(above = 30, unit = \"C\")"))
 })
+
+# ==== Indicator frame ========================================================
+
+test_that("a table in unit-then-date order gives the same grid as matching row by row", {
+    long <- calc_threshold_day(extracted(layers = 1:40), above = 300)
+    shuffled <- long[sample(nrow(long)), ]
+    fast <- indicator_frame(long)
+    slow <- indicator_frame(shuffled)
+
+    expect_true(fast$regular)
+    expect_false(slow$regular)
+    expect_identical(fast$ids, slow$ids)
+    expect_identical(fast$dates, slow$dates)
+    expect_identical(frame_matrix(fast, "value"), frame_matrix(slow, "value"))
+    expect_identical(frame_matrix(fast, "day_abv_300"), frame_matrix(slow, "day_abv_300"))
+})
+
+test_that("any other layout is matched row by row, with the same results", {
+    long <- calc_threshold_day(extracted(layers = 1:40), above = 300)
+    in_order <- calc_spell(long)
+    expect_true(indicator_frame(long)$regular)
+
+    shuffled <- long[sample(nrow(long)), ]
+    gap <- long[-5, ]                          # one unit misses a date
+    reordered <- dplyr::arrange(long, dplyr::desc(ID), date)
+    for (x in list(shuffled, gap, reordered)) {
+        expect_false(indicator_frame(x)$regular)
+    }
+    same_columns(calc_spell(shuffled), in_order, c("value", "spell_abv_300"))
+    same_columns(calc_spell(reordered), in_order, c("value", "spell_abv_300"))
+    gap_spell <- tibble::as_tibble(calc_spell(gap))
+    expect_equal(nrow(gap_spell), nrow(long) - 1)
+})
+
+test_that("repeated rows are still refused", {
+    long <- calc_threshold_day(extracted(layers = 1:10), above = 300)
+    expect_error(indicator_frame(dplyr::bind_rows(long, long)), "more than one row")
+})
