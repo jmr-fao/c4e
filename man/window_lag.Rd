@@ -5,6 +5,7 @@
 \alias{window_season}
 \alias{window_fixed}
 \alias{window_since}
+\alias{window_calendar}
 \title{Reference windows for survey summaries}
 \usage{
 window_lag(interval = "1 year", n_lags = 0)
@@ -14,6 +15,8 @@ window_season(start_month, end_month, years_back = 0)
 window_fixed(from, to)
 
 window_since(event)
+
+window_calendar(start, end, unit = c("doy", "dekad"), years_back = 0)
 }
 \arguments{
 \item{interval}{Length of each lag, e.g. \code{"1 year"}, \code{"6 months"},
@@ -32,6 +35,16 @@ three.}
 
 \item{event}{<\code{\link[rlang:args_data_masking]{data-masking}}> Column of the
 survey with the start date of each household's window.}
+
+\item{start, end}{<\code{\link[rlang:args_data_masking]{data-masking}}> Columns
+of the survey with each location's season bounds, as offsets from
+1 January. Values below 1 or above 365 reach into the neighbouring
+year, and a season closing before it opens is taken to close in
+the following one, so windows that straddle the new year need no
+special handling.}
+
+\item{unit}{Unit of \code{start} and \code{end}: \code{"doy"} for days, \code{"dekad"}
+for the 10-day steps that FAO ASIS phenology uses.}
 }
 \value{
 A \code{c4e_window} object.
@@ -51,11 +64,15 @@ season may cross the new year (\code{"Nov"} to \code{"Feb"}).
 \item \code{window_fixed()}: the same calendar period for everyone.
 \item \code{window_since()}: from a date recorded for each household, such as
 planting or a shock, up to the day before the interview.
+\item \code{window_calendar()}: a season whose bounds are columns of the
+survey, so every location can have its own, as with a crop
+calendar read from a raster. Use \code{\link[=read_season]{read_season()}} to attach them.
 }
 }
 \examples{
 window_lag("1 year", n_lags = 2)
 window_season("Jun", "Sep", years_back = 0:1)
+window_calendar(sos, eos, unit = "dekad")
 window_fixed("2022-01-01", "2022-12-31")
 }
 \seealso{

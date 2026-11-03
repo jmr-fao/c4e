@@ -196,6 +196,72 @@ test_that("season, fixed and since windows summarise the right days", {
                  sum(days$day_abv_30))
 })
 
+
+test_that("calendar windows take their bounds from the survey, row by row", {
+    keys <- tibble::tibble(
+        .by_key    = c("a", "b", "c"),
+        .interview = as.Date(c("2023-11-20", "2023-06-15", "2023-08-01")),
+        .sos       = c(92, 92, 260),
+        .eos       = c(297, 297, 159))
+    w <- window_frame(window_calendar(sos, eos), keys) |> dplyr::arrange(.by_key)
+
+    # a: interviewed once the 2023 season had closed, so that is the window
+    expect_equal(c(w$w_start[1], w$w_end[1]), as.Date(c("2023-04-01", "2023-10-24")))
+    # b: same season, interviewed inside it, so the last CLOSED one is 2022's
+    expect_equal(c(w$w_start[2], w$w_end[2]), as.Date(c("2022-04-01", "2022-10-24")))
+    # c: an end before its start closes in the following year
+    expect_equal(c(w$w_start[3], w$w_end[3]), as.Date(c("2022-09-16", "2023-06-08")))
+
+    # the three rows share nothing but the shape: one window each
+    expect_equal(nrow(w), 3L)
+
+    # dekads are ten-day steps from 1 January and may run negative, which is
+    # how FAO ASIS encodes a season reaching back into the previous year
+    dek <- window_frame(window_calendar(sos, eos, unit = "dekad"),
+                        dplyr::mutate(keys[1, ], .sos = -2, .eos = 14))
+    expect_equal(c(dek$w_start, dek$w_end), as.Date(c("2022-12-10", "2023-05-20")))
+
+    # years_back steps whole seasons, as window_season() does
+    back <- window_frame(window_calendar(sos, eos, years_back = 0:2), keys[1, ])
+    expect_equal(back$lag, 0:2)
+    expect_equal(lubridate::year(back$w_end), c(2023, 2022, 2021))
+
+    # a row with no season is dropped, not an error
+    expect_equal(nrow(window_frame(window_calendar(sos, eos),
+                                   dplyr::mutate(keys[1, ], .sos = NA))), 0L)
+
+    expect_equal(describe_window(window_calendar(sos, eos)),
+                 "season sos to eos (doy), 0 season(s) back")
+})
+
+test_that("a calendar window summarises the days inside each row's own season", {
+    coord <- survey_coord()
+    indicators <- hot_days()
+    long <- tibble::as_tibble(indicators)
+    coord$sos <- 60L
+    coord$eos <- 200L
+
+    cal <- summarise_by_interview(coord, indicators,
+                                  window = window_calendar(sos, eos),
+                                  min_coverage = 0)
+    expect_equal(c4e_meta(cal)$window$type, "calendar")
+
+    first <- dplyr::filter(tibble::as_tibble(coord), hhid == hhid[1])
+    w <- window_frame(window_calendar(sos, eos),
+                      tibble::tibble(.by_key = first$ID,
+                                     .interview = first$interview,
+                                     .sos = first$sos, .eos = first$eos))
+    days <- dplyr::filter(long, ID == first$ID, date > w$w_start, date <= w$w_end)
+    expect_equal(dplyr::filter(tibble::as_tibble(cal), hhid == first$hhid)$day_abv_30_sum,
+                 sum(days$day_abv_30))
+
+    # a missing bound column is caught by name
+    coord$eos <- NULL
+    expect_error(summarise_by_interview(coord, indicators,
+                                        window = window_calendar(sos, eos)),
+                 "eos")
+})
+
 # ==== summarise_by_period() ==================================================
 
 test_that("period summaries count days per unit and month", {

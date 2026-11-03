@@ -116,6 +116,16 @@ summarise_by_interview <- function(survey, x, window = NULL, interval = NULL,
     if (identical(window$type, "since")) {
         keys$.event <- parse_date_label(tibble::as_tibble(survey)[[window$event]])
     }
+    if (identical(window$type, "calendar")) {
+        survey_tbl <- tibble::as_tibble(survey)
+        missing <- setdiff(c(window$start, window$end), names(survey_tbl))
+        if (length(missing)) {
+            cli::cli_abort("The survey has no {.field {missing}} column{?s},
+                            which {.fn window_calendar} needs.")
+        }
+        keys$.sos <- as.numeric(survey_tbl[[window$start]])
+        keys$.eos <- as.numeric(survey_tbl[[window$end]])
+    }
     dropped <- is.na(keys$.interview)
     if (any(dropped)) {
         n_dropped <- sum(dropped)
@@ -133,7 +143,8 @@ summarise_by_interview <- function(survey, x, window = NULL, interval = NULL,
         summarise_windows(parts$keys, parts$values, window, by, plans, step,
                           min_coverage, id_name, extra_names)
     }
-    windows_all <- window_frame(window, keys[intersect(c(".by_key", ".interview", ".event"),
+    windows_all <- window_frame(window, keys[intersect(c(".by_key", ".interview", ".event",
+                                                       ".sos", ".eos"),
                                                        names(keys))])
     n_rows <- sum(expected_count(windows_all$w_start, windows_all$w_end, step))
     out <- with_chunks(list(keys = keys, values = values), compute, by = by,
@@ -174,7 +185,8 @@ summarise_by_interview <- function(survey, x, window = NULL, interval = NULL,
 #' @noRd
 summarise_windows <- function(keys, values, window, by, plans, step,
                               min_coverage, id_name, extra_names) {
-    key_cols <- intersect(c(".by_key", ".interview", ".event"), names(keys))
+    key_cols <- intersect(c(".by_key", ".interview", ".event", ".sos", ".eos"),
+                          names(keys))
     windows <- window_frame(window, keys[key_cols])
     group <- c(key_cols, "lag")
 

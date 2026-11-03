@@ -18,6 +18,9 @@
 #' * `window_fixed()`: the same calendar period for everyone.
 #' * `window_since()`: from a date recorded for each household, such as
 #'   planting or a shock, up to the day before the interview.
+#' * `window_calendar()`: a season whose bounds are columns of the
+#'   survey, so every location can have its own, as with a crop
+#'   calendar read from a raster. Use [read_season()] to attach them.
 #'
 #' @param interval Length of each lag, e.g. `"1 year"`, `"6 months"`,
 #'   `"30 days"`.
@@ -30,6 +33,14 @@
 #' @param from,to Dates of a fixed window, inclusive.
 #' @param event <[`data-masking`][rlang::args_data_masking]> Column of the
 #'   survey with the start date of each household's window.
+#' @param start,end <[`data-masking`][rlang::args_data_masking]> Columns
+#'   of the survey with each location's season bounds, as offsets from
+#'   1 January. Values below 1 or above 365 reach into the neighbouring
+#'   year, and a season closing before it opens is taken to close in
+#'   the following one, so windows that straddle the new year need no
+#'   special handling.
+#' @param unit Unit of `start` and `end`: `"doy"` for days, `"dekad"`
+#'   for the 10-day steps that FAO ASIS phenology uses.
 #'
 #' @return A `c4e_window` object.
 #'
@@ -39,6 +50,7 @@
 #' @examples
 #' window_lag("1 year", n_lags = 2)
 #' window_season("Jun", "Sep", years_back = 0:1)
+#' window_calendar(sos, eos, unit = "dekad")
 #' window_fixed("2022-01-01", "2022-12-31")
 window_lag <- function(interval = "1 year", n_lags = 0) {
     parse_interval(interval)
@@ -74,6 +86,18 @@ window_since <- function(event) {
     new_window("since", event = rlang::as_name(rlang::enquo(event)))
 }
 
+#' @rdname window_lag
+#' @export
+window_calendar <- function(start, end, unit = c("doy", "dekad"),
+                            years_back = 0) {
+    unit <- rlang::arg_match(unit)
+    new_window("calendar",
+               start = rlang::as_name(rlang::enquo(start)),
+               end = rlang::as_name(rlang::enquo(end)),
+               unit = unit,
+               years_back = as.integer(years_back))
+}
+
 new_window <- function(type, ...) {
     structure(list(type = type, ...), class = "c4e_window")
 }
@@ -95,7 +119,11 @@ describe_window <- function(window) {
                            paste(window$years_back, collapse = ", "),
                            " season(s) back"),
            fixed  = paste0("from ", window$from, " to ", window$to),
-           since  = paste0("from ", window$event, " to the interview"))
+           since  = paste0("from ", window$event, " to the interview"),
+           calendar = paste0("season ", window$start, " to ",
+                             window$end, " (", window$unit, "), ",
+                             paste(window$years_back, collapse = ", "),
+                             " season(s) back"))
 }
 
 #' Window bounds for each location and interview date
@@ -122,7 +150,8 @@ window_frame <- function(window, keys) {
            since = keys |>
                dplyr::filter(!is.na(.data$.event)) |>
                dplyr::mutate(lag = 0L, w_start = .data$.event,
-                             w_end = .data$.interview - 1L))
+                             w_end = .data$.interview - 1L),
+           calendar = calendar_windows(keys, window))
 }
 
 #' The last complete seasons before each interview
@@ -145,6 +174,45 @@ season_windows <- function(keys, window) {
         dplyr::mutate(w_start = season_start(.data$.last - .data$lag) - 1L,
                       w_end   = season_end(.data$.last - .data$lag)) |>
         dplyr::select(-".last")
+}
+
+#' The last complete season before each interview, bounds given per row
+#'
+#' Unlike `season_windows()`, which takes one pair of months for the whole
+#' survey, the bounds here come from `.sos` and `.eos` in `keys`, so each
+#' location has its own season. Both are offsets from 1 January, counted in
+#' days or dekads, and date arithmetic from 1 January absorbs values
+#' outside 1-365: a negative start simply lands in the previous year. A
+#' season whose end falls before its start is taken to close in the
+#' following year.
+#'
+#' The bounds stay in the returned frame because they are part of the join
+#' key: two locations can share a `.by_key` and an interview date and still
+#' have different seasons.
+#' @noRd
+calendar_windows <- function(keys, window) {
+    mult <- if (identical(window$unit, "dekad")) 10L else 1L
+    jan1 <- function(year) lubridate::make_date(year, 1, 1)
+    keys <- keys |>
+        dplyr::filter(!is.na(.data$.sos), !is.na(.data$.eos)) |>
+        dplyr::mutate(
+            .start = as.numeric(.data$.sos) * mult,
+            .end   = as.numeric(.data$.eos) * mult,
+            .wrap  = as.integer(.data$.end < .data$.start))
+    if (nrow(keys) == 0L) {
+        return(dplyr::mutate(keys, lag = integer(), w_start = as.Date(character()),
+                             w_end = as.Date(character())))
+    }
+    this_year <- lubridate::year(keys$.interview)
+    ends_this_year <- jan1(this_year + keys$.wrap) + (keys$.end - 1)
+    keys$.last <- ifelse(ends_this_year < keys$.interview,
+                         this_year, this_year - 1L)
+    tidyr::expand_grid(keys, lag = window$years_back) |>
+        dplyr::mutate(
+            w_start = jan1(.data$.last - .data$lag) + (.data$.start - 1) - 1L,
+            w_end   = jan1(.data$.last - .data$lag + .data$.wrap) +
+                (.data$.end - 1)) |>
+        dplyr::select(-".last", -".start", -".end", -".wrap")
 }
 
 #' How many observations a window should hold at a time step
