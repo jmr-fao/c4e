@@ -48,11 +48,7 @@ climatic4economist's `main`.
    path inside `weather_extremes()` and `climate_indices()`, from
    extraction to window sums with running totals, never building the long
    table (about 2.5 s of a 6 s call on 300 locations, and the memory).
-   Two v1 bugs to fix in climatic4economist if Jan agrees:
-   `quantile_na_check()` with no replacement crashes on a unit and month
-   with no data (`calc_pct_day.R:68`, `:73`: pass `replace = NA_real_`),
-   and `extr_day_index.R:80-81`, `extr_spell_index.R:67-68` need
-   `invalid = "previous"`. Possible later for `displace_coord()`: a minimum displacement
+   Possible later for `displace_coord()`: a minimum displacement
    ("donut") and recording which indicators were computed before
    displacement.
 2. Chunk 17, the release (plan §8 row 17): a GitHub release only, for
