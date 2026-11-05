@@ -30,16 +30,19 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** before the release, the comparison of c4e with
-climatic4economist on real data and the fixes it found, on branch
-`compare-v1` (not pushed): the labour survey (six countries, 300 sampled
-locations, WFDE5 1991-2019) agrees on every value both packages compute;
-unit conversion and the long-table frame are faster; wet-day percentiles
-follow v1; short windows warn. The paper draft (#12) is merged.
+**Current chunk:** before the release, additions for the survey
+harmonisation's weather shock block, on branch `window-calendar` (PR into
+`main`, which is now protected: no direct pushes): `window_calendar()` and
+`read_season()`, `sd` and `cv` statistics, window bounds in the
+summaries, `stats = list(value = )`, `calc_anomaly()`,
+`snap_to_valid_cell()`, `window_lags()`. The comparison with
+climatic4economist (#13) is merged; the two v1 fixes are on
+climatic4economist's `main`.
 
 **Next steps (in order):**
-1. Push `compare-v1` and open its pull request. Thresholds are still
-   about 3 times slower than v1 and spells about 1.3 times (the long
+1. Merge the `window-calendar` pull request once its checks pass, then
+   delete the branch; add NEWS bullets for its functions. Thresholds are
+   still about 3 times slower than v1 and spells about 1.3 times (the long
    table). Later, if a large survey runs out of memory (the long table
    reaches about 2 GB for thousands of locations over 30 years): a matrix
    path inside `weather_extremes()` and `climate_indices()`, from
@@ -229,6 +232,24 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-11-05 — merging the weather shock additions (laptop: FAO-Win, session: Claude)
+- Did: #13 (comparison with v1) was merged on 3 November. Fixed in
+  climatic4economist `main` (545e6f3): `invalid = "previous"` in
+  `extr_day_index()` and `extr_spell_index()` (29 February interviews), and
+  `calc_pct_day()` gives NA to a unit and month with no data and no
+  threshold, the threshold otherwise as before (as c4e does); two
+  regression tests, 671 expectations pass. In c4e, three commits made
+  outside these sessions (`window_calendar()` and `read_season()`; `sd`
+  and `cv`; window bounds, `calc_anomaly()`, `snap_to_valid_cell()`,
+  `window_lags()`) were tested and moved to `window-calendar` for a PR.
+- Found: `main` on GitHub is now protected, so the direct push was
+  refused; changes go in through pull requests. GitHub Pages is still
+  off (`has_pages` false), so the site URL answers 404 although
+  `gh-pages` is deployed.
+- Tests: full suite 1,270 expectations, 0 failures; `rcmdcheck` 0 errors,
+  0 warnings, 3 notes (the open ones below).
+- Next: see Next steps above.
 
 ### 2026-10-31 — reading tables already in order (laptop: FAO-Win, session: Claude)
 - Did: `indicator_frame()` first checks, through `regular_grid()`, whether
