@@ -324,3 +324,34 @@ test_that("daily cell flags become area shares per division and day", {
                                date == as.Date("2021-01-01"))$day_abv_300,
                  expected)
 })
+
+
+test_that("sd and cv are available as summary statistics", {
+    out <- summarise_by_interview(survey_coord(), hot_days(), interval = "1 year",
+                                  stats = list(flag = c("mean", "sd", "cv")))
+    tb <- tibble::as_tibble(out)
+
+    expect_true(all(c("day_abv_30_mean", "day_abv_30_sd", "day_abv_30_cv") %in%
+                        names(tb)))
+    ok <- is.finite(tb$day_abv_30_sd) & tb$day_abv_30_mean != 0
+    expect_equal(tb$day_abv_30_cv[ok],
+                 (tb$day_abv_30_sd / tb$day_abv_30_mean)[ok])
+    expect_equal(c4e_meta(out)$indicators$day_abv_30_sd$stat, "sd")
+})
+
+test_that("cv is NA where the mean is zero, rather than zero", {
+    flat <- summarise_by_interview(survey_coord(), hot_days(), interval = "1 year",
+                                   stats = list(flag = c("mean", "cv")))
+    tb <- tibble::as_tibble(flat)
+    zero <- tb$day_abv_30_mean == 0
+    if (any(zero)) expect_true(all(is.na(tb$day_abv_30_cv[zero])))
+    expect_false(any(is.na(tb$day_abv_30_mean)))
+})
+
+test_that("an unknown statistic is still rejected", {
+    expect_error(
+        summarise_by_interview(survey_coord(), hot_days(), interval = "1 year",
+                               stats = list(flag = "median")),
+        "median"
+    )
+})

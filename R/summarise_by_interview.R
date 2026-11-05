@@ -39,7 +39,13 @@
 #'   columns to carry into the result.
 #' @param stats Optional named list of statistics per kind of indicator,
 #'   e.g. `list(flag = c("sum", "mean"), spell = "max")`. Statistics: `"sum"`,
-#'   `"mean"`, `"max"`, `"min"`, `"n"` (number of non-missing values).
+#'   `"mean"`, `"max"`, `"min"`, `"n"` (number of non-missing values),
+#'   `"sd"` and `"cv"` (see [cv()]). The first five fall back to `0` when
+#'   the window holds no data; `"sd"` and `"cv"` return `NA` instead,
+#'   because a window with nothing in it has no dispersion rather than a
+#'   dispersion of zero, and `"sd"` needs two values. `"cv"` is a ratio,
+#'   so it is meaningful only on a scale with a true zero: use kelvin for
+#'   temperature, which [calc_par()] does by itself.
 #' @param min_coverage Share of the window that must be covered by data.
 #' @inheritParams calc_threshold_day
 #'
@@ -233,10 +239,11 @@ summary_plans <- function(long, meta, stats, call = rlang::caller_env()) {
         }
         defaults[names(stats)] <- stats
     }
-    known <- c("sum", "mean", "max", "min", "n")
+    known <- c("sum", "mean", "max", "min", "n", "sd", "cv")
     unknown <- setdiff(unlist(defaults), known)
     if (length(unknown) > 0) {
-        cli::cli_abort("Unknown statistic{?s} {.val {unknown}}; use {.or {.val {known}}}.",
+        cli::cli_abort(paste0("{cli::qty(length(unknown))}Unknown statistic{?s} ",
+                              "{.val {unknown}}; use {.or {.val {known}}}."),
                        call = call)
     }
 
@@ -273,7 +280,9 @@ summary_expressions <- function(plans) {
                 mean = rlang::expr(mean_na_check(!!value)),
                 max  = rlang::expr(max_na_check(!!value)),
                 min  = rlang::expr(min_na_check(!!value)),
-                n    = rlang::expr(sum(!is.na(!!value)))
+                n    = rlang::expr(sum(!is.na(!!value))),
+                sd   = rlang::expr(stats::sd(!!value, na.rm = TRUE)),
+                cv   = rlang::expr(cv(!!value))
             )
         }
     }
