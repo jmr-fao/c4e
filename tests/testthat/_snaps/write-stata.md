@@ -37,7 +37,7 @@
     Code
       write_stata(out, path)
     Message
-      Wrote 40 rows and 8 variables to <path>.
+      Wrote 40 rows and 10 variables to <path>.
 
 # names Stata cannot take are refused before writing
 

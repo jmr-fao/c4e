@@ -29,8 +29,26 @@ tracked in `dev/LOG_v2.md`.
 * Standardised indices and parameters: `calc_std_index()` (SPI and SPEI),
   `calc_std_threshold()`, and `calc_par()` with periods and coverage.
 * Survey side: stable coordinate IDs in `prepare_coord()`, window objects
-  (`window_lag()`, `window_season()`, `window_fixed()`, `window_since()`),
-  `summarise_by_interview()`, `summarise_by_period()`, `aggregate_to_adm()`.
+  (`window_lag()`, `window_season()`, `window_fixed()`, `window_since()`,
+  `window_calendar()` with `read_season()`), `window_lags()` to reach back
+  whichever kind a window is, `summarise_by_interview()`,
+  `summarise_by_period()`, `aggregate_to_adm()`.
+* Window anomalies: `calc_anomaly()` ranks the window before an interview
+  against the same window in earlier years at the same location, as a
+  percentile of the baseline or a z-score. The percentile assumes no
+  distribution, which matters for right-skewed season totals;
+  `calc_std_index()` is the fitted-distribution form of the same idea.
+* `summarise_by_interview()` returns the bounds of each window, `w_start`
+  and `w_end`, so a caller does not have to work out which dates a lag
+  stands for. **This adds two columns to its output.**
+* `summarise_by_interview(stats = list(value = ...))` summarises the series
+  itself, not only the registered indicators: the window's total, mean,
+  spread and coefficient of variation as `value_sum` and the rest.
+* `snap_to_valid_cell()` moves points that fall in an empty cell to the
+  nearest cell that has a value, for land-only grids whose coastline leaves
+  a household on land without a cell. `fill_missing_rast()` does the same
+  job on the raster; this one is for when the points are what matters and
+  the raster is a long daily stack.
 * Export and inspection: `write_stata()` with variable labels and a
   codebook, `c4e_labels()`, `validate_c4e()`, `summary()`.
 * Wrappers that run the whole chain in one call: `weather_extremes()`,

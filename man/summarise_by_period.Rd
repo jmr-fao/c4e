@@ -19,7 +19,11 @@ summarise_by_period(
 \item{period}{\code{"month"} or \code{"year"}.}
 
 \item{stats}{Optional named list of statistics per kind of indicator,
-e.g. \code{list(flag = c("sum", "mean"), spell = "max")}. Statistics: \code{"sum"},
+e.g. \code{list(flag = c("sum", "mean"), spell = "max")}. The series itself
+is the kind \code{"value"}, which no step registers and nothing computes
+unless it is asked for: \code{list(value = c("sum", "sd", "cv"))} gives the
+window's total, spread and coefficient of variation as \code{value_sum},
+\code{value_sd} and \code{value_cv}. Statistics: \code{"sum"},
 \code{"mean"}, \code{"max"}, \code{"min"}, \code{"n"} (number of non-missing values),
 \code{"sd"} and \code{"cv"} (see \code{\link[=cv]{cv()}}). The first five fall back to \code{0} when
 the window holds no data; \code{"sd"} and \code{"cv"} return \code{NA} instead,

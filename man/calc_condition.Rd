@@ -33,6 +33,7 @@ calc_condition(x, warm = value > 30, mild = value > 27 & value <= 30)
 }
 \seealso{
 Other indicators:
+\code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},
 \code{\link[=calc_par]{calc_par()}},
 \code{\link[=calc_percentile]{calc_percentile()}},

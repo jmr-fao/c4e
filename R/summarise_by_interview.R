@@ -38,7 +38,11 @@
 #' @param extra_col <[`tidy-select`][dplyr::dplyr_tidy_select]> Survey
 #'   columns to carry into the result.
 #' @param stats Optional named list of statistics per kind of indicator,
-#'   e.g. `list(flag = c("sum", "mean"), spell = "max")`. Statistics: `"sum"`,
+#'   e.g. `list(flag = c("sum", "mean"), spell = "max")`. The series itself
+#'   is the kind `"value"`, which no step registers and nothing computes
+#'   unless it is asked for: `list(value = c("sum", "sd", "cv"))` gives the
+#'   window's total, spread and coefficient of variation as `value_sum`,
+#'   `value_sd` and `value_cv`. Statistics: `"sum"`,
 #'   `"mean"`, `"max"`, `"min"`, `"n"` (number of non-missing values),
 #'   `"sd"` and `"cv"` (see [cv()]). The first five fall back to `0` when
 #'   the window holds no data; `"sd"` and `"cv"` return `NA` instead,
@@ -50,11 +54,14 @@
 #' @inheritParams calc_threshold_day
 #'
 #' @return A `c4e_tbl` with one row per survey unit and lag: the unit
-#'   identifier, `lag`, the extra columns and one column per indicator and
-#'   statistic (`day_abv_30_sum`, `spell_abv_30_max`), registered with the
-#'   window.
+#'   identifier, `lag`, the window's own bounds `w_start` and `w_end`, the
+#'   extra columns and one column per indicator and statistic
+#'   (`day_abv_30_sum`, `spell_abv_30_max`), registered with the window. The
+#'   window is half-open, `(w_start, w_end]`, so `w_end` is the last day
+#'   counted and `w_start` the day before the first.
 #'
-#' @seealso [window_lag()], [summarise_by_period()]
+#' @seealso [window_lag()], [window_lags()], [calc_anomaly()],
+#'   [summarise_by_period()]
 #' @export
 #'
 #' @examples
@@ -141,7 +148,8 @@ summarise_by_interview <- function(survey, x, window = NULL, interval = NULL,
     }
     keys[[by]] <- keys$.by_key
 
-    values <- tibble::as_tibble(long)[c(by, date_col, names(plans), intersect("value", names(long)))]
+    values <- tibble::as_tibble(long)[unique(c(by, date_col, names(plans),
+                                               intersect("value", names(long))))]
     names(values)[names(values) == date_col] <- "date"
     values$date <- parse_date_label(values$date)
 
@@ -166,7 +174,7 @@ summarise_by_interview <- function(survey, x, window = NULL, interval = NULL,
     out <- out[setdiff(names(out), c(".short", ".no_data"))]
     entries <- summary_entries(plans, long_meta, window)
     meta <- modify_meta(empty_meta(), list(
-        key = id_name, unit_cols = "lag", shape = "summary",
+        key = id_name, unit_cols = c("lag", "w_start", "w_end"), shape = "summary",
         variable = long_meta$variable, unit = long_meta$unit,
         time_step = long_meta$time_step, crs = long_meta$crs,
         source = long_meta$source, label = long_meta$label,
@@ -218,11 +226,16 @@ summarise_windows <- function(keys, values, window, by, plans, step,
     summaries$.short <- short
     summaries$.no_data <- is.na(summaries$.present) | summaries$.present == 0
 
+    # w_start and w_end are returned with the summaries: a summary row is
+    # identified by the window it covers, and a caller that has to know which
+    # dates a lag stands for would otherwise reimplement window_frame().
     keys |>
         dplyr::select(dplyr::all_of(c(".id", key_cols, extra_names))) |>
-        dplyr::inner_join(summaries[c(group, stat_cols, ".short", ".no_data")],
-                          by = key_cols, relationship = "many-to-many") |>
-        dplyr::select(dplyr::all_of(c(".id", "lag", extra_names, stat_cols,
+        dplyr::inner_join(
+            summaries[c(group, "w_start", "w_end", stat_cols, ".short", ".no_data")],
+            by = key_cols, relationship = "many-to-many") |>
+        dplyr::select(dplyr::all_of(c(".id", "lag", "w_start", "w_end",
+                                      extra_names, stat_cols,
                                       ".short", ".no_data"))) |>
         dplyr::rename(!!id_name := ".id")
 }
@@ -231,7 +244,7 @@ summarise_windows <- function(keys, values, window, by, plans, step,
 #' @noRd
 summary_plans <- function(long, meta, stats, call = rlang::caller_env()) {
     defaults <- list(flag = "sum", excess = "sum", spell = c("max", "mean", "sum", "n"),
-                     std = "mean")
+                     std = "mean", value = character())
     if (!is.null(stats)) {
         if (!is.list(stats) || !rlang::is_named(stats)) {
             cli::cli_abort("{.arg stats} must be a named list by kind, e.g.
@@ -247,13 +260,20 @@ summary_plans <- function(long, meta, stats, call = rlang::caller_env()) {
                        call = call)
     }
 
+    # The series itself, which no step registers as an indicator. Nothing is
+    # computed from it unless `stats` asks for it by name, so a call that does
+    # not mention it behaves as it did before.
+    value_plan <- if (length(defaults$value) > 0 && "value" %in% names(long)) {
+        stats::setNames(list(defaults$value), "value")
+    }
+
     registered <- purrr::keep(meta$indicators, \(entry) entry$kind %in% names(defaults))
     registered <- registered[intersect(names(registered), names(long))]
     if (length(registered) > 0) {
-        return(lapply(registered, \(entry) defaults[[entry$kind]]))
+        return(c(value_plan, lapply(registered, \(entry) defaults[[entry$kind]])))
     }
     # tables without a registry: the v1 column names
-    plans <- list()
+    plans <- value_plan
     for (col in names(long)) {
         if (grepl("^day", col) || (grepl("abv|blw", col) && !grepl("^spell", col))) {
             plans[[col]] <- defaults$flag
@@ -301,6 +321,11 @@ summary_entries <- function(plans, meta, window) {
     entries <- list()
     for (col in names(plans)) {
         source <- meta$indicators[[col]] %||% list()
+        # the series itself is registered by no step, so it describes itself
+        if (identical(col, "value") && length(source) == 0) {
+            source <- list(kind = "value", variable = meta$variable,
+                           unit = meta$unit, step = meta$time_step)
+        }
         for (stat in plans[[col]]) {
             entries[[paste0(col, "_", stat)]] <- new_indicator(
                 "agg", base = col, stat = stat, direction = source$direction,

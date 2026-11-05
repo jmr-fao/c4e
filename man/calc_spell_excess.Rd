@@ -40,6 +40,7 @@ calc_spell_excess(spells, calc_spell_percentile(spells, p = 0.5))
 }
 \seealso{
 Other indicators:
+\code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},
 \code{\link[=calc_par]{calc_par()}},

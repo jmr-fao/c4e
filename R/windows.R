@@ -98,6 +98,49 @@ window_calendar <- function(start, end, unit = c("doy", "dekad"),
                years_back = as.integer(years_back))
 }
 
+#' The same window, one or more periods earlier
+#'
+#' Sets how far back a window reaches, whichever kind it is: the lags of
+#' [window_lag()] and the earlier seasons of [window_season()] and
+#' [window_calendar()] are the same idea under two field names, and a caller
+#' building a baseline should not have to know which one it holds.
+#'
+#' `window_fixed()` is the same period for everyone and `window_since()`
+#' runs from a date recorded per household, so neither has earlier periods
+#' and both are refused.
+#'
+#' @param window A `c4e_window`.
+#' @param back Which earlier periods: `0` is the window itself, `0:39` it
+#'   and the thirty-nine before it. A lag window takes the highest, there
+#'   being no gaps in a run of consecutive periods.
+#'
+#' @return `window`, with its lags set.
+#'
+#' @seealso [window_lag()], [calc_anomaly()]
+#' @export
+#'
+#' @examples
+#' window_lags(window_season("Jun", "Sep"), 0:29)
+#' window_lags(window_lag("1 year"), 0:9)
+window_lags <- function(window, back) {
+    if (!inherits(window, "c4e_window")) {
+        cli::cli_abort("{.arg window} must be a window, see {.fn window_lag}.")
+    }
+    if (!is.numeric(back) || length(back) == 0 || anyNA(back) || any(back < 0)) {
+        cli::cli_abort("{.arg back} must be whole numbers, 0 or more.")
+    }
+    back <- as.integer(back)
+    switch(window$type,
+           lag      = window$n_lags <- max(back),
+           season   = ,
+           calendar = window$years_back <- back,
+           cli::cli_abort(c(
+               "A {.val {window$type}} window has no earlier periods.",
+               i = "Only {.fn window_lag}, {.fn window_season} and
+                    {.fn window_calendar} reach back.")))
+    window
+}
+
 new_window <- function(type, ...) {
     structure(list(type = type, ...), class = "c4e_window")
 }

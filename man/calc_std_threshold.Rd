@@ -49,6 +49,7 @@ extract_by_coord(pre, points) |>
 }
 \seealso{
 Other indicators:
+\code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},
 \code{\link[=calc_par]{calc_par()}},

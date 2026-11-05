@@ -98,9 +98,24 @@ indicator_label <- function(entry, meta) {
            pct    = pct_label(entry, meta),
            std    = paste0(toupper(entry$index %||% "index"), " over ",
                            entry$scale, " month", if (isTRUE(entry$scale > 1)) "s"),
-           par    = par_label(entry, meta),
-           agg    = agg_label(entry, meta),
+           par     = par_label(entry, meta),
+           agg     = agg_label(entry, meta),
+           anomaly = anomaly_label(entry, meta),
            entry$kind)
+}
+
+#' "percentile of days above 30 C among the baseline years, per 1-year window"
+#' @noRd
+anomaly_label <- function(entry, meta) {
+    source <- entry
+    source$kind <- entry$of %||% "flag"
+    base <- indicator_label(source, meta)
+    text <- switch(entry$stat %||% "pctl",
+                   pctl = paste("percentile of", base, "among the baseline years"),
+                   z    = paste0(base, ", in baseline standard deviations"),
+                   paste(entry$stat, "of", base))
+    window <- if (!is.null(meta$window)) paste0(", ", window_phrase(meta$window)) else ""
+    paste0(text, window)
 }
 
 step_word <- function(step) {

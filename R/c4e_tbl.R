@@ -74,7 +74,8 @@ c4e_meta_fields <- c(
 )
 c4e_time_steps      <- c("hour", "day", "month", "year")
 c4e_shapes          <- c("wide", "long", "lookup", "summary")
-c4e_indicator_kinds <- c("flag", "excess", "spell", "pct", "std", "par", "agg")
+c4e_indicator_kinds <- c("flag", "excess", "spell", "pct", "std", "par", "agg",
+                         "anomaly")
 c4e_directions      <- c("above", "below")
 
 # fields holding one value, which must agree when two tables are merged

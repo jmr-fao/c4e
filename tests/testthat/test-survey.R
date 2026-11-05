@@ -355,3 +355,122 @@ test_that("an unknown statistic is still rejected", {
         "median"
     )
 })
+
+# ==== Window bounds, the value kind, lags and anomalies ===================
+
+test_that("a window summary carries its own bounds", {
+    out <- summarise_by_interview(survey_coord(), hot_days(),
+                                  interval = "1 year", n_lags = 1)
+    tb <- tibble::as_tibble(out)
+    expect_true(all(c("w_start", "w_end") %in% names(tb)))
+    expect_s3_class(tb$w_start, "Date")
+    expect_s3_class(tb$w_end, "Date")
+
+    ## the window is half-open and closes before the interview, so w_end is
+    ## the day before it at lag 0
+    interview <- synthetic_survey()
+    first <- tb[tb$hhid == interview$hhid[1], ]
+    own <- interview$interview[1]
+    expect_equal(first$w_end[first$lag == 0], own - 1)
+    expect_true(all(first$w_start < first$w_end))
+    ## consecutive periods tile, so one lag closes where the next opens
+    expect_equal(first$w_end[first$lag == 1], first$w_start[first$lag == 0])
+
+    ## and the bounds say which window a row is, not which unit
+    expect_equal(summary(out)$n_units, 20L)
+})
+
+test_that("the series itself is summarised when stats ask for it", {
+    plain <- summarise_by_interview(survey_coord(), hot_days(),
+                                    interval = "1 year")
+    expect_false(any(grepl("^value_", names(tibble::as_tibble(plain)))))
+
+    out <- summarise_by_interview(survey_coord(), hot_days(),
+                                  interval = "1 year",
+                                  stats = list(value = c("sum", "mean", "sd", "cv")))
+    tb <- tibble::as_tibble(out)
+    expect_true(all(c("value_sum", "value_mean", "value_sd", "value_cv") %in%
+                    names(tb)))
+    ## the indicators are still there, and the registry knows what the
+    ## series columns are
+    expect_true("day_abv_30_sum" %in% names(tb))
+    expect_equal(c4e_meta(out)$indicators$value_mean$of, "value")
+    expect_equal(c4e_meta(out)$indicators$value_mean$unit, "C")
+    ok <- is.finite(tb$value_sd) & tb$value_mean != 0
+    expect_equal(tb$value_cv[ok], (tb$value_sd / tb$value_mean)[ok])
+})
+
+test_that("window_lags() sets whichever field the window keeps", {
+    expect_equal(window_lags(window_lag("1 year"), 0:9)$n_lags, 9L)
+    expect_equal(window_lags(window_season("Jun", "Sep"), 0:2)$years_back, 0:2)
+    expect_equal(window_lags(window_calendar(sos, eos), 0:2)$years_back, 0:2)
+    expect_error(window_lags(window_fixed("2020-01-01", "2020-12-31"), 0:2),
+                 "no earlier periods")
+    expect_error(window_lags(window_lag("1 year"), -1), "0 or more")
+    expect_error(window_lags("1 year", 0:2), "must be a window")
+})
+
+test_that("calc_anomaly() ranks a window against its own baseline", {
+    ## min_coverage 0 because the fixture holds about a year of data, so
+    ## the earlier lags are partial and would otherwise all be NA
+    out <- summarise_by_interview(
+        survey_coord(), hot_days(), min_coverage = 0,
+        window = window_lags(window_lag("1 year"), 0:2))
+    anom <- calc_anomaly(out, cols = "day_abv_30_sum", min_years = 2)
+    tb <- tibble::as_tibble(anom)
+
+    expect_equal(nrow(tb), 20)
+    expect_true(all(c("day_abv_30_sum_pctl", "day_abv_30_sum_z") %in% names(tb)))
+    expect_true(all(tb$baseline_n == 2))
+    expect_true(all(tb$day_abv_30_sum_pctl >= 0 & tb$day_abv_30_sum_pctl <= 100,
+                    na.rm = TRUE))
+
+    ## the two forms agree on which way round a window sits, the percentile
+    ## being a monotone transform of the z-score within a unit
+    both <- stats::na.omit(tb[c("day_abv_30_sum_pctl", "day_abv_30_sum_z")])
+    expect_true(all((both[[1]] > 50) == (both[[2]] > 0) |
+                    both[[1]] == 50 | both[[2]] == 0))
+
+    ## a baseline too short for min_years gives NA, not a number
+    thin <- calc_anomaly(out, cols = "day_abv_30_sum", min_years = 30)
+    expect_true(all(is.na(tibble::as_tibble(thin)$day_abv_30_sum_pctl)))
+})
+
+test_that("calc_anomaly() needs lags and the bounds", {
+    one <- summarise_by_interview(survey_coord(), hot_days(),
+                                  interval = "1 year")
+    expect_error(calc_anomaly(one), "only lag 0")
+
+    out <- summarise_by_interview(
+        survey_coord(), hot_days(), min_coverage = 0,
+        window = window_lags(window_lag("1 year"), 0:2))
+    stripped <- tibble::as_tibble(out)[c("hhid", "lag", "day_abv_30_sum")]
+    expect_error(calc_anomaly(stripped, id = "hhid"), "window bounds")
+
+    expect_error(
+        calc_anomaly(out, cols = "day_abv_30_sum", baseline = c(1800, 1810)),
+        "No window falls in the baseline")
+})
+
+test_that("snap_to_valid_cell() moves only the points with no cell", {
+    r <- suppressMessages(read_climate(
+        system.file("extdata", "tmax_daily.tif", package = "c4e")))[[1]]
+    mid <- terra::xyFromCell(r, terra::cellFromRowCol(r, 1, 1))
+    r[terra::cellFromRowCol(r, 1, 1)] <- NA
+
+    places <- tibble::tibble(
+        place = 1:2,
+        lon = c(mid[1, "x"], terra::xmin(r) - 50),   # in the hole, far away
+        lat = c(mid[1, "y"], terra::ymin(r) - 50)
+    )
+    out <- suppressMessages(snap_to_valid_cell(places, r, radius_deg = 0.5))
+
+    expect_equal(out$snapped, c(TRUE, FALSE))
+    expect_equal(out$lon_given, places$lon)
+    expect_false(out$lon[1] == places$lon[1] && out$lat[1] == places$lat[1])
+    expect_equal(out$lon[2], places$lon[2])
+    expect_false(is.na(terra::extract(
+        r, terra::vect(as.data.frame(out[1, c("lon", "lat")]),
+                       geom = c("lon", "lat"), crs = "EPSG:4326"),
+        ID = FALSE)[[1]]))
+})
