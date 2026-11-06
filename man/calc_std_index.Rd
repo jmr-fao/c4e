@@ -80,6 +80,7 @@ extract_by_coord(pre, points) |>
 \code{\link[=calc_std_threshold]{calc_std_threshold()}}
 
 Other indicators:
+\code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},
 \code{\link[=calc_par]{calc_par()}},

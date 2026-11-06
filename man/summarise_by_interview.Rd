@@ -44,8 +44,18 @@ column.}
 columns to carry into the result.}
 
 \item{stats}{Optional named list of statistics per kind of indicator,
-e.g. \code{list(flag = c("sum", "mean"), spell = "max")}. Statistics: \code{"sum"},
-\code{"mean"}, \code{"max"}, \code{"min"}, \code{"n"} (number of non-missing values).}
+e.g. \code{list(flag = c("sum", "mean"), spell = "max")}. The series itself
+is the kind \code{"value"}, which no step registers and nothing computes
+unless it is asked for: \code{list(value = c("sum", "sd", "cv"))} gives the
+window's total, spread and coefficient of variation as \code{value_sum},
+\code{value_sd} and \code{value_cv}. Statistics: \code{"sum"},
+\code{"mean"}, \code{"max"}, \code{"min"}, \code{"n"} (number of non-missing values),
+\code{"sd"} and \code{"cv"} (see \code{\link[=cv]{cv()}}). The first five fall back to \code{0} when
+the window holds no data; \code{"sd"} and \code{"cv"} return \code{NA} instead,
+because a window with nothing in it has no dispersion rather than a
+dispersion of zero, and \code{"sd"} needs two values. \code{"cv"} is a ratio,
+so it is meaningful only on a scale with a true zero: use kelvin for
+temperature, which \code{\link[=calc_par]{calc_par()}} does by itself.}
 
 \item{min_coverage}{Share of the window that must be covered by data.}
 
@@ -57,9 +67,11 @@ splits.}
 }
 \value{
 A \code{c4e_tbl} with one row per survey unit and lag: the unit
-identifier, \code{lag}, the extra columns and one column per indicator and
-statistic (\code{day_abv_30_sum}, \code{spell_abv_30_max}), registered with the
-window.
+identifier, \code{lag}, the window's own bounds \code{w_start} and \code{w_end}, the
+extra columns and one column per indicator and statistic
+(\code{day_abv_30_sum}, \code{spell_abv_30_max}), registered with the window. The
+window is half-open, \verb{(w_start, w_end]}, so \code{w_end} is the last day
+counted and \code{w_start} the day before the first.
 }
 \description{
 For every survey unit (household), summarises the daily (or monthly)
@@ -99,5 +111,6 @@ hot <- extract_by_coord(tmax, georef_coord(coord)) |>
 summarise_by_interview(coord, hot, interval = "1 year", n_lags = 1)
 }
 \seealso{
-\code{\link[=window_lag]{window_lag()}}, \code{\link[=summarise_by_period]{summarise_by_period()}}
+\code{\link[=window_lag]{window_lag()}}, \code{\link[=window_lags]{window_lags()}}, \code{\link[=calc_anomaly]{calc_anomaly()}},
+\code{\link[=summarise_by_period]{summarise_by_period()}}
 }

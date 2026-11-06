@@ -136,7 +136,9 @@ summary.c4e_tbl <- function(object, ...) {
     data <- tibble::as_tibble(object)
     key <- meta$key %||% resolve_key(object)
     id_cols <- unique(c(key, intersect(meta$unit_cols, names(data))))
-    id_cols <- setdiff(id_cols, "lag")
+    # a window summary holds one row per unit and lag, with the lag's own
+    # bounds: all three say which window a row is, not which unit it is
+    id_cols <- setdiff(id_cols, c("lag", "w_start", "w_end"))
     indicators <- intersect(names(meta$indicators), names(data))
     labels <- c4e_labels(object)
     structure(

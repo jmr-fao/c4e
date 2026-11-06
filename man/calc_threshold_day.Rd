@@ -76,6 +76,7 @@ extract_by_coord(tmax[[1:60]], points) |>
 \code{\link[=calc_percentile_day]{calc_percentile_day()}}, \code{\link[=calc_spell]{calc_spell()}}, \code{\link[=calc_condition]{calc_condition()}}
 
 Other indicators:
+\code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},
 \code{\link[=calc_par]{calc_par()}},
