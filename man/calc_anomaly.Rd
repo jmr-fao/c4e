@@ -87,6 +87,7 @@ summarise_by_interview(coord, hot, window = window_lags(window_lag("1 year"), 0:
 \code{\link[=summarise_by_interview]{summarise_by_interview()}}, \code{\link[=window_lags]{window_lags()}}, \code{\link[=calc_std_index]{calc_std_index()}}
 
 Other indicators:
+\code{\link[=bound_threshold]{bound_threshold()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},
 \code{\link[=calc_par]{calc_par()}},

@@ -7,6 +7,33 @@ tracked in `dev/LOG_v2.md`.
 
 ## Done so far
 
+* `read_season_by_poly()` summarises a crop calendar over the cells of each
+  administrative division, so a division-level analysis can use a growing
+  season as its window. It reports the modal and the mean start, middle and
+  end, and resolves the land-cover mask: cropland governs a division where it
+  covers at least `min_share` of its cells, pasture takes over where it does
+  not, and `season_source` with `cropland_share` and `pasture_share` record
+  what happened. Without the fallback, divisions in pastoral areas get no
+  window at all and leave the analysis.
+* `read_season()` has tests, on a miniature ASIS tree built at test time by
+  `make_asis_tree()`, covering the dekad bounds, the second season crossing
+  the year, and every flag value becoming `NA`.
+
+* Labels say what a column is after `aggregate_to_adm()`: a coverage-weighted
+  mean over a division turns a flag from a count of days into the share of the
+  division's area beyond the threshold, and an excess into an area-weighted
+  mean. The label said "days" for a number between 0 and 1. The kind is left
+  alone, because the summaries choose their statistics by kind.
+* `bound_threshold()` holds a threshold lookup table at an absolute
+  guardrail, so a relative and an absolute threshold become one threshold
+  rather than two flags to combine by hand. It works on any threshold table,
+  a percentile one or a user's own zone or crop limits, which is the model
+  thresholds already follow. The bound is recorded on the threshold and
+  appears in the label, and a bound paired with the tail it would loosen is
+  warned about. `calc_percentile()` gains `min_threshold` and
+  `max_threshold` as a convenience for the common case, which hand the
+  finished lookup to it.
+
 * `c4e_tbl` tables carry their context (key, variable, unit, time step,
   dates, CRS, indicator registry, history); `c4e_meta()`, `update_meta()`,
   `bind_indicators()`, `c4e_history()`.

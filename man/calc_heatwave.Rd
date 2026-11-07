@@ -54,6 +54,7 @@ extract_by_coord(tmax, points) |> calc_heatwave(excess = 5)
 }
 \seealso{
 Other indicators:
+\code{\link[=bound_threshold]{bound_threshold()}},
 \code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_par]{calc_par()}},

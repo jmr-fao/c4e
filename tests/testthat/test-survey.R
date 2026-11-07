@@ -326,6 +326,41 @@ test_that("daily cell flags become area shares per division and day", {
 })
 
 
+test_that("labels say area share after aggregating to divisions", {
+    tmax <- suppressMessages(read_climate(
+        system.file("extdata", "tmax_daily.tif", package = "c4e")))[[1:31]]
+    cells <- extract_cell_by_poly(tmax, synthetic_adm_div()) |>
+        calc_threshold_day(above = 300)
+
+    ## Before aggregating, the column really does count days.
+    expect_match(c4e_labels(cells)[["day_abv_300"]], "^days above")
+    expect_match(c4e_labels(cells)[["K_abv_300"]], "^excess above")
+
+    ## After it, the same column is a share of the division's area, and the
+    ## excess is an area-weighted mean. The names cannot say so.
+    shares <- aggregate_to_adm(cells)
+    expect_match(c4e_labels(shares)[["day_abv_300"]],
+                 "^share of division area above")
+    expect_match(c4e_labels(shares)[["K_abv_300"]], "^area-weighted excess")
+
+    ## The kind is left alone, because summarise_*() picks its statistics by
+    ## kind and does not know "agg": relabelling must not change behaviour.
+    expect_equal(c4e_meta(shares)$indicators$day_abv_300$kind, "flag")
+    expect_no_error(summarise_by_period(shares, "month"))
+
+    ## A condition keeps its own wording.
+    cond <- calc_condition(cells, hot = value > 300)
+    expect_match(c4e_labels(aggregate_to_adm(cond))[["hot"]],
+                 "^share of division area with ")
+})
+
+test_that("a different spatial aggregation leaves labels alone", {
+    ## Only the coverage-weighted mean over a division turns a count into a
+    ## share; point and polygon extraction must read as before.
+    out <- hot_days()
+    expect_match(c4e_labels(out)[["day_abv_30"]], "^days above")
+})
+
 test_that("sd and cv are available as summary statistics", {
     out <- summarise_by_interview(survey_coord(), hot_days(), interval = "1 year",
                                   stats = list(flag = c("mean", "sd", "cv")))
