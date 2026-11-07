@@ -36,6 +36,7 @@ reference:
       - aggregate_time
       - select_by_dates
       - select_by_season
+      - read_season
       - convert_unit
       - list_units
       - register_unit
@@ -45,7 +46,9 @@ reference:
       - prepare_coord
       - georef_coord
       - displace_coord
+      - snap_to_valid_cell
       - window_lag
+      - window_lags
       - select_by_interview
 
   - title: Extraction
@@ -62,6 +65,7 @@ reference:
       - calc_condition
       - calc_percentile
       - calc_percentile_day
+      - bound_threshold
       - calc_spell
       - calc_spell_percentile
       - calc_spell_excess
@@ -77,6 +81,7 @@ reference:
     contents:
       - summarise_by_interview
       - summarise_by_period
+      - calc_anomaly
       - merge_with_survey
       - merge_by_common
 

@@ -114,6 +114,7 @@ calc_par(df, fn = list(total = sum), period = "year")
 }
 \seealso{
 Other indicators:
+\code{\link[=bound_threshold]{bound_threshold()}},
 \code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},
