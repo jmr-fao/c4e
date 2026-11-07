@@ -91,6 +91,10 @@ series_label <- function(meta) {
 #' @noRd
 indicator_label <- function(entry, meta) {
     steps <- step_word(entry$step %||% meta$time_step)
+    spatial <- spatial_label(entry, meta, steps)
+    if (!is.null(spatial)) {
+        return(spatial)
+    }
     switch(entry$kind,
            flag   = flag_label(entry, steps),
            excess = excess_label(entry, meta),
@@ -102,6 +106,37 @@ indicator_label <- function(entry, meta) {
            agg     = agg_label(entry, meta),
            anomaly = anomaly_label(entry, meta),
            entry$kind)
+}
+
+#' What a column means after it has been aggregated over space
+#'
+#' [aggregate_to_adm()] takes a coverage-weighted mean over the cells of a
+#' division, so a flag stops counting days and becomes the share of the
+#' division's area beyond the threshold, and an excess becomes an
+#' area-weighted mean. The column keeps its name, which cannot say so, and the
+#' registry keeps its kind, because `summarise_by_interview()` and
+#' `summarise_by_period()` choose their statistics by kind and know nothing of
+#' `"agg"`. The label is therefore the only place this can be said, and it was
+#' saying "days" for a number between 0 and 1.
+#'
+#' `NULL` when the table has not been aggregated that way, so every other
+#' label is untouched.
+#' @noRd
+spatial_label <- function(entry, meta, steps) {
+    agg <- meta$spatial_agg
+    if (!identical(agg$level, "adm_div") || !identical(agg$fn, "weighted.mean")) {
+        return(NULL)
+    }
+    switch(entry$kind,
+           flag = if (!is.null(entry$condition)) {
+               paste0("share of division area with ", entry$condition)
+           } else if (is.null(entry$index)) {
+               paste("share of division area", threshold_phrase(entry))
+           } else {
+               paste("share of division area,", flag_label(entry, steps))
+           },
+           excess = paste("area-weighted", excess_label(entry, meta)),
+           NULL)
 }
 
 #' "percentile of days above 30 C among the baseline years, per 1-year window"

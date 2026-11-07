@@ -7,6 +7,12 @@ tracked in `dev/LOG_v2.md`.
 
 ## Done so far
 
+* Labels say what a column is after `aggregate_to_adm()`: a coverage-weighted
+  mean over a division turns a flag from a count of days into the share of the
+  division's area beyond the threshold, and an excess into an area-weighted
+  mean. The label said "days" for a number between 0 and 1. The kind is left
+  alone, because the summaries choose their statistics by kind.
+
 * `c4e_tbl` tables carry their context (key, variable, unit, time step,
   dates, CRS, indicator registry, history); `c4e_meta()`, `update_meta()`,
   `bind_indicators()`, `c4e_history()`.
