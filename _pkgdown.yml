@@ -34,6 +34,7 @@ reference:
       - register_source
       - read_boundaries
       - read_season
+      - read_season_by_poly
       - aggregate_time
       - select_by_dates
       - select_by_season

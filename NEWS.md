@@ -7,6 +7,18 @@ tracked in `dev/LOG_v2.md`.
 
 ## Done so far
 
+* `read_season_by_poly()` summarises a crop calendar over the cells of each
+  administrative division, so a division-level analysis can use a growing
+  season as its window. It reports the modal and the mean start, middle and
+  end, and resolves the land-cover mask: cropland governs a division where it
+  covers at least `min_share` of its cells, pasture takes over where it does
+  not, and `season_source` with `cropland_share` and `pasture_share` record
+  what happened. Without the fallback, divisions in pastoral areas get no
+  window at all and leave the analysis.
+* `read_season()` has tests, on a miniature ASIS tree built at test time by
+  `make_asis_tree()`, covering the dekad bounds, the second season crossing
+  the year, and every flag value becoming `NA`.
+
 * Labels say what a column is after `aggregate_to_adm()`: a coverage-weighted
   mean over a division turns a flag from a count of days into the share of the
   division's area beyond the threshold, and an excess into an area-weighted

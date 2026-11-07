@@ -27,6 +27,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 16 | Privacy and case studies | ✔ done | #10 | 2026-10-21 | 2026-10-21 | `displace_coord()` with division, water and population options merged into `main`; the case studies move to a separate tutorial site |
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
 | 18 | Paper (JOSS) | 🔄 in progress | #12 | 2026-10-21 | | draft merged into `main` (#12); placeholders wait for Jan's input |
+| S | Season bounds per division | 🔄 in progress | | 2026-11-07 | | branch `season-by-poly`; also the first tests `read_season()` has had |
 | L | Labels after spatial aggregation | 🔄 in progress | | 2026-11-07 | | branch `agg-labels`; expect a conflict in this log with `percentile-bound` |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
@@ -277,6 +278,35 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-11-07 — season bounds per division (laptop: FAO-Win, session: Claude)
+- Did: branch `season-by-poly`. `read_season_by_poly()` in
+  `R/read_season_by_poly.R`: modal and mean SOS/MOS/EOS over the cells of each
+  division, flags masked to `NA`, and the land cover resolved per division --
+  cropland governs where it covers at least `min_share` of the cells, pasture
+  takes over where it does not, and `season_source`, `cropland_share` and
+  `pasture_share` record what happened. The disaster report needs the fallback:
+  the ASIS cropland mask is usable for 93% of Malawian households but only 68%
+  of Nigerien ones, so cropland alone would drop a third of Niger, and they are
+  the pastoralists, which is selection on the thing being studied.
+- Did: `read_season()` now has tests, which it did not before -- the only
+  function from #14 without any. The obstacle was that it needs real ASIS
+  rasters and `inst/extdata` has no phenology fixture.
+  `tests/testthat/helper-season.R` builds a miniature ASIS tree into a temp
+  directory, following the pattern of `helper-boundaries.R`, with the real
+  file-name convention so `path =` finds it, real flag values, and a cropland
+  layer deliberately holed over the lower half of the grid so the fallback has
+  something to fall back from. Nothing is added to `inst/extdata`.
+- Decided: the fallback is per division, not per cell. Mixing cropland and
+  pasture cells inside one division would blend two calendars into a statistic
+  that describes neither. One division, one calendar, and a column saying
+  which.
+- Found: ASIS uses a different NDVI threshold for the end of season on
+  cropland than elsewhere, so `eos` is not strictly the same quantity across
+  the two covers while `sos` is less affected. Documented on the function:
+  read `season_source` before comparing season *lengths*.
+- Tests: `test-season.R` 32 passing, 0 failures.
+- Next: push; PR after the branches already open.
 
 ### 2026-11-07 — labels after spatial aggregation (laptop: FAO-Win, session: Claude)
 - Did: branch `agg-labels` off `main`, in parallel with `percentile-bound`
