@@ -28,7 +28,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
 | 18 | Paper (JOSS) | 🔄 in progress | #12 | 2026-10-21 | | draft merged into `main` (#12); placeholders wait for Jan's input |
 | W | Weather shock additions | ✔ done | #14 | 2026-11-05 | 2026-11-07 | merged into `main`; `_pkgdown.yml` entry (`a88929b`) stayed on the branch |
-| B | Threshold bounds | 🔄 in progress | | 2026-11-07 | | branch `percentile-bound`: `bound_threshold()`, with `min_threshold`/`max_threshold` on `calc_percentile()` as sugar; also rescues `a88929b` |
+| B | Threshold bounds | 👀 in review | | 2026-11-07 | | branch `percentile-bound`: `bound_threshold()`, with `min_threshold`/`max_threshold` on `calc_percentile()` as sugar; also rescues `a88929b` |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
@@ -331,7 +331,10 @@ To reproduce the GitHub check locally (same arguments as CI):
   change was 1268. `rcmdcheck` with the build arguments below: 0 errors, 0
   warnings, 2 notes, all three known (the Pages URL, the missing pandoc, and
   the absent vignette index that skipping the vignette build causes).
-- Next: see Next steps above. Nothing pushed.
+- Next: see Next steps above. Branch pushed as `percentile-bound`
+  (`f7d124b`); the pull request into `main` still has to be opened by hand,
+  since `gh` is not installed on this laptop:
+  <https://github.com/jmr-fao/c4e/pull/new/percentile-bound>.
 
 ### 2026-11-05 — merging the weather shock additions (laptop: FAO-Win, session: Claude)
 - Did: #13 (comparison with v1) was merged on 3 November. Fixed in
