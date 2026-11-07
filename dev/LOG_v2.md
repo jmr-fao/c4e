@@ -27,6 +27,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 16 | Privacy and case studies | ✔ done | #10 | 2026-10-21 | 2026-10-21 | `displace_coord()` with division, water and population options merged into `main`; the case studies move to a separate tutorial site |
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
 | 18 | Paper (JOSS) | 🔄 in progress | #12 | 2026-10-21 | | draft merged into `main` (#12); placeholders wait for Jan's input |
+| L | Labels after spatial aggregation | 🔄 in progress | | 2026-11-07 | | branch `agg-labels`; expect a conflict in this log with `percentile-bound` |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
@@ -228,6 +229,33 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-11-07 — labels after spatial aggregation (laptop: FAO-Win, session: Claude)
+- Did: branch `agg-labels` off `main`, in parallel with `percentile-bound`
+  (expect a conflict in this log and in `R/labels.R`; merge that one first).
+  `spatial_label()` in `R/labels.R`, hooked at the top of `indicator_label()`:
+  when `meta$spatial_agg` is a `weighted.mean` at `adm_div` level, a flag reads
+  "share of division area above the 95th percentile" and an excess
+  "area-weighted excess above ...". It returns `NULL` otherwise, so point,
+  buffer, poly and cell extractions are untouched. Tests in `test-survey.R`.
+- Found: `aggregate_to_adm()` takes a coverage-weighted mean, so a flag stops
+  counting days and becomes the share of the division's area beyond the
+  threshold, but the label still said "days above the 95th percentile" for a
+  number between 0 and 1. In the disaster report's daily file that mislabelled
+  22 of 34 columns.
+- Found: the obvious fix is wrong. Registering the columns as `kind = "agg"`,
+  the way `summarise_by_interview()` does, breaks the pipeline:
+  `summary_plans()` keeps only the kinds named in its `defaults` list
+  (`flag`, `excess`, `spell`, `std`, `value`), so every aggregated column
+  would be dropped and the next call would abort with "x has no indicator
+  columns to summarise". `agg_label()` and `grid_engine.R:255` both unwrap
+  `entry$of` to recover the source kind; `summary_plans()` does not.
+  Completing that idiom is a larger change and is not needed for a label, so
+  the kind is left alone and only the label reads `spatial_agg`. One test
+  asserts the kind is still `"flag"` and that `summarise_by_period()` runs,
+  so the trap stays shut.
+- Tests: 0 failures. `test-survey.R` alone: 110 passing.
+- Next: push, and open the PR after `percentile-bound` merges.
 
 ### 2026-11-05 — merging the weather shock additions (laptop: FAO-Win, session: Claude)
 - Did: #13 (comparison with v1) was merged on 3 November. Fixed in
