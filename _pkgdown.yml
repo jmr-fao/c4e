@@ -37,7 +37,6 @@ reference:
       - aggregate_time
       - select_by_dates
       - select_by_season
-      - read_season
       - convert_unit
       - list_units
       - register_unit
