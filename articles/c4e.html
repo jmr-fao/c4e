@@ -145,30 +145,31 @@ the history says so.</p>
 <code class="sourceCode R"><span><span class="va">heat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/weather_extremes.html">weather_extremes</a></span><span class="op">(</span><span class="va">survey</span>, <span class="va">tmax</span>, id <span class="op">=</span> <span class="va">hhid</span>, interview <span class="op">=</span> <span class="va">interview</span>,</span>
 <span>                         preset <span class="op">=</span> <span class="st">"heat"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">heat</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 14</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 16</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Context:  tmax [C], day, summary; key hhid; 12 indicators</span></span></span>
-<span><span class="co">#&gt;   hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0            103         235.              4         1.84</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0            140         419.             28        24.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0            105         233.              5         4.38</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0             81         153.              3         1.39</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> HH05      0            121         277.             14         9.52</span></span>
+<span><span class="co">#&gt;   hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0 2022-08-01 2023-07-31            103         235.              4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0 2022-03-17 2023-03-16            140         419.             28</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0 2022-06-19 2023-06-18            105         233.              5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0 2022-05-30 2023-05-29             81         153.              3</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> HH05      0 2022-04-16 2023-04-15            121         277.             14</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 15 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: spell_abv_30_max &lt;dbl&gt;, spell_abv_30_mean &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;, spell_abv_35_max &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;, spell_abv_35_n &lt;int&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: C_abv_35_sum &lt;dbl&gt;, spell_abv_30_max &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_30_mean &lt;dbl&gt;, spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_max &lt;dbl&gt;, spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_n &lt;int&gt;</span></span></span></code></pre></div>
 <p><code>day_abv_30_sum</code> is the number of days above 30 C in the
 year before the interview, <code>spell_abv_30_max</code> the longest run
 of them. Every table can print the steps that produced it, ready to copy
 and adapt:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/c4e_history.html">c4e_history</a></span><span class="op">(</span><span class="va">heat</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;c4e history: 6 steps, 0.4 s&gt;</span></span>
+<span><span class="co">#&gt; &lt;c4e history: 6 steps, 0.5 s&gt;</span></span>
 <span><span class="co">#&gt; prepare_coord(id_rule = "coordinates") |&gt;                                                                    # 0.1 s</span></span>
-<span><span class="co">#&gt;   extract_by_coord() |&gt;                                                                                      # 0.0 s</span></span>
+<span><span class="co">#&gt;   extract_by_coord() |&gt;                                                                                      # 0.1 s</span></span>
 <span><span class="co">#&gt;   convert_unit(to = "C", from = "K") |&gt;                                                                      # 0.0 s</span></span>
-<span><span class="co">#&gt;   calc_threshold_day(above = c(30, 35), unit = "C") |&gt;                                                       # 0.1 s</span></span>
+<span><span class="co">#&gt;   calc_threshold_day(above = c(30, 35), unit = "C") |&gt;                                                       # 0.2 s</span></span>
 <span><span class="co">#&gt;   calc_spell(min_spell = 2L) |&gt;                                                                              # 0.0 s</span></span>
 <span><span class="co">#&gt;   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 0L), min_coverage = 0.8)  # 0.1 s</span></span></code></pre></div>
 </div>
@@ -185,16 +186,17 @@ interview:</p>
 <span>                           preset <span class="op">=</span> <span class="st">"drought_spi3"</span>,</span>
 <span>                           window <span class="op">=</span> <span class="fu"><a href="../reference/window_lag.html">window_lag</a></span><span class="op">(</span><span class="st">"6 months"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">drought</span>, n <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 6</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 8</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Context:  pre [mm/month], month, summary; key hhid; 4 indicators</span></span></span>
-<span><span class="co">#&gt;   hhid    lag spi_3_mean `spi3_blw_-1_sum` `spi3_blw_-1.5_sum` `spi3_blw_-2_sum`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0     0.478                  0                   0                 0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0    -<span style="color: #BB0000;">1.70</span>                   6                   4                 1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0    -<span style="color: #BB0000;">0.055</span><span style="color: #BB0000; text-decoration: underline;">5</span>                 0                   0                 0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0     1.07                   0                   0                 0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> HH05      0     0.444                  0                   0                 0</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 15 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt;   hhid    lag w_start    w_end      spi_3_mean `spi3_blw_-1_sum`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0 2023-02-01 2023-07-31     0.478                  0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0 2022-09-17 2023-03-16    -<span style="color: #BB0000;">1.70</span>                   6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0 2022-12-19 2023-06-18    -<span style="color: #BB0000;">0.055</span><span style="color: #BB0000; text-decoration: underline;">5</span>                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0 2022-11-30 2023-05-29     1.07                   0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> HH05      0 2022-10-16 2023-04-15     0.444                  0</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 15 more rows</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: `spi3_blw_-1.5_sum` &lt;dbl&gt;, `spi3_blw_-2_sum` &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="spatial-controls">Spatial controls<a class="anchor" aria-label="anchor" href="#spatial-controls"></a>

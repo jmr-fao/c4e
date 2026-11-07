@@ -164,21 +164,21 @@ thresholds. The sign stays in the column name, so
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarise_by_interview.html">summarise_by_interview</a></span><span class="op">(</span><span class="va">coord</span>, <span class="va">dry</span>, window <span class="op">=</span> <span class="fu"><a href="../reference/window_lag.html">window_lag</a></span><span class="op">(</span><span class="st">"1 year"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">summary</span>, n <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 24</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 26</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Context:  pre [mm/month], month, summary; key hhid; 22 indicators</span></span></span>
-<span><span class="co">#&gt;   hhid    lag spi_3_mean spi_12_mean `spi3_blw_-1_sum` `spi3_blw_-1.5_sum`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0     0.049<span style="text-decoration: underline;">7</span>      -<span style="color: #BB0000;">0.671</span>                 1                   0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0    -<span style="color: #BB0000;">0.703</span>        0.358                 6                   4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0     0.234        0.444                 0                   0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0     0.595       -<span style="color: #BB0000;">0.357</span>                 0                   0</span></span>
+<span><span class="co">#&gt;   hhid    lag w_start    w_end      spi_3_mean spi_12_mean `spi3_blw_-1_sum`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0 2022-08-01 2023-07-31     0.049<span style="text-decoration: underline;">7</span>      -<span style="color: #BB0000;">0.671</span>                 1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0 2022-03-17 2023-03-16    -<span style="color: #BB0000;">0.703</span>        0.358                 6</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0 2022-06-19 2023-06-18     0.234        0.444                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0 2022-05-30 2023-05-29     0.595       -<span style="color: #BB0000;">0.357</span>                 0</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 16 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 18 more variables: `spi12_blw_-1_sum` &lt;dbl&gt;, `spi12_blw_-1.5_sum` &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1_max` &lt;dbl&gt;, `spell_spi3_blw_-1_mean` &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1_sum` &lt;dbl&gt;, `spell_spi3_blw_-1_n` &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1.5_max` &lt;dbl&gt;, `spell_spi3_blw_-1.5_mean` &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1.5_sum` &lt;dbl&gt;, `spell_spi3_blw_-1.5_n` &lt;int&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi12_blw_-1_max` &lt;dbl&gt;, `spell_spi12_blw_-1_mean` &lt;dbl&gt;, …</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 19 more variables: `spi3_blw_-1.5_sum` &lt;dbl&gt;, `spi12_blw_-1_sum` &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `spi12_blw_-1.5_sum` &lt;dbl&gt;, `spell_spi3_blw_-1_max` &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1_mean` &lt;dbl&gt;, `spell_spi3_blw_-1_sum` &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1_n` &lt;int&gt;, `spell_spi3_blw_-1.5_max` &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1.5_mean` &lt;dbl&gt;, `spell_spi3_blw_-1.5_sum` &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `spell_spi3_blw_-1.5_n` &lt;int&gt;, `spell_spi12_blw_-1_max` &lt;dbl&gt;, …</span></span></span>
 <span><span class="fu"><a href="../reference/c4e_labels.html">c4e_labels</a></span><span class="op">(</span><span class="va">summary</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"spi_3_mean"</span>, <span class="st">"spi3_blw_-1.5_sum"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="co">#&gt;                                        spi_3_mean </span></span>
 <span><span class="co">#&gt;    "mean of SPI over 3 months, per 1-year window" </span></span>
@@ -213,17 +213,18 @@ raster; daily precipitation is summed to months by itself.</p>
 <span><span class="co">#&gt;   outside the dates of the data).</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Lower `min_coverage` to keep partial windows, e.g. `min_coverage = 0.5`.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">drought</span>, n <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 10</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 12</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Context:  pre [mm/month], month, summary; key hhid; 8 indicators</span></span></span>
-<span><span class="co">#&gt;   hhid    lag spi_3_mean spi_12_mean `spi3_blw_-1_sum` `spi3_blw_-1.5_sum`</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0     <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>                    <span style="color: #BB0000;">NA</span>                  <span style="color: #BB0000;">NA</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0     -<span style="color: #BB0000;">1.32</span>       -<span style="color: #BB0000;">0.201</span>                 1                   0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0      0.195       0.393                 0                   0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0      0.226       0.811                 0                   0</span></span>
+<span><span class="co">#&gt;   hhid    lag w_start    w_end      spi_3_mean spi_12_mean `spi3_blw_-1_sum`</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0 2023-07-01 2023-07-31     <span style="color: #BB0000;">NA</span>          <span style="color: #BB0000;">NA</span>                    <span style="color: #BB0000;">NA</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0 2023-02-17 2023-03-16     -<span style="color: #BB0000;">1.32</span>       -<span style="color: #BB0000;">0.201</span>                 1</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0 2023-05-19 2023-06-18      0.195       0.393                 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0 2023-04-30 2023-05-29      0.226       0.811                 0</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 16 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 4 more variables: `spi3_blw_-2_sum` &lt;dbl&gt;, `spi12_blw_-1_sum` &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   `spi12_blw_-1.5_sum` &lt;dbl&gt;, `spi12_blw_-2_sum` &lt;dbl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: `spi3_blw_-1.5_sum` &lt;dbl&gt;, `spi3_blw_-2_sum` &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `spi12_blw_-1_sum` &lt;dbl&gt;, `spi12_blw_-1.5_sum` &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `spi12_blw_-2_sum` &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -195,18 +195,19 @@ division its coordinates fall in.</p>
 <span>                         boundaries <span class="op">=</span> <span class="va">adm</span>, control <span class="op">=</span> <span class="fu"><a href="../reference/extremes_control.html">extremes_control</a></span><span class="op">(</span>verbose <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading one raster block of data per layer requires approximately 1095 MB but the GDAL block size cache is only 799 MB. This is likely to result in very slow performance. It is recommended to increase the cache size using terra::gdalCache(new_size), reduce the number of layers in the input raster, or rewrite the input raster using a smaller chunk size.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">heat</span>, n <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 14</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 20 × 16</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Context:  tmax [C], day, summary; key hhid; 12 indicators</span></span></span>
-<span><span class="co">#&gt;   hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0           88.5         178.           3.72         3.05</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0          134.          384.          19.7         21.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0           88.8         183.           4.11         3.30</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0           89.3         187.           4.67         3.43</span></span>
+<span><span class="co">#&gt;   hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0 2022-08-01 2023-07-31           88.5         178.           3.72</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH02      0 2022-03-17 2023-03-16          134.          384.          19.7 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH03      0 2022-06-19 2023-06-18           88.8         183.           4.11</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH04      0 2022-05-30 2023-05-29           89.3         187.           4.67</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 16 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: spell_abv_30_max &lt;dbl&gt;, spell_abv_30_mean &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;, spell_abv_35_max &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;, spell_abv_35_n &lt;int&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: C_abv_35_sum &lt;dbl&gt;, spell_abv_30_max &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_30_mean &lt;dbl&gt;, spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_max &lt;dbl&gt;, spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_n &lt;int&gt;</span></span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

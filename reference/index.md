@@ -47,6 +47,10 @@ Indicators, parameters and controls returned as rasters.
   : Teach read_climate() a data source
 - [`read_boundaries()`](https://jmr-fao.github.io/c4e/reference/read_boundaries.md)
   : Read administrative boundaries
+- [`read_season()`](https://jmr-fao.github.io/c4e/reference/read_season.md)
+  : Growing-season bounds at each survey location
+- [`read_season_by_poly()`](https://jmr-fao.github.io/c4e/reference/read_season_by_poly.md)
+  : Growing-season bounds for each administrative division
 - [`aggregate_time()`](https://jmr-fao.github.io/c4e/reference/aggregate_time.md)
   : Aggregate a raster to a coarser time step
 - [`select_by_dates()`](https://jmr-fao.github.io/c4e/reference/select_by_dates.md)
@@ -68,11 +72,16 @@ Indicators, parameters and controls returned as rasters.
   : Georeference based on coordinates and coordinate reference system
 - [`displace_coord()`](https://jmr-fao.github.io/c4e/reference/displace_coord.md)
   : Displace survey coordinates to protect respondents
+- [`snap_to_valid_cell()`](https://jmr-fao.github.io/c4e/reference/snap_to_valid_cell.md)
+  : Move points off the empty cells of a grid
 - [`window_lag()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
   [`window_season()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
   [`window_fixed()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
   [`window_since()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  [`window_calendar()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
   : Reference windows for survey summaries
+- [`window_lags()`](https://jmr-fao.github.io/c4e/reference/window_lags.md)
+  : The same window, one or more periods earlier
 - [`select_by_interview()`](https://jmr-fao.github.io/c4e/reference/select_by_interview.md)
   : Select time observations based on interview date and time interval
 
@@ -99,6 +108,8 @@ Indicators, parameters and controls returned as rasters.
   : Percentiles of daily values by unit and month
 - [`calc_percentile_day()`](https://jmr-fao.github.io/c4e/reference/calc_percentile_day.md)
   : Flag days beyond their unit's monthly percentiles
+- [`bound_threshold()`](https://jmr-fao.github.io/c4e/reference/bound_threshold.md)
+  : Hold a threshold lookup table between absolute bounds
 - [`calc_spell()`](https://jmr-fao.github.io/c4e/reference/calc_spell.md)
   : Spells of consecutive flagged days
 - [`calc_spell_percentile()`](https://jmr-fao.github.io/c4e/reference/calc_spell_percentile.md)
@@ -123,6 +134,8 @@ Indicators, parameters and controls returned as rasters.
   : Summarise indicators over each household's reference period
 - [`summarise_by_period()`](https://jmr-fao.github.io/c4e/reference/summarise_by_period.md)
   : Summarise indicators by calendar period
+- [`calc_anomaly()`](https://jmr-fao.github.io/c4e/reference/calc_anomaly.md)
+  : How unusual a window was, against the same window in earlier years
 - [`merge_with_survey()`](https://jmr-fao.github.io/c4e/reference/merge_with_survey.md)
   : Merge survey observations with other data.
 - [`merge_by_common()`](https://jmr-fao.github.io/c4e/reference/merge_by_common.md)

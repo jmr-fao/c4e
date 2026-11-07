@@ -216,18 +216,19 @@ year before the interview and the year before that.</p>
 <code class="sourceCode R"><span><span class="va">summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/summarise_by_interview.html">summarise_by_interview</a></span><span class="op">(</span><span class="va">coord</span>, <span class="va">spells</span>,</span>
 <span>                                  window <span class="op">=</span> <span class="fu"><a href="../reference/window_lag.html">window_lag</a></span><span class="op">(</span><span class="st">"1 year"</span>, n_lags <span class="op">=</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">summary</span>, n <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 40 × 14</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 40 × 16</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># Context:  tmax [C], day, summary; key hhid; 12 indicators</span></span></span>
-<span><span class="co">#&gt;   hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0            103         235.              4         1.84</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH01      1             97         248.             12        11.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH02      0            140         419.             28        24.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH02      1            136         357.              9        10.3 </span></span>
+<span><span class="co">#&gt;   hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> HH01      0 2022-08-01 2023-07-31            103         235.              4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> HH01      1 2021-08-01 2022-08-01             97         248.             12</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> HH02      0 2022-03-17 2023-03-16            140         419.             28</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> HH02      1 2021-03-17 2022-03-17            136         357.              9</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 36 more rows</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 8 more variables: spell_abv_30_max &lt;dbl&gt;, spell_abv_30_mean &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;, spell_abv_35_max &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;, spell_abv_35_n &lt;int&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 9 more variables: C_abv_35_sum &lt;dbl&gt;, spell_abv_30_max &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_30_mean &lt;dbl&gt;, spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_max &lt;dbl&gt;, spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   spell_abv_35_n &lt;int&gt;</span></span></span></code></pre></div>
 <p>Other windows are a season (<code>window_season(6, 9)</code> for June
 to September), a fixed period (<code><a href="../reference/window_lag.html">window_fixed()</a></code>) or the time
 since an event (<code><a href="../reference/window_lag.html">window_since()</a></code>). A window short of data
@@ -242,10 +243,10 @@ means. <code><a href="../reference/c4e_labels.html">c4e_labels()</a></code> writ
 that context, which <code><a href="../reference/write_stata.html">write_stata()</a></code> uses:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/c4e_history.html">c4e_history</a></span><span class="op">(</span><span class="va">summary</span><span class="op">)</span></span>
-<span><span class="co">#&gt; &lt;c4e history: 5 steps, 0.5 s&gt;</span></span>
+<span><span class="co">#&gt; &lt;c4e history: 5 steps, 0.6 s&gt;</span></span>
 <span><span class="co">#&gt; prepare_coord(id_rule = "coordinates") |&gt;                                                                    # 0.2 s</span></span>
 <span><span class="co">#&gt;   extract_by_coord() |&gt;                                                                                      # 0.0 s</span></span>
-<span><span class="co">#&gt;   calc_threshold_day(above = c(30, 35), unit = "C") |&gt;                                                       # 0.1 s</span></span>
+<span><span class="co">#&gt;   calc_threshold_day(above = c(30, 35), unit = "C") |&gt;                                                       # 0.2 s</span></span>
 <span><span class="co">#&gt;   calc_spell(min_spell = 2L) |&gt;                                                                              # 0.0 s</span></span>
 <span><span class="co">#&gt;   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 1L), min_coverage = 0.8)  # 0.1 s</span></span>
 <span><span class="fu"><a href="../reference/c4e_labels.html">c4e_labels</a></span><span class="op">(</span><span class="va">summary</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"day_abv_30_sum"</span>, <span class="st">"spell_abv_35_max"</span><span class="op">)</span><span class="op">]</span></span>
@@ -255,8 +256,8 @@ that context, which <code><a href="../reference/write_stata.html">write_stata()<
 <span><span class="co">#&gt; "longest spell above 35 C (2+ days), per 1-year window"</span></span></code></pre></div>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/write_stata.html">write_stata</a></span><span class="op">(</span><span class="va">summary</span>, <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"household_extremes.dta"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Wrote 40 rows and 14 variables to</span></span>
-<span><span class="co">#&gt; <span style="color: #0000BB;">/tmp/RtmphPlQNJ/household_extremes.dta</span>.</span></span></code></pre></div>
+<span><span class="co">#&gt; Wrote 40 rows and 16 variables to</span></span>
+<span><span class="co">#&gt; <span style="color: #0000BB;">/tmp/RtmpF6QWBQ/household_extremes.dta</span>.</span></span></code></pre></div>
 <p><code><a href="../reference/validate_c4e.html">validate_c4e()</a></code> checks a table for duplicate rows, empty
 indicators, units without data and gaps in the dates:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">

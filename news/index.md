@@ -9,6 +9,41 @@ progress is tracked in `dev/LOG_v2.md`.
 
 ### Done so far
 
+- [`read_season_by_poly()`](https://jmr-fao.github.io/c4e/reference/read_season_by_poly.md)
+  summarises a crop calendar over the cells of each administrative
+  division, so a division-level analysis can use a growing season as its
+  window. It reports the modal and the mean start, middle and end, and
+  resolves the land-cover mask: cropland governs a division where it
+  covers at least `min_share` of its cells, pasture takes over where it
+  does not, and `season_source` with `cropland_share` and
+  `pasture_share` record what happened. Without the fallback, divisions
+  in pastoral areas get no window at all and leave the analysis.
+
+- [`read_season()`](https://jmr-fao.github.io/c4e/reference/read_season.md)
+  has tests, on a miniature ASIS tree built at test time by
+  `make_asis_tree()`, covering the dekad bounds, the second season
+  crossing the year, and every flag value becoming `NA`.
+
+- Labels say what a column is after
+  [`aggregate_to_adm()`](https://jmr-fao.github.io/c4e/reference/aggregate_to_adm.md):
+  a coverage-weighted mean over a division turns a flag from a count of
+  days into the share of the division’s area beyond the threshold, and
+  an excess into an area-weighted mean. The label said “days” for a
+  number between 0 and 1. The kind is left alone, because the summaries
+  choose their statistics by kind.
+
+- [`bound_threshold()`](https://jmr-fao.github.io/c4e/reference/bound_threshold.md)
+  holds a threshold lookup table at an absolute guardrail, so a relative
+  and an absolute threshold become one threshold rather than two flags
+  to combine by hand. It works on any threshold table, a percentile one
+  or a user’s own zone or crop limits, which is the model thresholds
+  already follow. The bound is recorded on the threshold and appears in
+  the label, and a bound paired with the tail it would loosen is warned
+  about.
+  [`calc_percentile()`](https://jmr-fao.github.io/c4e/reference/calc_percentile.md)
+  gains `min_threshold` and `max_threshold` as a convenience for the
+  common case, which hand the finished lookup to it.
+
 - `c4e_tbl` tables carry their context (key, variable, unit, time step,
   dates, CRS, indicator registry, history);
   [`c4e_meta()`](https://jmr-fao.github.io/c4e/reference/c4e_tbl.md),
@@ -68,10 +103,41 @@ progress is tracked in `dev/LOG_v2.md`.
   ([`window_lag()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
   [`window_season()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
   [`window_fixed()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
-  [`window_since()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)),
+  [`window_since()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
+  [`window_calendar()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  with
+  [`read_season()`](https://jmr-fao.github.io/c4e/reference/read_season.md)),
+  [`window_lags()`](https://jmr-fao.github.io/c4e/reference/window_lags.md)
+  to reach back whichever kind a window is,
   [`summarise_by_interview()`](https://jmr-fao.github.io/c4e/reference/summarise_by_interview.md),
   [`summarise_by_period()`](https://jmr-fao.github.io/c4e/reference/summarise_by_period.md),
   [`aggregate_to_adm()`](https://jmr-fao.github.io/c4e/reference/aggregate_to_adm.md).
+
+- Window anomalies:
+  [`calc_anomaly()`](https://jmr-fao.github.io/c4e/reference/calc_anomaly.md)
+  ranks the window before an interview against the same window in
+  earlier years at the same location, as a percentile of the baseline or
+  a z-score. The percentile assumes no distribution, which matters for
+  right-skewed season totals;
+  [`calc_std_index()`](https://jmr-fao.github.io/c4e/reference/calc_std_index.md)
+  is the fitted-distribution form of the same idea.
+
+- [`summarise_by_interview()`](https://jmr-fao.github.io/c4e/reference/summarise_by_interview.md)
+  returns the bounds of each window, `w_start` and `w_end`, so a caller
+  does not have to work out which dates a lag stands for. **This adds
+  two columns to its output.**
+
+- `summarise_by_interview(stats = list(value = ...))` summarises the
+  series itself, not only the registered indicators: the window’s total,
+  mean, spread and coefficient of variation as `value_sum` and the rest.
+
+- [`snap_to_valid_cell()`](https://jmr-fao.github.io/c4e/reference/snap_to_valid_cell.md)
+  moves points that fall in an empty cell to the nearest cell that has a
+  value, for land-only grids whose coastline leaves a household on land
+  without a cell.
+  [`fill_missing_rast()`](https://jmr-fao.github.io/c4e/reference/fill_missing_rast.md)
+  does the same job on the raster; this one is for when the points are
+  what matters and the raster is a long daily stack.
 
 - Export and inspection:
   [`write_stata()`](https://jmr-fao.github.io/c4e/reference/write_stata.md)

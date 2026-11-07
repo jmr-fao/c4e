@@ -49,6 +49,8 @@ table, announced, and otherwise to 2. A missing value ends a run.
 ## See also
 
 Other indicators:
+[`bound_threshold()`](https://jmr-fao.github.io/c4e/reference/bound_threshold.md),
+[`calc_anomaly()`](https://jmr-fao.github.io/c4e/reference/calc_anomaly.md),
 [`calc_condition()`](https://jmr-fao.github.io/c4e/reference/calc_condition.md),
 [`calc_heatwave()`](https://jmr-fao.github.io/c4e/reference/calc_heatwave.md),
 [`calc_par()`](https://jmr-fao.github.io/c4e/reference/calc_par.md),

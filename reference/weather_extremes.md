@@ -163,40 +163,41 @@ weather_extremes(survey,
 #>   12 locations, 20 survey units
 #> ℹ Extracting tmax
 #> Converting "K" to "C" to read the thresholds.
-#> ✔ Extracting tmax [586ms]
+#> ✔ Extracting tmax [88ms]
 #> 
 #> ℹ Computing indicators
 #> Using `unit = "C"` from upstream unit.
-#> ✔ Computing indicators [85ms]
+#> ✔ Computing indicators [128ms]
 #> 
 #> ℹ Summarising over the reference windows
-#> ✔ Summarising over the reference windows [78ms]
+#> ✔ Summarising over the reference windows [119ms]
 #> 
-#> # A tibble: 20 × 14
+#> # A tibble: 20 × 16
 #> # Context:  tmax [C], day, summary; key hhid; 12 indicators
-#>    hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum
-#>    <chr> <int>          <dbl>        <dbl>          <dbl>        <dbl>
-#>  1 HH01      0            103         235.              4        1.84 
-#>  2 HH02      0            140         419.             28       24.6  
-#>  3 HH03      0            105         233.              5        4.38 
-#>  4 HH04      0             81         153.              3        1.39 
-#>  5 HH05      0            121         277.             14        9.52 
-#>  6 HH06      0            100         231.              6        4.80 
-#>  7 HH07      0            136         366.             11       11.0  
-#>  8 HH08      0            103         235.              4        1.84 
-#>  9 HH09      0            113         280.              8       10.4  
-#> 10 HH10      0             89         183.              1        0.790
-#> 11 HH11      0            127         397.             28       27.2  
-#> 12 HH12      0            105         233.              7        2.93 
-#> 13 HH13      0             81         147.              3        1.39 
-#> 14 HH14      0            119         300.              8        9.40 
-#> 15 HH15      0            118         271.             14        9.52 
-#> 16 HH16      0            104         230.              4        5.88 
-#> 17 HH17      0             98         253.             12        9.95 
-#> 18 HH18      0            125         367.             14       15.8  
-#> 19 HH19      0            103         234.              6        4.80 
-#> 20 HH20      0             94         251.             12        9.95 
-#> # ℹ 8 more variables: spell_abv_30_max <dbl>, spell_abv_30_mean <dbl>,
-#> #   spell_abv_30_sum <dbl>, spell_abv_30_n <int>, spell_abv_35_max <dbl>,
-#> #   spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>, spell_abv_35_n <int>
+#>    hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum
+#>    <chr> <int> <date>     <date>              <dbl>        <dbl>          <dbl>
+#>  1 HH01      0 2022-08-01 2023-07-31            103         235.              4
+#>  2 HH02      0 2022-03-17 2023-03-16            140         419.             28
+#>  3 HH03      0 2022-06-19 2023-06-18            105         233.              5
+#>  4 HH04      0 2022-05-30 2023-05-29             81         153.              3
+#>  5 HH05      0 2022-04-16 2023-04-15            121         277.             14
+#>  6 HH06      0 2022-03-06 2023-03-05            100         231.              6
+#>  7 HH07      0 2022-06-27 2023-06-26            136         366.             11
+#>  8 HH08      0 2022-07-30 2023-07-29            103         235.              4
+#>  9 HH09      0 2022-07-16 2023-07-15            113         280.              8
+#> 10 HH10      0 2022-08-02 2023-08-01             89         183.              1
+#> 11 HH11      0 2022-04-10 2023-04-09            127         397.             28
+#> 12 HH12      0 2022-05-10 2023-05-09            105         233.              7
+#> 13 HH13      0 2022-06-11 2023-06-10             81         147.              3
+#> 14 HH14      0 2022-08-17 2023-08-16            119         300.              8
+#> 15 HH15      0 2022-05-05 2023-05-04            118         271.             14
+#> 16 HH16      0 2022-06-30 2023-06-29            104         230.              4
+#> 17 HH17      0 2022-04-24 2023-04-23             98         253.             12
+#> 18 HH18      0 2022-03-03 2023-03-02            125         367.             14
+#> 19 HH19      0 2022-06-06 2023-06-05            103         234.              6
+#> 20 HH20      0 2022-05-05 2023-05-04             94         251.             12
+#> # ℹ 9 more variables: C_abv_35_sum <dbl>, spell_abv_30_max <dbl>,
+#> #   spell_abv_30_mean <dbl>, spell_abv_30_sum <dbl>, spell_abv_30_n <int>,
+#> #   spell_abv_35_max <dbl>, spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>,
+#> #   spell_abv_35_n <int>
 ```

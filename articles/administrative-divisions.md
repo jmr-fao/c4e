@@ -140,16 +140,17 @@ heat <- weather_extremes(survey, system.file("extdata", "tmax_daily.tif", packag
                          boundaries = adm, control = extremes_control(verbose = FALSE))
 #> Loading one raster block of data per layer requires approximately 1095 MB but the GDAL block size cache is only 799 MB. This is likely to result in very slow performance. It is recommended to increase the cache size using terra::gdalCache(new_size), reduce the number of layers in the input raster, or rewrite the input raster using a smaller chunk size.
 print(heat, n = 4)
-#> # A tibble: 20 × 14
+#> # A tibble: 20 × 16
 #> # Context:  tmax [C], day, summary; key hhid; 12 indicators
-#>   hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum
-#>   <chr> <int>          <dbl>        <dbl>          <dbl>        <dbl>
-#> 1 HH01      0           88.5         178.           3.72         3.05
-#> 2 HH02      0          134.          384.          19.7         21.9 
-#> 3 HH03      0           88.8         183.           4.11         3.30
-#> 4 HH04      0           89.3         187.           4.67         3.43
+#>   hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum
+#>   <chr> <int> <date>     <date>              <dbl>        <dbl>          <dbl>
+#> 1 HH01      0 2022-08-01 2023-07-31           88.5         178.           3.72
+#> 2 HH02      0 2022-03-17 2023-03-16          134.          384.          19.7 
+#> 3 HH03      0 2022-06-19 2023-06-18           88.8         183.           4.11
+#> 4 HH04      0 2022-05-30 2023-05-29           89.3         187.           4.67
 #> # ℹ 16 more rows
-#> # ℹ 8 more variables: spell_abv_30_max <dbl>, spell_abv_30_mean <dbl>,
-#> #   spell_abv_30_sum <dbl>, spell_abv_30_n <int>, spell_abv_35_max <dbl>,
-#> #   spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>, spell_abv_35_n <int>
+#> # ℹ 9 more variables: C_abv_35_sum <dbl>, spell_abv_30_max <dbl>,
+#> #   spell_abv_30_mean <dbl>, spell_abv_30_sum <dbl>, spell_abv_30_n <int>,
+#> #   spell_abv_35_max <dbl>, spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>,
+#> #   spell_abv_35_n <int>
 ```

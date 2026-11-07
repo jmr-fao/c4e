@@ -108,18 +108,19 @@ counted, excesses summed, spells summarised.
 
 summary <- summarise_by_interview(coord, spell_excess, window = window_lag("1 year"))
 print(summary, n = 4)
-#> # A tibble: 20 × 16
+#> # A tibble: 20 × 18
 #> # Context:  pre [mm/day], day, summary; key hhid; 14 indicators
-#>   hhid    lag day_abv_90p_sum mm_abv_90p_sum day_abv_95p_sum mm_abv_95p_sum
-#>   <chr> <int>           <dbl>          <dbl>           <dbl>          <dbl>
-#> 1 HH01      0              20           229.              14          120. 
-#> 2 HH02      0              12           101.               9           36.4
-#> 3 HH03      0              13           192.              10          137. 
-#> 4 HH04      0              25           267.              18          169. 
+#>   hhid    lag w_start    w_end      day_abv_90p_sum mm_abv_90p_sum
+#>   <chr> <int> <date>     <date>               <dbl>          <dbl>
+#> 1 HH01      0 2022-08-01 2023-07-31              20           229.
+#> 2 HH02      0 2022-03-17 2023-03-16              12           101.
+#> 3 HH03      0 2022-06-19 2023-06-18              13           192.
+#> 4 HH04      0 2022-05-30 2023-05-29              25           267.
 #> # ℹ 16 more rows
-#> # ℹ 10 more variables: spell_abv_90p_max <dbl>, spell_abv_90p_mean <dbl>,
-#> #   spell_abv_90p_sum <dbl>, spell_abv_90p_n <int>, spell_abv_95p_max <dbl>,
-#> #   spell_abv_95p_mean <dbl>, spell_abv_95p_sum <dbl>, spell_abv_95p_n <int>,
+#> # ℹ 12 more variables: day_abv_95p_sum <dbl>, mm_abv_95p_sum <dbl>,
+#> #   spell_abv_90p_max <dbl>, spell_abv_90p_mean <dbl>, spell_abv_90p_sum <dbl>,
+#> #   spell_abv_90p_n <int>, spell_abv_95p_max <dbl>, spell_abv_95p_mean <dbl>,
+#> #   spell_abv_95p_sum <dbl>, spell_abv_95p_n <int>,
 #> #   spell_abv_90p_90p_sum <dbl>, spell_abv_95p_90p_sum <dbl>
 c4e_labels(summary)[c("day_abv_95p_sum", "mm_abv_95p_sum")]
 #>                                                        day_abv_95p_sum 
@@ -141,7 +142,8 @@ wet <- weather_extremes(survey, system.file("extdata", "pre_daily.tif", package 
                         id = hhid, interview = interview, p = 0.95,
                         control = extremes_control(spell_excess = TRUE, verbose = FALSE))
 names(wet)
-#> [1] "hhid"                  "lag"                   "day_abv_95p_sum"      
-#> [4] "mm_abv_95p_sum"        "spell_abv_95p_max"     "spell_abv_95p_mean"   
-#> [7] "spell_abv_95p_sum"     "spell_abv_95p_n"       "spell_abv_95p_95p_sum"
+#>  [1] "hhid"                  "lag"                   "w_start"              
+#>  [4] "w_end"                 "day_abv_95p_sum"       "mm_abv_95p_sum"       
+#>  [7] "spell_abv_95p_max"     "spell_abv_95p_mean"    "spell_abv_95p_sum"    
+#> [10] "spell_abv_95p_n"       "spell_abv_95p_95p_sum"
 ```

@@ -83,8 +83,18 @@ period with less than <code>min_coverage</code> of its days present gives <code>
 
 <dt id="arg-stats">stats<a class="anchor" aria-label="anchor" href="#arg-stats"></a></dt>
 <dd><p>Optional named list of statistics per kind of indicator,
-e.g. <code>list(flag = c("sum", "mean"), spell = "max")</code>. Statistics: <code>"sum"</code>,
-<code>"mean"</code>, <code>"max"</code>, <code>"min"</code>, <code>"n"</code> (number of non-missing values).</p></dd>
+e.g. <code>list(flag = c("sum", "mean"), spell = "max")</code>. The series itself
+is the kind <code>"value"</code>, which no step registers and nothing computes
+unless it is asked for: <code>list(value = c("sum", "sd", "cv"))</code> gives the
+window's total, spread and coefficient of variation as <code>value_sum</code>,
+<code>value_sd</code> and <code>value_cv</code>. Statistics: <code>"sum"</code>,
+<code>"mean"</code>, <code>"max"</code>, <code>"min"</code>, <code>"n"</code> (number of non-missing values),
+<code>"sd"</code> and <code>"cv"</code> (see <code><a href="cv.html">cv()</a></code>). The first five fall back to <code>0</code> when
+the window holds no data; <code>"sd"</code> and <code>"cv"</code> return <code>NA</code> instead,
+because a window with nothing in it has no dispersion rather than a
+dispersion of zero, and <code>"sd"</code> needs two values. <code>"cv"</code> is a ratio,
+so it is meaningful only on a scale with a true zero: use kelvin for
+temperature, which <code><a href="calc_par.html">calc_par()</a></code> does by itself.</p></dd>
 
 
 <dt id="arg-min-coverage">min_coverage<a class="anchor" aria-label="anchor" href="#arg-min-coverage"></a></dt>

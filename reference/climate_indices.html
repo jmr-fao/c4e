@@ -172,43 +172,43 @@ computed per cell and averaged per division (area shares).</p></dd>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   window: 1 month before the interview</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   12 locations, 20 survey units</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Extracting precipitation</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Extracting precipitation <span style="color: #B2B2B2;">[36ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Extracting precipitation <span style="color: #B2B2B2;">[37ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Computing SPI</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Computing SPI <span style="color: #B2B2B2;">[148ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Computing SPI <span style="color: #B2B2B2;">[205ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Summarising over the reference windows</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>1 of 20 household windows is `NA`: less than 80% of the days have data.</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> 1 of them has no data at all (a location on cells without data, or a window</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span>   outside the dates of the data).</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Lower `min_coverage` to keep partial windows, e.g. `min_coverage = 0.5`.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Summarising over the reference windows <span style="color: #B2B2B2;">[91ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Summarising over the reference windows <span style="color: #B2B2B2;">[113ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 8</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Context:  pre [mm/month], month, summary; key hhid; 4 indicators</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    hhid    lag spi_3_mean `spi3_blw_-1_sum` `spi3_blw_-1.5_sum`</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>               <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> HH01      0   <span style="color: #BB0000;">NA</span>                      <span style="color: #BB0000;">NA</span>                  <span style="color: #BB0000;">NA</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> HH02      0   -<span style="color: #BB0000;">1.32</span>                    1                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> HH03      0    0.195                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> HH04      0    0.226                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> HH05      0    0.002<span style="text-decoration: underline;">15</span>                 0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> HH06      0   -<span style="color: #BB0000;">0.487</span>                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> HH07      0   -<span style="color: #BB0000;">0.085</span><span style="color: #BB0000; text-decoration: underline;">3</span>                  0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> HH08      0    0.339                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> HH09      0    0.294                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> HH10      0    0.291                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> HH11      0    0.870                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> HH12      0   -<span style="color: #BB0000;">0.717</span>                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> HH13      0   -<span style="color: #BB0000;">0.306</span>                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> HH14      0    1.29                    0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> HH15      0   -<span style="color: #BB0000;">0.810</span>                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> HH16      0    0.195                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> HH17      0    0.701                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> HH18      0   -<span style="color: #BB0000;">0.087</span><span style="color: #BB0000; text-decoration: underline;">3</span>                  0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span> HH19      0    0.195                   0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span> HH20      0    0.042<span style="text-decoration: underline;">2</span>                  0                   0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: `spi3_blw_-2_sum` &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    hhid    lag w_start    w_end      spi_3_mean `spi3_blw_-1_sum`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> HH01      0 2023-07-01 2023-07-31   <span style="color: #BB0000;">NA</span>                      <span style="color: #BB0000;">NA</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> HH02      0 2023-02-17 2023-03-16   -<span style="color: #BB0000;">1.32</span>                    1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> HH03      0 2023-05-19 2023-06-18    0.195                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> HH04      0 2023-04-30 2023-05-29    0.226                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> HH05      0 2023-03-16 2023-04-15    0.002<span style="text-decoration: underline;">15</span>                 0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> HH06      0 2023-02-06 2023-03-05   -<span style="color: #BB0000;">0.487</span>                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> HH07      0 2023-05-27 2023-06-26   -<span style="color: #BB0000;">0.085</span><span style="color: #BB0000; text-decoration: underline;">3</span>                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> HH08      0 2023-06-30 2023-07-29    0.339                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> HH09      0 2023-06-16 2023-07-15    0.294                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> HH10      0 2023-07-02 2023-08-01    0.291                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> HH11      0 2023-03-10 2023-04-09    0.870                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> HH12      0 2023-04-10 2023-05-09   -<span style="color: #BB0000;">0.717</span>                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> HH13      0 2023-05-11 2023-06-10   -<span style="color: #BB0000;">0.306</span>                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> HH14      0 2023-07-17 2023-08-16    1.29                    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> HH15      0 2023-04-05 2023-05-04   -<span style="color: #BB0000;">0.810</span>                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> HH16      0 2023-05-30 2023-06-29    0.195                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> HH17      0 2023-03-24 2023-04-23    0.701                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> HH18      0 2023-02-03 2023-03-02   -<span style="color: #BB0000;">0.087</span><span style="color: #BB0000; text-decoration: underline;">3</span>                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span> HH19      0 2023-05-06 2023-06-05    0.195                   0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span> HH20      0 2023-04-05 2023-05-04    0.042<span style="text-decoration: underline;">2</span>                  0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: `spi3_blw_-1.5_sum` &lt;dbl&gt;, `spi3_blw_-2_sum` &lt;dbl&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -78,8 +78,20 @@ summarise_by_interview(
 - stats:
 
   Optional named list of statistics per kind of indicator, e.g.
-  `list(flag = c("sum", "mean"), spell = "max")`. Statistics: `"sum"`,
-  `"mean"`, `"max"`, `"min"`, `"n"` (number of non-missing values).
+  `list(flag = c("sum", "mean"), spell = "max")`. The series itself is
+  the kind `"value"`, which no step registers and nothing computes
+  unless it is asked for: `list(value = c("sum", "sd", "cv"))` gives the
+  window's total, spread and coefficient of variation as `value_sum`,
+  `value_sd` and `value_cv`. Statistics: `"sum"`, `"mean"`, `"max"`,
+  `"min"`, `"n"` (number of non-missing values), `"sd"` and `"cv"` (see
+  [`cv()`](https://jmr-fao.github.io/c4e/reference/cv.md)). The first
+  five fall back to `0` when the window holds no data; `"sd"` and `"cv"`
+  return `NA` instead, because a window with nothing in it has no
+  dispersion rather than a dispersion of zero, and `"sd"` needs two
+  values. `"cv"` is a ratio, so it is meaningful only on a scale with a
+  true zero: use kelvin for temperature, which
+  [`calc_par()`](https://jmr-fao.github.io/c4e/reference/calc_par.md)
+  does by itself.
 
 - min_coverage:
 
@@ -97,8 +109,11 @@ summarise_by_interview(
 ## Value
 
 A `c4e_tbl` with one row per survey unit and lag: the unit identifier,
-`lag`, the extra columns and one column per indicator and statistic
-(`day_abv_30_sum`, `spell_abv_30_max`), registered with the window.
+`lag`, the window's own bounds `w_start` and `w_end`, the extra columns
+and one column per indicator and statistic (`day_abv_30_sum`,
+`spell_abv_30_max`), registered with the window. The window is
+half-open, `(w_start, w_end]`, so `w_end` is the last day counted and
+`w_start` the day before the first.
 
 ## Details
 
@@ -120,6 +135,8 @@ it would exceed the memory budget.
 ## See also
 
 [`window_lag()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
+[`window_lags()`](https://jmr-fao.github.io/c4e/reference/window_lags.md),
+[`calc_anomaly()`](https://jmr-fao.github.io/c4e/reference/calc_anomaly.md),
 [`summarise_by_period()`](https://jmr-fao.github.io/c4e/reference/summarise_by_period.md)
 
 ## Examples
@@ -142,20 +159,21 @@ hot <- extract_by_coord(tmax, georef_coord(coord)) |>
 #> Using `unit = "C"` from upstream unit.
 
 summarise_by_interview(coord, hot, interval = "1 year", n_lags = 1)
-#> # A tibble: 40 × 8
+#> # A tibble: 40 × 10
 #> # Context:  tmax [C], day, summary; key hhid; 6 indicators
-#>    hhid    lag day_abv_30_sum C_abv_30_sum spell_abv_30_max spell_abv_30_mean
-#>    <chr> <int>          <dbl>        <dbl>            <dbl>             <dbl>
-#>  1 HH01      0            103         235.               29              8.31
-#>  2 HH01      1             97         248.                9              4.31
-#>  3 HH02      0            140         419.               38              8.31
-#>  4 HH02      1            136         357.               70              8.79
-#>  5 HH03      0            105         233.               22              5.88
-#>  6 HH03      1             94         209.               20              4.35
-#>  7 HH04      0             81         153.               13              4.29
-#>  8 HH04      1             86         167.                9              3.63
-#>  9 HH05      0            121         277.               57              8.67
-#> 10 HH05      1            116         306.               31              6.8 
+#>    hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum
+#>    <chr> <int> <date>     <date>              <dbl>        <dbl>
+#>  1 HH01      0 2022-08-01 2023-07-31            103         235.
+#>  2 HH01      1 2021-08-01 2022-08-01             97         248.
+#>  3 HH02      0 2022-03-17 2023-03-16            140         419.
+#>  4 HH02      1 2021-03-17 2022-03-17            136         357.
+#>  5 HH03      0 2022-06-19 2023-06-18            105         233.
+#>  6 HH03      1 2021-06-19 2022-06-19             94         209.
+#>  7 HH04      0 2022-05-30 2023-05-29             81         153.
+#>  8 HH04      1 2021-05-30 2022-05-30             86         167.
+#>  9 HH05      0 2022-04-16 2023-04-15            121         277.
+#> 10 HH05      1 2021-04-16 2022-04-16            116         306.
 #> # ℹ 30 more rows
-#> # ℹ 2 more variables: spell_abv_30_sum <dbl>, spell_abv_30_n <int>
+#> # ℹ 4 more variables: spell_abv_30_max <dbl>, spell_abv_30_mean <dbl>,
+#> #   spell_abv_30_sum <dbl>, spell_abv_30_n <int>
 ```

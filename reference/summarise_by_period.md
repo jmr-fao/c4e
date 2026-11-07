@@ -33,8 +33,20 @@ summarise_by_period(
 - stats:
 
   Optional named list of statistics per kind of indicator, e.g.
-  `list(flag = c("sum", "mean"), spell = "max")`. Statistics: `"sum"`,
-  `"mean"`, `"max"`, `"min"`, `"n"` (number of non-missing values).
+  `list(flag = c("sum", "mean"), spell = "max")`. The series itself is
+  the kind `"value"`, which no step registers and nothing computes
+  unless it is asked for: `list(value = c("sum", "sd", "cv"))` gives the
+  window's total, spread and coefficient of variation as `value_sum`,
+  `value_sd` and `value_cv`. Statistics: `"sum"`, `"mean"`, `"max"`,
+  `"min"`, `"n"` (number of non-missing values), `"sd"` and `"cv"` (see
+  [`cv()`](https://jmr-fao.github.io/c4e/reference/cv.md)). The first
+  five fall back to `0` when the window holds no data; `"sd"` and `"cv"`
+  return `NA` instead, because a window with nothing in it has no
+  dispersion rather than a dispersion of zero, and `"sd"` needs two
+  values. `"cv"` is a ratio, so it is meaningful only on a scale with a
+  true zero: use kelvin for temperature, which
+  [`calc_par()`](https://jmr-fao.github.io/c4e/reference/calc_par.md)
+  does by itself.
 
 - min_coverage:
 

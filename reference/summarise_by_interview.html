@@ -126,8 +126,18 @@ columns to carry into the result.</p></dd>
 
 <dt id="arg-stats">stats<a class="anchor" aria-label="anchor" href="#arg-stats"></a></dt>
 <dd><p>Optional named list of statistics per kind of indicator,
-e.g. <code>list(flag = c("sum", "mean"), spell = "max")</code>. Statistics: <code>"sum"</code>,
-<code>"mean"</code>, <code>"max"</code>, <code>"min"</code>, <code>"n"</code> (number of non-missing values).</p></dd>
+e.g. <code>list(flag = c("sum", "mean"), spell = "max")</code>. The series itself
+is the kind <code>"value"</code>, which no step registers and nothing computes
+unless it is asked for: <code>list(value = c("sum", "sd", "cv"))</code> gives the
+window's total, spread and coefficient of variation as <code>value_sum</code>,
+<code>value_sd</code> and <code>value_cv</code>. Statistics: <code>"sum"</code>,
+<code>"mean"</code>, <code>"max"</code>, <code>"min"</code>, <code>"n"</code> (number of non-missing values),
+<code>"sd"</code> and <code>"cv"</code> (see <code><a href="cv.html">cv()</a></code>). The first five fall back to <code>0</code> when
+the window holds no data; <code>"sd"</code> and <code>"cv"</code> return <code>NA</code> instead,
+because a window with nothing in it has no dispersion rather than a
+dispersion of zero, and <code>"sd"</code> needs two values. <code>"cv"</code> is a ratio,
+so it is meaningful only on a scale with a true zero: use kelvin for
+temperature, which <code><a href="calc_par.html">calc_par()</a></code> does by itself.</p></dd>
 
 
 <dt id="arg-min-coverage">min_coverage<a class="anchor" aria-label="anchor" href="#arg-min-coverage"></a></dt>
@@ -147,9 +157,11 @@ splits.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>c4e_tbl</code> with one row per survey unit and lag: the unit
-identifier, <code>lag</code>, the extra columns and one column per indicator and
-statistic (<code>day_abv_30_sum</code>, <code>spell_abv_30_max</code>), registered with the
-window.</p>
+identifier, <code>lag</code>, the window's own bounds <code>w_start</code> and <code>w_end</code>, the
+extra columns and one column per indicator and statistic
+(<code>day_abv_30_sum</code>, <code>spell_abv_30_max</code>), registered with the window. The
+window is half-open, <code>(w_start, w_end]</code>, so <code>w_end</code> is the last day
+counted and <code>w_start</code> the day before the first.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -168,7 +180,8 @@ it would exceed the memory budget.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="window_lag.html">window_lag()</a></code>, <code><a href="summarise_by_period.html">summarise_by_period()</a></code></p></div>
+    <div class="dont-index"><p><code><a href="window_lag.html">window_lag()</a></code>, <code><a href="window_lags.html">window_lags()</a></code>, <code><a href="calc_anomaly.html">calc_anomaly()</a></code>,
+<code><a href="summarise_by_period.html">summarise_by_period()</a></code></p></div>
     </div>
 
     <div class="section level2">
@@ -190,22 +203,23 @@ it would exceed the memory budget.</p>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Using `unit = "C"` from upstream <span style="color: #00BB00;">unit</span>.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">summarise_by_interview</span><span class="op">(</span><span class="va">coord</span>, <span class="va">hot</span>, interval <span class="op">=</span> <span class="st">"1 year"</span>, n_lags <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 40 × 8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 40 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Context:  tmax [C], day, summary; key hhid; 6 indicators</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    hhid    lag day_abv_30_sum C_abv_30_sum spell_abv_30_max spell_abv_30_mean</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> HH01      0            103         235.               29              8.31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> HH01      1             97         248.                9              4.31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> HH02      0            140         419.               38              8.31</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> HH02      1            136         357.               70              8.79</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> HH03      0            105         233.               22              5.88</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> HH03      1             94         209.               20              4.35</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> HH04      0             81         153.               13              4.29</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> HH04      1             86         167.                9              3.63</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> HH05      0            121         277.               57              8.67</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> HH05      1            116         306.               31              6.8 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> HH01      0 2022-08-01 2023-07-31            103         235.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> HH01      1 2021-08-01 2022-08-01             97         248.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> HH02      0 2022-03-17 2023-03-16            140         419.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> HH02      1 2021-03-17 2022-03-17            136         357.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> HH03      0 2022-06-19 2023-06-18            105         233.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> HH03      1 2021-06-19 2022-06-19             94         209.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> HH04      0 2022-05-30 2023-05-29             81         153.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> HH04      1 2021-05-30 2022-05-30             86         167.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> HH05      0 2022-04-16 2023-04-15            121         277.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> HH05      1 2021-04-16 2022-04-16            116         306.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 30 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 4 more variables: spell_abv_30_max &lt;dbl&gt;, spell_abv_30_mean &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

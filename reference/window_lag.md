@@ -14,6 +14,8 @@ window_season(start_month, end_month, years_back = 0)
 window_fixed(from, to)
 
 window_since(event)
+
+window_calendar(start, end, unit = c("doy", "dekad"), years_back = 0)
 ```
 
 ## Arguments
@@ -43,6 +45,20 @@ window_since(event)
   \<[`data-masking`](https://rlang.r-lib.org/reference/args_data_masking.html)\>
   Column of the survey with the start date of each household's window.
 
+- start, end:
+
+  \<[`data-masking`](https://rlang.r-lib.org/reference/args_data_masking.html)\>
+  Columns of the survey with each location's season bounds, as offsets
+  from 1 January. Values below 1 or above 365 reach into the
+  neighbouring year, and a season closing before it opens is taken to
+  close in the following one, so windows that straddle the new year need
+  no special handling.
+
+- unit:
+
+  Unit of `start` and `end`: `"doy"` for days, `"dekad"` for the 10-day
+  steps that FAO ASIS phenology uses.
+
 ## Value
 
 A `c4e_window` object.
@@ -62,6 +78,12 @@ A `c4e_window` object.
 - `window_since()`: from a date recorded for each household, such as
   planting or a shock, up to the day before the interview.
 
+- `window_calendar()`: a season whose bounds are columns of the survey,
+  so every location can have its own, as with a crop calendar read from
+  a raster. Use
+  [`read_season()`](https://jmr-fao.github.io/c4e/reference/read_season.md)
+  to attach them.
+
 ## See also
 
 [`summarise_by_interview()`](https://jmr-fao.github.io/c4e/reference/summarise_by_interview.md)
@@ -73,6 +95,8 @@ window_lag("1 year", n_lags = 2)
 #> <c4e window: 1 year before the interview, lags 0 to 2>
 window_season("Jun", "Sep", years_back = 0:1)
 #> <c4e window: season Jun to Sep, 0, 1 season(s) back>
+window_calendar(sos, eos, unit = "dekad")
+#> <c4e window: season sos to eos (dekad), 0 season(s) back>
 window_fixed("2022-01-01", "2022-12-31")
 #> <c4e window: from 2022-01-01 to 2022-12-31>
 ```

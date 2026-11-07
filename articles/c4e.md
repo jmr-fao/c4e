@@ -79,19 +79,20 @@ says so.
 heat <- weather_extremes(survey, tmax, id = hhid, interview = interview,
                          preset = "heat")
 print(heat, n = 5)
-#> # A tibble: 20 × 14
+#> # A tibble: 20 × 16
 #> # Context:  tmax [C], day, summary; key hhid; 12 indicators
-#>   hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum
-#>   <chr> <int>          <dbl>        <dbl>          <dbl>        <dbl>
-#> 1 HH01      0            103         235.              4         1.84
-#> 2 HH02      0            140         419.             28        24.6 
-#> 3 HH03      0            105         233.              5         4.38
-#> 4 HH04      0             81         153.              3         1.39
-#> 5 HH05      0            121         277.             14         9.52
+#>   hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum
+#>   <chr> <int> <date>     <date>              <dbl>        <dbl>          <dbl>
+#> 1 HH01      0 2022-08-01 2023-07-31            103         235.              4
+#> 2 HH02      0 2022-03-17 2023-03-16            140         419.             28
+#> 3 HH03      0 2022-06-19 2023-06-18            105         233.              5
+#> 4 HH04      0 2022-05-30 2023-05-29             81         153.              3
+#> 5 HH05      0 2022-04-16 2023-04-15            121         277.             14
 #> # ℹ 15 more rows
-#> # ℹ 8 more variables: spell_abv_30_max <dbl>, spell_abv_30_mean <dbl>,
-#> #   spell_abv_30_sum <dbl>, spell_abv_30_n <int>, spell_abv_35_max <dbl>,
-#> #   spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>, spell_abv_35_n <int>
+#> # ℹ 9 more variables: C_abv_35_sum <dbl>, spell_abv_30_max <dbl>,
+#> #   spell_abv_30_mean <dbl>, spell_abv_30_sum <dbl>, spell_abv_30_n <int>,
+#> #   spell_abv_35_max <dbl>, spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>,
+#> #   spell_abv_35_n <int>
 ```
 
 `day_abv_30_sum` is the number of days above 30 C in the year before the
@@ -101,11 +102,11 @@ print the steps that produced it, ready to copy and adapt:
 ``` r
 
 c4e_history(heat)
-#> <c4e history: 6 steps, 0.4 s>
+#> <c4e history: 6 steps, 0.5 s>
 #> prepare_coord(id_rule = "coordinates") |>                                                                    # 0.1 s
-#>   extract_by_coord() |>                                                                                      # 0.0 s
+#>   extract_by_coord() |>                                                                                      # 0.1 s
 #>   convert_unit(to = "C", from = "K") |>                                                                      # 0.0 s
-#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.1 s
+#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.2 s
 #>   calc_spell(min_spell = 2L) |>                                                                              # 0.0 s
 #>   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 0L), min_coverage = 0.8)  # 0.1 s
 ```
@@ -124,16 +125,17 @@ drought <- climate_indices(survey, pre_monthly, id = hhid, interview = interview
                            preset = "drought_spi3",
                            window = window_lag("6 months"))
 print(drought, n = 5)
-#> # A tibble: 20 × 6
+#> # A tibble: 20 × 8
 #> # Context:  pre [mm/month], month, summary; key hhid; 4 indicators
-#>   hhid    lag spi_3_mean `spi3_blw_-1_sum` `spi3_blw_-1.5_sum` `spi3_blw_-2_sum`
-#>   <chr> <int>      <dbl>             <dbl>               <dbl>             <dbl>
-#> 1 HH01      0     0.478                  0                   0                 0
-#> 2 HH02      0    -1.70                   6                   4                 1
-#> 3 HH03      0    -0.0555                 0                   0                 0
-#> 4 HH04      0     1.07                   0                   0                 0
-#> 5 HH05      0     0.444                  0                   0                 0
+#>   hhid    lag w_start    w_end      spi_3_mean `spi3_blw_-1_sum`
+#>   <chr> <int> <date>     <date>          <dbl>             <dbl>
+#> 1 HH01      0 2023-02-01 2023-07-31     0.478                  0
+#> 2 HH02      0 2022-09-17 2023-03-16    -1.70                   6
+#> 3 HH03      0 2022-12-19 2023-06-18    -0.0555                 0
+#> 4 HH04      0 2022-11-30 2023-05-29     1.07                   0
+#> 5 HH05      0 2022-10-16 2023-04-15     0.444                  0
 #> # ℹ 15 more rows
+#> # ℹ 2 more variables: `spi3_blw_-1.5_sum` <dbl>, `spi3_blw_-2_sum` <dbl>
 ```
 
 ## Spatial controls

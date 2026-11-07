@@ -169,18 +169,19 @@ an object: here the year before the interview and the year before that.
 summary <- summarise_by_interview(coord, spells,
                                   window = window_lag("1 year", n_lags = 1))
 print(summary, n = 4)
-#> # A tibble: 40 × 14
+#> # A tibble: 40 × 16
 #> # Context:  tmax [C], day, summary; key hhid; 12 indicators
-#>   hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum
-#>   <chr> <int>          <dbl>        <dbl>          <dbl>        <dbl>
-#> 1 HH01      0            103         235.              4         1.84
-#> 2 HH01      1             97         248.             12        11.6 
-#> 3 HH02      0            140         419.             28        24.6 
-#> 4 HH02      1            136         357.              9        10.3 
+#>   hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum
+#>   <chr> <int> <date>     <date>              <dbl>        <dbl>          <dbl>
+#> 1 HH01      0 2022-08-01 2023-07-31            103         235.              4
+#> 2 HH01      1 2021-08-01 2022-08-01             97         248.             12
+#> 3 HH02      0 2022-03-17 2023-03-16            140         419.             28
+#> 4 HH02      1 2021-03-17 2022-03-17            136         357.              9
 #> # ℹ 36 more rows
-#> # ℹ 8 more variables: spell_abv_30_max <dbl>, spell_abv_30_mean <dbl>,
-#> #   spell_abv_30_sum <dbl>, spell_abv_30_n <int>, spell_abv_35_max <dbl>,
-#> #   spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>, spell_abv_35_n <int>
+#> # ℹ 9 more variables: C_abv_35_sum <dbl>, spell_abv_30_max <dbl>,
+#> #   spell_abv_30_mean <dbl>, spell_abv_30_sum <dbl>, spell_abv_30_n <int>,
+#> #   spell_abv_35_max <dbl>, spell_abv_35_mean <dbl>, spell_abv_35_sum <dbl>,
+#> #   spell_abv_35_n <int>
 ```
 
 Other windows are a season (`window_season(6, 9)` for June to
@@ -202,10 +203,10 @@ uses:
 ``` r
 
 c4e_history(summary)
-#> <c4e history: 5 steps, 0.5 s>
+#> <c4e history: 5 steps, 0.6 s>
 #> prepare_coord(id_rule = "coordinates") |>                                                                    # 0.2 s
 #>   extract_by_coord() |>                                                                                      # 0.0 s
-#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.1 s
+#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.2 s
 #>   calc_spell(min_spell = 2L) |>                                                                              # 0.0 s
 #>   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 1L), min_coverage = 0.8)  # 0.1 s
 c4e_labels(summary)[c("day_abv_30_sum", "spell_abv_35_max")]
@@ -218,8 +219,8 @@ c4e_labels(summary)[c("day_abv_30_sum", "spell_abv_35_max")]
 ``` r
 
 write_stata(summary, file.path(tempdir(), "household_extremes.dta"))
-#> Wrote 40 rows and 14 variables to
-#> /tmp/RtmphPlQNJ/household_extremes.dta.
+#> Wrote 40 rows and 16 variables to
+#> /tmp/RtmpF6QWBQ/household_extremes.dta.
 ```
 
 [`validate_c4e()`](https://jmr-fao.github.io/c4e/reference/validate_c4e.md)

@@ -194,42 +194,43 @@ processed in turn and the results are stacked with a <code>survey</code> column.
 <span class="r-msg co"><span class="r-pr">#&gt;</span>   12 locations, 20 survey units</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Extracting tmax</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Converting <span style="color: #0000BB;">"K"</span> to <span style="color: #0000BB;">"C"</span> to read the thresholds.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Extracting tmax <span style="color: #B2B2B2;">[586ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Extracting tmax <span style="color: #B2B2B2;">[88ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Computing indicators</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Using `unit = "C"` from upstream <span style="color: #00BB00;">unit</span>.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Computing indicators <span style="color: #B2B2B2;">[85ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Computing indicators <span style="color: #B2B2B2;">[128ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Summarising over the reference windows</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Summarising over the reference windows <span style="color: #B2B2B2;">[78ms]</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> Summarising over the reference windows <span style="color: #B2B2B2;">[119ms]</span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 14</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 16</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Context:  tmax [C], day, summary; key hhid; 12 indicators</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    hhid    lag day_abv_30_sum C_abv_30_sum day_abv_35_sum C_abv_35_sum</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> HH01      0            103         235.              4        1.84 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> HH02      0            140         419.             28       24.6  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> HH03      0            105         233.              5        4.38 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> HH04      0             81         153.              3        1.39 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> HH05      0            121         277.             14        9.52 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> HH06      0            100         231.              6        4.80 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> HH07      0            136         366.             11       11.0  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> HH08      0            103         235.              4        1.84 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> HH09      0            113         280.              8       10.4  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> HH10      0             89         183.              1        0.790</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> HH11      0            127         397.             28       27.2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> HH12      0            105         233.              7        2.93 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> HH13      0             81         147.              3        1.39 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> HH14      0            119         300.              8        9.40 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> HH15      0            118         271.             14        9.52 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> HH16      0            104         230.              4        5.88 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> HH17      0             98         253.             12        9.95 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> HH18      0            125         367.             14       15.8  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span> HH19      0            103         234.              6        4.80 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span> HH20      0             94         251.             12        9.95 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 8 more variables: spell_abv_30_max &lt;dbl&gt;, spell_abv_30_mean &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;, spell_abv_35_max &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;, spell_abv_35_n &lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    hhid    lag w_start    w_end      day_abv_30_sum C_abv_30_sum day_abv_35_sum</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> HH01      0 2022-08-01 2023-07-31            103         235.              4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> HH02      0 2022-03-17 2023-03-16            140         419.             28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> HH03      0 2022-06-19 2023-06-18            105         233.              5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> HH04      0 2022-05-30 2023-05-29             81         153.              3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> HH05      0 2022-04-16 2023-04-15            121         277.             14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> HH06      0 2022-03-06 2023-03-05            100         231.              6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> HH07      0 2022-06-27 2023-06-26            136         366.             11</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> HH08      0 2022-07-30 2023-07-29            103         235.              4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> HH09      0 2022-07-16 2023-07-15            113         280.              8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> HH10      0 2022-08-02 2023-08-01             89         183.              1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> HH11      0 2022-04-10 2023-04-09            127         397.             28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> HH12      0 2022-05-10 2023-05-09            105         233.              7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> HH13      0 2022-06-11 2023-06-10             81         147.              3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> HH14      0 2022-08-17 2023-08-16            119         300.              8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> HH15      0 2022-05-05 2023-05-04            118         271.             14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> HH16      0 2022-06-30 2023-06-29            104         230.              4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span> HH17      0 2022-04-24 2023-04-23             98         253.             12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span> HH18      0 2022-03-03 2023-03-02            125         367.             14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span> HH19      0 2022-06-06 2023-06-05            103         234.              6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span> HH20      0 2022-05-05 2023-05-04             94         251.             12</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 9 more variables: C_abv_35_sum &lt;dbl&gt;, spell_abv_30_max &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   spell_abv_30_mean &lt;dbl&gt;, spell_abv_30_sum &lt;dbl&gt;, spell_abv_30_n &lt;int&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   spell_abv_35_max &lt;dbl&gt;, spell_abv_35_mean &lt;dbl&gt;, spell_abv_35_sum &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   spell_abv_35_n &lt;int&gt;</span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -17,6 +17,8 @@ calc_percentile(
   p,
   exclude_below = NULL,
   exclude_above = NULL,
+  min_threshold = NULL,
+  max_threshold = NULL,
   yearly = FALSE,
   baseline = NULL,
   replace = NA_real_,
@@ -44,6 +46,14 @@ calc_percentile(
 - exclude_below, exclude_above:
 
   Values beyond these are left out.
+
+- min_threshold, max_threshold:
+
+  Absolute bounds on the percentile, in the data's unit, passed to
+  [`bound_threshold()`](https://jmr-fao.github.io/c4e/reference/bound_threshold.md):
+  a convenience for the common case, since the same bound applies to any
+  threshold lookup table however it was produced. Use `min_threshold`
+  with an upper tail and `max_threshold` with a lower one.
 
 - yearly:
 
@@ -80,6 +90,11 @@ probability and baseline.
 
 ## Details
 
+`min_threshold` and `max_threshold` hand the finished lookup to
+[`bound_threshold()`](https://jmr-fao.github.io/c4e/reference/bound_threshold.md),
+which combines the percentile with an absolute guardrail so that one
+definition of an extreme travels across climates.
+
 Use `exclude_below` to leave out values, for instance days with less
 than 0.1 mm of rain, so the percentiles describe wet days only. A unit
 and month whose values all fall beyond the cut-off, such as a dry-season
@@ -94,6 +109,8 @@ rare wet day still counts. A unit and month with no data at all gets
 [`calc_spell_percentile()`](https://jmr-fao.github.io/c4e/reference/calc_spell_percentile.md)
 
 Other indicators:
+[`bound_threshold()`](https://jmr-fao.github.io/c4e/reference/bound_threshold.md),
+[`calc_anomaly()`](https://jmr-fao.github.io/c4e/reference/calc_anomaly.md),
 [`calc_condition()`](https://jmr-fao.github.io/c4e/reference/calc_condition.md),
 [`calc_heatwave()`](https://jmr-fao.github.io/c4e/reference/calc_heatwave.md),
 [`calc_par()`](https://jmr-fao.github.io/c4e/reference/calc_par.md),

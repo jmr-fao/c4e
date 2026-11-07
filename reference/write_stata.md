@@ -72,5 +72,5 @@ x <- update_meta(
 hot <- calc_threshold_day(x, above = 30)
 #> Using `unit = "C"` from upstream unit.
 write_stata(hot, tempfile(fileext = ".dta"), codebook = TRUE)
-#> Wrote 5 rows and 5 variables to /tmp/RtmpvxT8ek/file234f33006683.dta.
+#> Wrote 5 rows and 5 variables to /tmp/Rtmpqs2Yan/file21d3616beed8.dta.
 ```

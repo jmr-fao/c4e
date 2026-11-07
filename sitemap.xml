@@ -16,10 +16,12 @@
 <url><loc>https://jmr-fao.github.io/c4e/reference/aggregate_to_adm.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/align_count_rast.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/bind_indicators.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/reference/bound_threshold.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/c4e-package.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/c4e_history.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/c4e_labels.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/c4e_tbl.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/reference/calc_anomaly.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/calc_condition.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/calc_distance.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/calc_heatwave.html</loc></url>
@@ -74,12 +76,15 @@
 <url><loc>https://jmr-fao.github.io/c4e/reference/raster_meta.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/read_boundaries.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/read_climate.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/reference/read_season.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/reference/read_season_by_poly.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/register_source.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/register_unit.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/select_by_dates.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/select_by_interview.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/select_by_season.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/skewness.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/reference/snap_to_valid_cell.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/split_raster.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/static_controls.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/summarise_by_interview.html</loc></url>
@@ -90,6 +95,7 @@
 <url><loc>https://jmr-fao.github.io/c4e/reference/validate_c4e.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/weather_extremes.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/window_lag.html</loc></url>
+<url><loc>https://jmr-fao.github.io/c4e/reference/window_lags.html</loc></url>
 <url><loc>https://jmr-fao.github.io/c4e/reference/write_stata.html</loc></url>
 </urlset>
 

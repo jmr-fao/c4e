@@ -103,21 +103,21 @@ names(dry)
 
 summary <- summarise_by_interview(coord, dry, window = window_lag("1 year"))
 print(summary, n = 4)
-#> # A tibble: 20 × 24
+#> # A tibble: 20 × 26
 #> # Context:  pre [mm/month], month, summary; key hhid; 22 indicators
-#>   hhid    lag spi_3_mean spi_12_mean `spi3_blw_-1_sum` `spi3_blw_-1.5_sum`
-#>   <chr> <int>      <dbl>       <dbl>             <dbl>               <dbl>
-#> 1 HH01      0     0.0497      -0.671                 1                   0
-#> 2 HH02      0    -0.703        0.358                 6                   4
-#> 3 HH03      0     0.234        0.444                 0                   0
-#> 4 HH04      0     0.595       -0.357                 0                   0
+#>   hhid    lag w_start    w_end      spi_3_mean spi_12_mean `spi3_blw_-1_sum`
+#>   <chr> <int> <date>     <date>          <dbl>       <dbl>             <dbl>
+#> 1 HH01      0 2022-08-01 2023-07-31     0.0497      -0.671                 1
+#> 2 HH02      0 2022-03-17 2023-03-16    -0.703        0.358                 6
+#> 3 HH03      0 2022-06-19 2023-06-18     0.234        0.444                 0
+#> 4 HH04      0 2022-05-30 2023-05-29     0.595       -0.357                 0
 #> # ℹ 16 more rows
-#> # ℹ 18 more variables: `spi12_blw_-1_sum` <dbl>, `spi12_blw_-1.5_sum` <dbl>,
-#> #   `spell_spi3_blw_-1_max` <dbl>, `spell_spi3_blw_-1_mean` <dbl>,
-#> #   `spell_spi3_blw_-1_sum` <dbl>, `spell_spi3_blw_-1_n` <int>,
-#> #   `spell_spi3_blw_-1.5_max` <dbl>, `spell_spi3_blw_-1.5_mean` <dbl>,
-#> #   `spell_spi3_blw_-1.5_sum` <dbl>, `spell_spi3_blw_-1.5_n` <int>,
-#> #   `spell_spi12_blw_-1_max` <dbl>, `spell_spi12_blw_-1_mean` <dbl>, …
+#> # ℹ 19 more variables: `spi3_blw_-1.5_sum` <dbl>, `spi12_blw_-1_sum` <dbl>,
+#> #   `spi12_blw_-1.5_sum` <dbl>, `spell_spi3_blw_-1_max` <dbl>,
+#> #   `spell_spi3_blw_-1_mean` <dbl>, `spell_spi3_blw_-1_sum` <dbl>,
+#> #   `spell_spi3_blw_-1_n` <int>, `spell_spi3_blw_-1.5_max` <dbl>,
+#> #   `spell_spi3_blw_-1.5_mean` <dbl>, `spell_spi3_blw_-1.5_sum` <dbl>,
+#> #   `spell_spi3_blw_-1.5_n` <int>, `spell_spi12_blw_-1_max` <dbl>, …
 c4e_labels(summary)[c("spi_3_mean", "spi3_blw_-1.5_sum")]
 #>                                        spi_3_mean 
 #>    "mean of SPI over 3 months, per 1-year window" 
@@ -156,15 +156,16 @@ drought <- climate_indices(survey, system.file("extdata", "pre_monthly.tif", pac
 #>   outside the dates of the data).
 #> ℹ Lower `min_coverage` to keep partial windows, e.g. `min_coverage = 0.5`.
 print(drought, n = 4)
-#> # A tibble: 20 × 10
+#> # A tibble: 20 × 12
 #> # Context:  pre [mm/month], month, summary; key hhid; 8 indicators
-#>   hhid    lag spi_3_mean spi_12_mean `spi3_blw_-1_sum` `spi3_blw_-1.5_sum`
-#>   <chr> <int>      <dbl>       <dbl>             <dbl>               <dbl>
-#> 1 HH01      0     NA          NA                    NA                  NA
-#> 2 HH02      0     -1.32       -0.201                 1                   0
-#> 3 HH03      0      0.195       0.393                 0                   0
-#> 4 HH04      0      0.226       0.811                 0                   0
+#>   hhid    lag w_start    w_end      spi_3_mean spi_12_mean `spi3_blw_-1_sum`
+#>   <chr> <int> <date>     <date>          <dbl>       <dbl>             <dbl>
+#> 1 HH01      0 2023-07-01 2023-07-31     NA          NA                    NA
+#> 2 HH02      0 2023-02-17 2023-03-16     -1.32       -0.201                 1
+#> 3 HH03      0 2023-05-19 2023-06-18      0.195       0.393                 0
+#> 4 HH04      0 2023-04-30 2023-05-29      0.226       0.811                 0
 #> # ℹ 16 more rows
-#> # ℹ 4 more variables: `spi3_blw_-2_sum` <dbl>, `spi12_blw_-1_sum` <dbl>,
-#> #   `spi12_blw_-1.5_sum` <dbl>, `spi12_blw_-2_sum` <dbl>
+#> # ℹ 5 more variables: `spi3_blw_-1.5_sum` <dbl>, `spi3_blw_-2_sum` <dbl>,
+#> #   `spi12_blw_-1_sum` <dbl>, `spi12_blw_-1.5_sum` <dbl>,
+#> #   `spi12_blw_-2_sum` <dbl>
 ```

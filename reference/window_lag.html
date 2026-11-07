@@ -59,7 +59,9 @@ summarise_by_interview() summarises the indicators."><meta property="og:image" c
 <span></span>
 <span><span class="fu">window_fixed</span><span class="op">(</span><span class="va">from</span>, <span class="va">to</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">window_since</span><span class="op">(</span><span class="va">event</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">window_since</span><span class="op">(</span><span class="va">event</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">window_calendar</span><span class="op">(</span><span class="va">start</span>, <span class="va">end</span>, unit <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"doy"</span>, <span class="st">"dekad"</span><span class="op">)</span>, years_back <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -94,6 +96,20 @@ three.</p></dd>
 <dd><p>&lt;<code><a href="https://rlang.r-lib.org/reference/args_data_masking.html" class="external-link">data-masking</a></code>&gt; Column of the
 survey with the start date of each household's window.</p></dd>
 
+
+<dt id="arg-start-end">start, end<a class="anchor" aria-label="anchor" href="#arg-start-end"></a></dt>
+<dd><p>&lt;<code><a href="https://rlang.r-lib.org/reference/args_data_masking.html" class="external-link">data-masking</a></code>&gt; Columns
+of the survey with each location's season bounds, as offsets from
+1 January. Values below 1 or above 365 reach into the neighbouring
+year, and a season closing before it opens is taken to close in
+the following one, so windows that straddle the new year need no
+special handling.</p></dd>
+
+
+<dt id="arg-unit">unit<a class="anchor" aria-label="anchor" href="#arg-unit"></a></dt>
+<dd><p>Unit of <code>start</code> and <code>end</code>: <code>"doy"</code> for days, <code>"dekad"</code>
+for the 10-day steps that FAO ASIS phenology uses.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -111,6 +127,9 @@ season may cross the new year (<code>"Nov"</code> to <code>"Feb"</code>).</p></l
 <li><p><code>window_fixed()</code>: the same calendar period for everyone.</p></li>
 <li><p><code>window_since()</code>: from a date recorded for each household, such as
 planting or a shock, up to the day before the interview.</p></li>
+<li><p><code>window_calendar()</code>: a season whose bounds are columns of the
+survey, so every location can have its own, as with a crop
+calendar read from a raster. Use <code><a href="read_season.html">read_season()</a></code> to attach them.</p></li>
 </ul></div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -123,6 +142,8 @@ planting or a shock, up to the day before the interview.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;c4e window: 1 year before the interview, lags 0 to 2&gt;</span>
 <span class="r-in"><span><span class="fu">window_season</span><span class="op">(</span><span class="st">"Jun"</span>, <span class="st">"Sep"</span>, years_back <span class="op">=</span> <span class="fl">0</span><span class="op">:</span><span class="fl">1</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;c4e window: season Jun to Sep, 0, 1 season(s) back&gt;</span>
+<span class="r-in"><span><span class="fu">window_calendar</span><span class="op">(</span><span class="va">sos</span>, <span class="va">eos</span>, unit <span class="op">=</span> <span class="st">"dekad"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;c4e window: season sos to eos (dekad), 0 season(s) back&gt;</span>
 <span class="r-in"><span><span class="fu">window_fixed</span><span class="op">(</span><span class="st">"2022-01-01"</span>, <span class="st">"2022-12-31"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;c4e window: from 2022-01-01 to 2022-12-31&gt;</span>
 </code></pre></div>
