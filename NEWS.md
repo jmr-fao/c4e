@@ -12,6 +12,15 @@ tracked in `dev/LOG_v2.md`.
   division's area beyond the threshold, and an excess into an area-weighted
   mean. The label said "days" for a number between 0 and 1. The kind is left
   alone, because the summaries choose their statistics by kind.
+* `bound_threshold()` holds a threshold lookup table at an absolute
+  guardrail, so a relative and an absolute threshold become one threshold
+  rather than two flags to combine by hand. It works on any threshold table,
+  a percentile one or a user's own zone or crop limits, which is the model
+  thresholds already follow. The bound is recorded on the threshold and
+  appears in the label, and a bound paired with the tail it would loosen is
+  warned about. `calc_percentile()` gains `min_threshold` and
+  `max_threshold` as a convenience for the common case, which hand the
+  finished lookup to it.
 
 * `c4e_tbl` tables carry their context (key, variable, unit, time step,
   dates, CRS, indicator registry, history); `c4e_meta()`, `update_meta()`,

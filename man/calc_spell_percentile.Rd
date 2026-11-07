@@ -54,6 +54,7 @@ calc_threshold_day(x, above = 30) |>
 }
 \seealso{
 Other indicators:
+\code{\link[=bound_threshold]{bound_threshold()}},
 \code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},

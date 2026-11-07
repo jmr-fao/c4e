@@ -147,6 +147,103 @@ test_that("a baseline restricts the dates the percentiles use", {
     expect_equal(c4e_meta(v2, "date_range"), as.Date(c("2021-01-01", "2021-12-31")))
 })
 
+test_that("min_threshold raises an upper percentile to the bound", {
+    wide <- extracted()
+    free <- calc_percentile(wide, p = c(0.9, 0.95), yearly = TRUE)
+
+    ## A bound taken from the data, so that it binds for some cell-months and
+    ## leaves the others untouched.
+    up <- round(stats::median(free$day_90p, na.rm = TRUE))
+    held <- calc_percentile(wide, p = c(0.9, 0.95), yearly = TRUE,
+                            min_threshold = up)
+
+    expect_equal(held$day_90p, pmax(free$day_90p, up))
+    expect_equal(held$day_95p, pmax(free$day_95p, up))
+    expect_equal(held$yr_90p, pmax(free$yr_90p, up))
+    expect_true(any(held$day_90p > free$day_90p))
+
+    ## A cell-month with no data keeps its replacement, not the bound.
+    expect_equal(is.na(held$day_90p), is.na(free$day_90p))
+})
+
+test_that("max_threshold lowers a lower percentile to the bound", {
+    wide <- extracted()
+    free <- calc_percentile(wide, p = c(0.05, 0.1))
+    lo   <- round(stats::median(free$day_10p, na.rm = TRUE))
+    held <- calc_percentile(wide, p = c(0.05, 0.1), max_threshold = lo)
+
+    expect_equal(held$day_10p, pmin(free$day_10p, lo))
+    expect_equal(held$day_5p, pmin(free$day_5p, lo))
+    expect_true(any(held$day_10p < free$day_10p))
+})
+
+test_that("a bound can be given for each percentile, in the order of p", {
+    wide <- extracted()
+    free <- calc_percentile(wide, p = c(0.9, 0.95))
+    a <- round(stats::median(free$day_90p, na.rm = TRUE))
+    b <- a + 5
+    held <- calc_percentile(wide, p = c(0.9, 0.95), min_threshold = c(a, b))
+
+    expect_equal(held$day_90p, pmax(free$day_90p, a))
+    expect_equal(held$day_95p, pmax(free$day_95p, b))
+})
+
+test_that("a bounded percentile flags the same days as the two flags together", {
+    ## The property the argument exists for: one threshold at
+    ## max(percentile, bound) is the same test as "beyond the percentile AND
+    ## beyond the bound", and it is the one the excess is measured from.
+    wide  <- extracted()
+    bound <- round(stats::median(calc_percentile(wide, p = 0.9)$day_90p,
+                                 na.rm = TRUE))
+
+    held <- calc_percentile_day(
+        wide, calc_percentile(wide, p = 0.9, min_threshold = bound))
+    pair <- wide |>
+        calc_percentile_day(calc_percentile(wide, p = 0.9)) |>
+        calc_threshold_day(above = bound)
+
+    expect_equal(held$day_abv_90p,
+                 pair$day_abv_90p & pair[[paste0("day_abv_", bound)]])
+})
+
+test_that("a bound on the wrong tail warns, and a wrong length is an error", {
+    wide <- extracted()
+    expect_warning(calc_percentile(wide, p = 0.1, min_threshold = 300), "lower")
+    expect_warning(calc_percentile(wide, p = 0.9, max_threshold = 300), "upper")
+    expect_no_warning(calc_percentile(wide, p = 0.9, min_threshold = 300))
+    expect_error(calc_percentile(wide, p = c(0.9, 0.95), min_threshold = c(1, 2, 3)),
+                 "one for each")
+    expect_error(calc_percentile(wide, p = 0.9, min_threshold = "30"), "number")
+})
+
+test_that("bound_threshold() works on any threshold table, not only percentiles", {
+    wide <- extracted()
+    pct  <- calc_percentile(wide, p = 0.9)
+    up   <- round(stats::median(pct$day_90p, na.rm = TRUE))
+
+    ## The verb and the convenience argument give the same table.
+    expect_equal(tibble::as_tibble(bound_threshold(pct, min = up)),
+                 tibble::as_tibble(calc_percentile(wide, p = 0.9,
+                                                   min_threshold = up)))
+
+    ## A column named explicitly is bounded even when nothing is registered,
+    ## which is how a user's own zone or crop limits are guarded.
+    own <- pct
+    attr(own, "c4e_meta")$indicators <- list()
+    held <- bound_threshold(own, min = up, cols = "day_90p")
+    expect_equal(held$day_90p, pmax(pct$day_90p, up))
+
+    expect_error(bound_threshold(pct), "Give")
+    expect_error(bound_threshold(own, min = up), "no registered threshold")
+})
+
+test_that("the label says what the percentile was held to", {
+    wide <- extracted()
+    held <- calc_percentile(wide, p = 0.9, min_threshold = 300)
+    expect_match(c4e_labels(held)[["day_90p"]], "held to at least 300")
+    expect_equal(c4e_meta(held)$indicators$day_90p$min_threshold, 300)
+})
+
 test_that("relative flags equal find_extr_rel_day(), upper and lower tails", {
     wide <- extracted()
     pct <- calc_percentile(wide, p = c(0.1, 0.9))

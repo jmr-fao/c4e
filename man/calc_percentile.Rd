@@ -12,6 +12,8 @@ calc_percentile(x, ...)
   p,
   exclude_below = NULL,
   exclude_above = NULL,
+  min_threshold = NULL,
+  max_threshold = NULL,
   yearly = FALSE,
   baseline = NULL,
   replace = NA_real_,
@@ -30,6 +32,12 @@ none.}
 \item{p}{Probabilities, e.g. \code{c(0.1, 0.9)}.}
 
 \item{exclude_below, exclude_above}{Values beyond these are left out.}
+
+\item{min_threshold, max_threshold}{Absolute bounds on the percentile, in
+the data's unit, passed to \code{\link[=bound_threshold]{bound_threshold()}}: a convenience for the
+common case, since the same bound applies to any threshold lookup table
+however it was produced. Use \code{min_threshold} with an upper tail and
+\code{max_threshold} with a lower one.}
 
 \item{yearly}{When \code{TRUE}, also compute percentiles over all days of the
 year (columns \code{yr_90p}), repeated on every month.}
@@ -60,6 +68,10 @@ maximum temperature in July. These are the relative thresholds that
 \code{calc_pct_day()}.
 }
 \details{
+\code{min_threshold} and \code{max_threshold} hand the finished lookup to
+\code{\link[=bound_threshold]{bound_threshold()}}, which combines the percentile with an absolute
+guardrail so that one definition of an extreme travels across climates.
+
 Use \code{exclude_below} to leave out values, for instance days with less than
 0.1 mm of rain, so the percentiles describe wet days only. A unit and
 month whose values all fall beyond the cut-off, such as a dry-season month
@@ -83,6 +95,7 @@ extract_by_coord(pre, points) |>
 \code{\link[=calc_percentile_day]{calc_percentile_day()}}, \code{\link[=calc_spell_percentile]{calc_spell_percentile()}}
 
 Other indicators:
+\code{\link[=bound_threshold]{bound_threshold()}},
 \code{\link[=calc_anomaly]{calc_anomaly()}},
 \code{\link[=calc_condition]{calc_condition()}},
 \code{\link[=calc_heatwave]{calc_heatwave()}},

@@ -231,7 +231,28 @@ pct_label <- function(entry, meta) {
                           time_step = meta$time_step))
     }
     period <- if (identical(entry$period, "year")) "over the year" else "by month"
-    paste0(ordinal(entry$p * 100), " percentile of ", what, ", ", period)
+    paste0(ordinal(entry$p * 100), " percentile of ", what, ", ", period,
+           bound_phrase(entry))
+}
+
+#' "held to at least 25 C", for a percentile given an absolute guardrail
+#'
+#' The bound is part of what the threshold is, so it belongs in the label:
+#' whoever opens the Stata file should not have to read the history to learn
+#' that a 99th percentile was not allowed below 25 degrees.
+#' @noRd
+bound_phrase <- function(entry) {
+    unit <- if (!is.null(entry$unit)) paste0(" ", entry$unit) else ""
+    parts <- c(
+        if (!is.null(entry$min_threshold))
+            paste0("at least ", entry$min_threshold, unit),
+        if (!is.null(entry$max_threshold))
+            paste0("at most ", entry$max_threshold, unit)
+    )
+    if (length(parts) == 0) {
+        return("")
+    }
+    paste0(", held to ", paste(parts, collapse = " and "))
 }
 
 par_label <- function(entry, meta) {

@@ -6,6 +6,10 @@
 #' [calc_percentile_day()] compares each day with. Replaces
 #' `calc_pct_day()`.
 #'
+#' `min_threshold` and `max_threshold` hand the finished lookup to
+#' [bound_threshold()], which combines the percentile with an absolute
+#' guardrail so that one definition of an extreme travels across climates.
+#'
 #' Use `exclude_below` to leave out values, for instance days with less than
 #' 0.1 mm of rain, so the percentiles describe wet days only. A unit and
 #' month whose values all fall beyond the cut-off, such as a dry-season month
@@ -17,6 +21,11 @@
 #' @param x A wide table from `extract_*()`, or a long indicator table.
 #' @param p Probabilities, e.g. `c(0.1, 0.9)`.
 #' @param exclude_below,exclude_above Values beyond these are left out.
+#' @param min_threshold,max_threshold Absolute bounds on the percentile, in
+#'   the data's unit, passed to [bound_threshold()]: a convenience for the
+#'   common case, since the same bound applies to any threshold lookup table
+#'   however it was produced. Use `min_threshold` with an upper tail and
+#'   `max_threshold` with a lower one.
 #' @param yearly When `TRUE`, also compute percentiles over all days of the
 #'   year (columns `yr_90p`), repeated on every month.
 #' @param baseline Optional dates `c(from, to)` limiting the days used, e.g.
@@ -51,6 +60,7 @@ calc_percentile <- function(x, ...) {
 #' @rdname calc_percentile
 #' @export
 calc_percentile.default <- function(x, p, exclude_below = NULL, exclude_above = NULL,
+                                    min_threshold = NULL, max_threshold = NULL,
                                     yearly = FALSE, baseline = NULL, replace = NA_real_,
                                     id = NULL, label = NULL, chunk = "auto", ...) {
     rlang::check_dots_empty()
@@ -105,12 +115,20 @@ calc_percentile.default <- function(x, p, exclude_below = NULL, exclude_above = 
         new_c4e_tbl(out, prune_meta(meta, names(out)))
     }
 
-    run_indicator(x, compute, "calc_percentile",
-                  args = list(p = p, exclude_below = exclude_below,
-                              exclude_above = exclude_above,
-                              yearly = if (yearly) TRUE, baseline = baseline),
-                  n_new = length(p) * (1 + yearly), id = id, label = label,
-                  chunk = chunk, started = started)
+    out <- run_indicator(x, compute, "calc_percentile",
+                         args = list(p = p, exclude_below = exclude_below,
+                                     exclude_above = exclude_above,
+                                     yearly = if (yearly) TRUE,
+                                     baseline = baseline),
+                         n_new = length(p) * (1 + yearly), id = id, label = label,
+                         chunk = chunk, started = started)
+    ## The bound transforms the finished lookup rather than computing it, so
+    ## it goes through the verb that any threshold table can use. Delegating
+    ## keeps one implementation and puts both steps in the history.
+    if (!is.null(min_threshold) || !is.null(max_threshold)) {
+        out <- bound_threshold(out, min = min_threshold, max = max_threshold)
+    }
+    out
 }
 
 #' Flag days beyond their unit's monthly percentiles

@@ -37,6 +37,7 @@ reference:
       - aggregate_time
       - select_by_dates
       - select_by_season
+      - read_season
       - convert_unit
       - list_units
       - register_unit
@@ -65,6 +66,7 @@ reference:
       - calc_condition
       - calc_percentile
       - calc_percentile_day
+      - bound_threshold
       - calc_spell
       - calc_spell_percentile
       - calc_spell_excess

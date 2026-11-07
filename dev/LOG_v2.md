@@ -31,18 +31,41 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** before the release, additions for the survey
-harmonisation's weather shock block, on branch `window-calendar` (PR into
-`main`, which is now protected: no direct pushes): `window_calendar()` and
-`read_season()`, `sd` and `cv` statistics, window bounds in the
-summaries, `stats = list(value = )`, `calc_anomaly()`,
-`snap_to_valid_cell()`, `window_lags()`. The comparison with
-climatic4economist (#13) is merged; the two v1 fixes are on
-climatic4economist's `main`.
+**Current chunk:** `percentile-bound`, on a branch off `main` (protected:
+no direct pushes). `calc_percentile()` gains `min_threshold` and
+`max_threshold`, which hold the computed threshold at an absolute guardrail,
+so that one definition of an extreme travels across climates. The pair is
+what the disaster report needs and had been writing by hand: a percentile
+AND an absolute level is the same test as the greater of the two, but only a
+single bounded threshold gives the right `excess` and the right label.
+
+The weather shock additions (#14) are merged: `window_calendar()` and
+`read_season()`, `sd` and `cv` statistics, window bounds in the summaries,
+`stats = list(value = )`, `calc_anomaly()`, `snap_to_valid_cell()`,
+`window_lags()`. The comparison with climatic4economist (#13) is merged; the
+two v1 fixes are on climatic4economist's `main`.
 
 **Next steps (in order):**
-1. Merge the `window-calendar` pull request once its checks pass, then
-   delete the branch; add NEWS bullets for its functions. Thresholds are
+1. Finish `percentile-bound`: NEWS bullet written; still to do is a mention
+   in the `weather_extremes()` wrapper and in a preset, so that a preset can
+   say `p = 0.99, min_threshold = 30` instead of leaving the two as separate
+   presets that cannot be combined. Then a PR into `main`.
+2. **Labels after spatial aggregation say days when the column is a share.**
+   `aggregate_to_adm()` takes a coverage-weighted mean, so a flag column
+   stops being a count of days and becomes the share of the division's area
+   affected. It records `spatial_agg` in the meta but leaves each indicator's
+   `kind` as `"flag"`, so `c4e_labels()` still answers "days above the 95th
+   percentile" for a number between 0 and 1. `agg_label()` already knows the
+   right wording (`flag` + `stat = "mean"` gives "share of ..."); it is only
+   that the columns are never registered as `kind = "agg"`. In the disaster
+   report's daily file this mislabels 22 of 34 columns. Small fix, own chunk.
+3. `a88929b` ("List the four new help pages in the pkgdown index") is on
+   `window-calendar` and `origin/window-calendar` but NOT in `main`: #14
+   merged an earlier commit. Rescue those four lines before deleting the
+   branch, or the site will not list `window_calendar()`, `read_season()`,
+   `sd`/`cv` or `window_lags()`. **Done by hand on `percentile-bound`**; the
+   branch can be deleted once that merges.
+4. Still open from #14: thresholds are
    still about 3 times slower than v1 and spells about 1.3 times (the long
    table). Later, if a large survey runs out of memory (the long table
    reaches about 2 GB for thousands of locations over 30 years): a matrix
@@ -209,11 +232,36 @@ climatic4economist's `main`.
   checked without pandoc": this laptop only (no internet time server,
   pandoc not on the PATH). For pkgdown here, set
   `RSTUDIO_PANDOC="C:/Program Files/RStudio/resources/app/bin/quarto/bin/tools"`.
+- "Package has a VignetteBuilder field but no prebuilt vignette index":
+  only when the local run skips the vignette build (see below). CI builds
+  them, so this note does not appear there.
 
 ## How to run things on a machine without R on the PATH
 
 ```bash
 "/c/Program Files/R/R-4.5.0/bin/Rscript.exe" -e 'testthat::test_local()'
+```
+
+From PowerShell rather than bash, put the R code in a file and run the file.
+Two traps on this laptop, both silent until R fails on something that looks
+unrelated:
+
+- PowerShell 5.1 does not escape double quotes when it calls a native
+  executable, so `-e 'test_local(filter = "indicators")'` reaches R as
+  `filter = indicators` and fails with "object 'indicators' not found".
+- `Set-Content -Encoding utf8` writes a byte-order mark, and R answers
+  `Error: unexpected input in "<U+FEFF>"`. Write the script from bash, or use
+  `Out-File` and check the first bytes.
+
+`rcmdcheck::rcmdcheck()` fails here with "Build process failed" unless the
+*build* step is told to skip both the manual and the vignettes: this laptop
+has no pdflatex, and no ghostscript or qpdf for the
+`--compact-vignettes=gs+qpdf` that CI uses. The vignettes are checked on CI
+instead.
+
+```r
+rcmdcheck::rcmdcheck(build_args = c("--no-manual", "--no-build-vignettes"),
+                     args = c("--no-manual", "--as-cran", "--ignore-vignettes"))
 ```
 
 Fixtures are rebuilt (identically, seeded) with:
@@ -256,6 +304,62 @@ To reproduce the GitHub check locally (same arguments as CI):
   so the trap stays shut.
 - Tests: 0 failures. `test-survey.R` alone: 110 passing.
 - Next: push, and open the PR after `percentile-bound` merges.
+### 2026-11-07 — percentile bounds (laptop: FAO-Win, session: Claude)
+- Did: #14 merged into `main`, so `main` now carries the weather shock
+  additions. Opened `percentile-bound` off `main` with `bound_threshold()`
+  (`R/bound_threshold.R`): it holds any threshold lookup table between
+  absolute bounds with `pmax()`/`pmin()` (so a cell-month with no data keeps
+  `replace` rather than being given the bound), one bound or one per column,
+  `cols` to name columns the registry does not know, the bound recorded on
+  each registered threshold and in the history, shown in the label by
+  `bound_phrase()` in `R/labels.R`, and a warning when a bound is paired with
+  the tail it loosens. `calc_percentile()` gains `min_threshold` and
+  `max_threshold`, which hand the finished lookup to the verb. Ten tests in
+  `test-indicators.R`, one of them the property the whole thing exists for: a
+  bounded percentile flags exactly the days that the percentile flag and the
+  absolute flag flag together. NEWS bullet added.
+- Decided: the bound belongs to a verb on the lookup table, not to
+  `calc_percentile()`. It was written as an argument first. Plan §11.1 says
+  thresholds are numbers or lookup tables and "percentile tables are just one
+  producer of such a table", listing zone, district and crop limits as the
+  others; and the bound does not change which values enter the quantile, it
+  clamps the result, so it is a transformation of a threshold table rather
+  than part of producing one. As an argument it would have been unavailable
+  to every other producer. The argument stays as sugar because the guardrail
+  is overwhelmingly used with percentiles and `exclude_below` sets the
+  precedent, but it delegates, so there is one implementation.
+- Did: rescued `a88929b` by hand (see below) into `_pkgdown.yml`, together
+  with `bound_threshold`: `read_season`, `snap_to_valid_cell`, `window_lags`
+  and `calc_anomaly` all have help pages on `main` and none were listed, so
+  the site was hiding four documented functions. `git cherry-pick -n` refused
+  because this branch had already edited the file; the four lines were put
+  back in the places the commit put them.
+- Found: `a88929b` ("List the four new help pages in the pkgdown index") is
+  on `window-calendar` and on the remote branch but NOT in `main`, because
+  #14 merged an earlier commit. Those four lines are lost if the branch is
+  deleted, and without them the site does not list the #14 functions.
+- Found: `with_chunks()` does split a real problem. On Niger's 7,214 cells
+  `calc_percentile()` reported needing 5.5 GB against a 4.7 GB budget and
+  completed in two chunks. A per-operation declaration of which axes may be
+  split (dates are safe for the pointwise steps, not for the pooling ones)
+  was considered for the disaster report and dropped: no observed failure.
+- Found: the disaster report had been combining a percentile with an absolute
+  level as `(percentile & floor) | hard`. The `| hard` branch is an OR, so it
+  admits days the percentile rejected: at Georgia's 99th percentile it
+  supplied 84% of the flagged days, and 41% of them were not in their month's
+  top 1% at all. It also puts a floor under the count that no percentile can
+  get below, which is why the indicator would not become rarer however
+  extreme the percentile was set. This argument exists so that nobody writes
+  that expression by hand again.
+- Tests: 26 files, 0 failures, 1286 passing expectations, 2 warnings (the
+  pre-existing SPEI fit and the testthat build note); the baseline before the
+  change was 1268. `rcmdcheck` with the build arguments below: 0 errors, 0
+  warnings, 2 notes, all three known (the Pages URL, the missing pandoc, and
+  the absent vignette index that skipping the vignette build causes).
+- Next: see Next steps above. Branch pushed as `percentile-bound`
+  (`f7d124b`); the pull request into `main` still has to be opened by hand,
+  since `gh` is not installed on this laptop:
+  <https://github.com/jmr-fao/c4e/pull/new/percentile-bound>.
 
 ### 2026-11-05 — merging the weather shock additions (laptop: FAO-Win, session: Claude)
 - Did: #13 (comparison with v1) was merged on 3 November. Fixed in
