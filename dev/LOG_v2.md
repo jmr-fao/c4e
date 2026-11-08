@@ -27,19 +27,31 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 16 | Privacy and case studies | ✔ done | #10 | 2026-10-21 | 2026-10-21 | `displace_coord()` with division, water and population options merged into `main`; the case studies move to a separate tutorial site |
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
 | 18 | Paper (JOSS) | 🔄 in progress | #12 | 2026-10-21 | | draft merged into `main` (#12); placeholders wait for Jan's input |
-| S | Season bounds per division | 🔄 in progress | | 2026-11-07 | | branch `season-by-poly`; also the first tests `read_season()` has had |
-| G | Season support gate | 🔄 in progress | | 2026-11-08 | | branch `season-support`; fixes a defect in chunk S |
-| L | Labels after spatial aggregation | 🔄 in progress | | 2026-11-07 | | branch `agg-labels`; expect a conflict in this log with `percentile-bound` |
+| S | Season bounds per division | ✔ done | #16 | 2026-11-07 | 2026-11-07 | merged into `main`; also the first tests `read_season()` has had |
+| G | Season support gate | ✔ done | #17 | 2026-11-08 | 2026-11-08 | merged into `main`; fixes a defect in chunk S |
+| L | Labels after spatial aggregation | ✔ done | | 2026-11-07 | 2026-11-07 | merged into `main` with #16 |
+| B | Percentile bound | ✔ done | | 2026-11-07 | 2026-11-07 | merged into `main`; `min_threshold`/`max_threshold` and `bound_threshold()` |
+| W | `window_dates()` | 🔄 in progress | | 2026-11-08 | | branch `window-dates`; exports the window resolution `summarise_by_interview()` already used |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** `percentile-bound`, on a branch off `main` (protected:
-no direct pushes). `calc_percentile()` gains `min_threshold` and
-`max_threshold`, which hold the computed threshold at an absolute guardrail,
-so that one definition of an extreme travels across climates. The pair is
-what the disaster report needs and had been writing by hand: a percentile
-AND an absolute level is the same test as the greater of the two, but only a
-single bounded threshold gives the right `excess` and the right label.
+**Current chunk:** `window-dates`, on a branch off `main` (protected: no
+direct pushes). `window_frame()` resolved every window type into `lag`,
+`w_start` and `w_end` but was `@noRd`, reachable only through
+`summarise_by_interview()`. A new `window_dates(window, data, interview, by)`
+exports that resolution, so a window can be built, inspected and joined on
+without going through a summary. No new logic: the wrapper builds the
+dot-prefixed keys frame the way `summarise_by_interview()` does and calls
+`window_frame()` unchanged, so its eight existing tests keep passing
+untouched.
+
+The disaster report needs it to cut a daily series to each division's
+growing season. The alternative was to route its exposure module through
+`summarise_by_interview()`, which does not fit: that function sums registry
+flags, while the module thresholds an already-aggregated coverage share per
+day and then counts the days. The share is registered as `kind = "flag"`, so
+summarising it would not abort on an unknown kind — it would silently sum
+shares into area-weighted days and return a plausible wrong number.
 
 The weather shock additions (#14) are merged: `window_calendar()` and
 `read_season()`, `sd` and `cv` statistics, window bounds in the summaries,
@@ -48,11 +60,14 @@ The weather shock additions (#14) are merged: `window_calendar()` and
 two v1 fixes are on climatic4economist's `main`.
 
 **Next steps (in order):**
-1. Finish `percentile-bound`: NEWS bullet written; still to do is a mention
-   in the `weather_extremes()` wrapper and in a preset, so that a preset can
-   say `p = 0.99, min_threshold = 30` instead of leaving the two as separate
-   presets that cannot be combined. Then a PR into `main`.
-2. **Labels after spatial aggregation say days when the column is a share.**
+1. Finish `window-dates`: code, tests, NEWS, docs and the pkgdown entry are
+   done (1351 tests, reference index checked). Then a PR into `main`.
+2. Left from `percentile-bound`, now merged: `min_threshold` is not yet
+   mentioned in the `weather_extremes()` wrapper or in a preset, so a preset
+   still cannot say `p = 0.99, min_threshold = 30` and the two remain
+   separate presets that cannot be combined. Own chunk.
+3. **Labels after spatial aggregation say days when the column is a share.**
+   *Fixed and merged on 2026-11-07; kept here for the reasoning.*
    `aggregate_to_adm()` takes a coverage-weighted mean, so a flag column
    stops being a count of days and becomes the share of the division's area
    affected. It records `spatial_agg` in the meta but leaves each indicator's
@@ -279,6 +294,33 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-11-08 — `window_dates()` (laptop: FAO-Win, session: Claude)
+- Did: branch `window-dates`. New `R/window_dates.R` exporting
+  `window_dates(window, data, interview, by)`, a tidy-select wrapper over the
+  internal `window_frame()`. `interview` is data-masked and `by` is a string,
+  per plan §11.8: survey-side columns are tidy-select, names that travel in
+  meta are strings. The season bounds of `window_calendar()` and the event of
+  `window_since()` are deliberately NOT arguments — the window object already
+  records which columns hold them, so they cannot be named twice and
+  disagree. 13 assertions added to `test-survey.R`, including that the
+  exported function equals the internal resolution, the ASIS dekad cases
+  (`sos = -2` giving 2022-12-10), a row with no season dropped rather than
+  returned with `NA`, distinctness over key and interview, and four refusals.
+  NEWS bullet, `_pkgdown.yml` entry, roxygen run.
+- Found: `window_frame()` needed no change at all, which was the point of
+  wrapping rather than widening it — changing its signature would have
+  touched `summarise_by_interview()` and rewritten its eight tests for no
+  user-visible gain. Two test expectations had to be loosened to match what
+  `cli` actually renders: `{.field {by}}` comes out as plain `nope`, not
+  `` `nope` ``, in a non-interactive session, and a regex with escaped
+  parentheses is not worth the brittleness when `fixed = TRUE` says the same
+  thing.
+- Tests: 1351 passing, 0 failures, 0 errors, 0 skips (1338 before).
+  `pkgdown:::data_reference_index()` clean with `RSTUDIO_PANDOC` set.
+- Next: PR into `main`, then the disaster report's exposure module gains
+  `window_type = "season"` calling this.
+- Commits on `window-dates`: the commit that adds this entry.
 
 ### 2026-11-08 — season support gate (laptop: FAO-Win, session: Claude)
 - Did: branch `season-support`. `min_share` in `read_season_by_poly()` now

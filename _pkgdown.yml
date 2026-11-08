@@ -50,6 +50,7 @@ reference:
       - snap_to_valid_cell
       - window_lag
       - window_lags
+      - window_dates
       - select_by_interview
 
   - title: Extraction
