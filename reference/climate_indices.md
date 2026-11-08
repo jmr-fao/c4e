@@ -130,17 +130,17 @@ climate_indices(survey,
 #>   window: 1 month before the interview
 #>   12 locations, 20 survey units
 #> ℹ Extracting precipitation
-#> ✔ Extracting precipitation [37ms]
+#> ✔ Extracting precipitation [26ms]
 #> 
 #> ℹ Computing SPI
-#> ✔ Computing SPI [205ms]
+#> ✔ Computing SPI [144ms]
 #> 
 #> ℹ Summarising over the reference windows
 #> Warning: 1 of 20 household windows is `NA`: less than 80% of the days have data.
 #> ℹ 1 of them has no data at all (a location on cells without data, or a window
 #>   outside the dates of the data).
 #> ℹ Lower `min_coverage` to keep partial windows, e.g. `min_coverage = 0.5`.
-#> ✔ Summarising over the reference windows [113ms]
+#> ✔ Summarising over the reference windows [67ms]
 #> 
 #> # A tibble: 20 × 8
 #> # Context:  pre [mm/month], month, summary; key hhid; 4 indicators
