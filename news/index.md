@@ -9,6 +9,21 @@ progress is tracked in `dev/LOG_v2.md`.
 
 ### Done so far
 
+- [`window_dates()`](https://jmr-fao.github.io/c4e/reference/window_dates.md)
+  resolves a window from
+  [`window_lag()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
+  [`window_season()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
+  [`window_calendar()`](https://jmr-fao.github.io/c4e/reference/window_lag.md),
+  [`window_fixed()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  or
+  [`window_since()`](https://jmr-fao.github.io/c4e/reference/window_lag.md)
+  into the dates it covers, one row per key, interview and lag.
+  [`summarise_by_interview()`](https://jmr-fao.github.io/c4e/reference/summarise_by_interview.md)
+  has always done this internally; exporting it serves the cases that do
+  not end in a summary, such as cutting a daily series to each
+  household’s growing season. The season bounds are not arguments,
+  because the window object already records which columns hold them.
+
 - [`read_season_by_poly()`](https://jmr-fao.github.io/c4e/reference/read_season_by_poly.md)’s
   `min_share` now gates whichever land cover supplies a division’s
   bounds, not only the first one tried. Gating only the primary cover

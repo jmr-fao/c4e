@@ -268,6 +268,8 @@ Indicators, parameters and controls returned as rasters.
   : Reference windows for survey summaries
 - [`window_lags()`](https://jmr-fao.github.io/c4e/reference/window_lags.md)
   : The same window, one or more periods earlier
+- [`window_dates()`](https://jmr-fao.github.io/c4e/reference/window_dates.md)
+  : The dates a window specification resolves to
 - [`select_by_interview()`](https://jmr-fao.github.io/c4e/reference/select_by_interview.md)
   : Select time observations based on interview date and time interval
 

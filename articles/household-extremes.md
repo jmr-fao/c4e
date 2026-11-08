@@ -203,12 +203,12 @@ uses:
 ``` r
 
 c4e_history(summary)
-#> <c4e history: 5 steps, 0.4 s>
+#> <c4e history: 5 steps, 0.6 s>
 #> prepare_coord(id_rule = "coordinates") |>                                                                    # 0.2 s
 #>   extract_by_coord() |>                                                                                      # 0.0 s
-#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.1 s
+#>   calc_threshold_day(above = c(30, 35), unit = "C") |>                                                       # 0.2 s
 #>   calc_spell(min_spell = 2L) |>                                                                              # 0.0 s
-#>   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 1L), min_coverage = 0.8)  # 0.1 s
+#>   summarise_by_interview(window = list(type = "lag", interval = "1 year", n_lags = 1L), min_coverage = 0.8)  # 0.2 s
 c4e_labels(summary)[c("day_abv_30_sum", "spell_abv_35_max")]
 #>                                          day_abv_30_sum 
 #>                    "days above 30 C, per 1-year window" 
@@ -220,7 +220,7 @@ c4e_labels(summary)[c("day_abv_30_sum", "spell_abv_35_max")]
 
 write_stata(summary, file.path(tempdir(), "household_extremes.dta"))
 #> Wrote 40 rows and 16 variables to
-#> /tmp/Rtmp6jMgGp/household_extremes.dta.
+#> /tmp/Rtmpk7mW46/household_extremes.dta.
 ```
 
 [`validate_c4e()`](https://jmr-fao.github.io/c4e/reference/validate_c4e.md)
