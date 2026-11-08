@@ -7,6 +7,17 @@ tracked in `dev/LOG_v2.md`.
 
 ## Done so far
 
+* `read_season_by_poly()`'s `min_share` now gates whichever land cover
+  supplies a division's bounds, not only the first one tried. Gating only the
+  primary cover let the fallback describe a division from a single cell, which
+  mattered because ASIS's second season is rare outside bimodal regimes: on a
+  20-country sample it returned a plausible second season for three quarters
+  of Georgia's divisions, every one of them from pasture at a median support
+  of 0.1% of cells. With the gate, the second season survives where
+  bimodality is real (Uganda 82%, Guatemala 95%, Benin 84%) and disappears
+  where it is not (Sahel 0-2%, Malawi 0%), and 96% of surviving rows come
+  from cropland rather than pasture.
+
 * `read_season_by_poly()` summarises a crop calendar over the cells of each
   administrative division, so a division-level analysis can use a growing
   season as its window. It reports the modal and the mean start, middle and

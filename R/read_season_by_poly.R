@@ -31,6 +31,15 @@
 #' cover each division ended up on, and `cropland_share` and `pasture_share`
 #' are both reported, so the choice can be audited or overridden.
 #'
+#' `min_share` gates the cover that is actually used, which matters more than
+#' it sounds. A modal dekad over whatever cells survive the flag mask will
+#' describe a division from a single cell if that is all there is, and the
+#' value will look perfectly ordinary — a confident wrong season is harder to
+#' notice than a missing one. ASIS's second season is rare outside bimodal
+#' regimes (0.2% of Niger's cells carry one, against 29% for the first), so
+#' without the gate `season = 2` returns a plausible-looking window for
+#' nearly every division in a unimodal country.
+#'
 #' ASIS defines the end of season with a different NDVI threshold on cropland
 #' than elsewhere, so `eos` from the two covers is not strictly the same
 #' quantity; `sos` is less affected. Read `season_source` before comparing
@@ -48,9 +57,11 @@
 #' @param land_cover `"cropland"`, `"pasture"`, or both for cropland with
 #'   pasture where cropland is absent.
 #' @param stat `"mode"`, `"mean"` or both.
-#' @param min_share The share of a division's cells that must carry a cropland
-#'   season before cropland governs it. Below this the division falls back to
-#'   pasture, when pasture is offered.
+#' @param min_share The share of a division's cells that must carry a season
+#'   before that season describes the division. It gates whichever land cover
+#'   supplies the bounds, not only the first: a division where cropland falls
+#'   short falls back to pasture, and if pasture falls short too the division
+#'   gets no season rather than one resting on a handful of cells.
 #' @param id Name of the division column in `boundaries`; `ID_adm_div` by
 #'   default.
 #' @param path The dataset folder, if it is not in the spatial repository
@@ -164,13 +175,18 @@ resolve_cover <- function(covers, land_cover, min_share, key, stat) {
     if (length(land_cover) == 1) {
         out <- primary[c(key, value_cols)]
         out$season_share <- primary$share
-        out$season_source <- dplyr::if_else(primary$share > 0,
+        out$season_source <- dplyr::if_else(primary$share >= min_share,
                                             land_cover[[1]], NA_character_)
-        return(dplyr::bind_cols(out, shares))
+        return(clear_unsupported(dplyr::bind_cols(out, shares), value_cols))
     }
 
     fallback <- covers[[land_cover[[2]]]]
-    use_primary <- primary$share >= min_share & primary$share > 0
+    ## The gate applies to whichever cover is used. Gating only the first
+    ## would let the fallback describe a division from a single cell, which
+    ## is how ASIS's rare second season came to look present nearly
+    ## everywhere in a unimodal country.
+    use_primary  <- primary$share >= min_share
+    use_fallback <- !use_primary & fallback$share >= min_share
 
     out <- tibble::tibble(!!key := primary[[key]])
     for (col in value_cols) {
@@ -179,14 +195,19 @@ resolve_cover <- function(covers, land_cover, min_share, key, stat) {
     out$season_share <- dplyr::if_else(use_primary, primary$share, fallback$share)
     out$season_source <- dplyr::case_when(
         use_primary ~ land_cover[[1]],
-        fallback$share > 0 ~ land_cover[[2]],
+        use_fallback ~ land_cover[[2]],
         .default = NA_character_
     )
-    ## A division with neither cover carries no season, not a borrowed one.
+    clear_unsupported(dplyr::bind_cols(out, shares), value_cols)
+}
+
+#' A division with no supported cover carries no season, not a borrowed one
+#' @noRd
+clear_unsupported <- function(out, value_cols) {
     empty <- is.na(out$season_source)
     for (col in value_cols) {
         out[[col]][empty] <- NA_real_
     }
     out$season_share[empty] <- 0
-    dplyr::bind_cols(out, shares)
+    out
 }
