@@ -234,6 +234,35 @@ test_that("calendar windows take their bounds from the survey, row by row", {
                  "season sos to eos (doy), 0 season(s) back")
 })
 
+test_that("a calendar season reaching past its own year still closes first", {
+    # FAO ASIS encodes a season running into the next year as a dekad above
+    # 36, whose END is numerically ABOVE its start, so it is not a `.wrap`.
+    # Stepping back one year from the interview year left such a season
+    # still open at interview time, which put weather AFTER the interview
+    # into the window.
+    d <- tibble::tibble(.by_key = "a", .interview = as.Date("2018-01-01"),
+                        .sos = 10, .eos = 39)
+    w <- window_frame(window_calendar(sos, eos, unit = "dekad",
+                                      years_back = 0:1), d)
+    expect_true(all(w$w_end < w$.interview))
+    expect_equal(w$w_end, as.Date(c("2017-01-24", "2016-01-25")))
+
+    # an interview late enough for that season to have closed takes it
+    late <- window_frame(window_calendar(sos, eos, unit = "dekad"),
+                         dplyr::mutate(d, .interview = as.Date("2018-06-01")))
+    expect_equal(late$w_end, as.Date("2018-01-25"))
+
+    # the day the season closes counts as closed: the window is (start, end]
+    on_day <- window_frame(window_calendar(sos, eos, unit = "dekad"),
+                           dplyr::mutate(d, .interview = as.Date("2018-01-26")))
+    expect_equal(on_day$w_end, as.Date("2018-01-25"))
+
+    # a season ending the day of the interview has not closed before it
+    eve <- window_frame(window_calendar(sos, eos, unit = "dekad"),
+                        dplyr::mutate(d, .interview = as.Date("2018-01-25")))
+    expect_true(eve$w_end < eve$.interview)
+})
+
 test_that("window_dates() resolves the same windows the summaries use", {
     survey <- tibble::tibble(
         division  = c("a", "b"),

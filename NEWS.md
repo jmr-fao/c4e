@@ -7,6 +7,15 @@ tracked in `dev/LOG_v2.md`.
 
 ## Done so far
 
+* `window_calendar()` now returns the last season to have **closed** before
+  the interview when the season reaches past the end of its own start year.
+  FAO ASIS encodes such a season as a dekad above 36, whose end is
+  numerically above its start and so was not treated as wrapping; stepping
+  back a single year from the interview year left it still open at interview
+  time. On a 20-country survey sample this put weather from after the
+  interview into 1.3% of windows, by up to 249 days. Seasons that close
+  inside their start year are unaffected.
+
 * `window_dates()` resolves a window from `window_lag()`, `window_season()`,
   `window_calendar()`, `window_fixed()` or `window_since()` into the dates it
   covers, one row per key, interview and lag. `summarise_by_interview()` has

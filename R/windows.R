@@ -246,10 +246,16 @@ calendar_windows <- function(keys, window) {
         return(dplyr::mutate(keys, lag = integer(), w_start = as.Date(character()),
                              w_end = as.Date(character())))
     }
-    this_year <- lubridate::year(keys$.interview)
-    ends_this_year <- jan1(this_year + keys$.wrap) + (keys$.end - 1)
-    keys$.last <- ifelse(ends_this_year < keys$.interview,
-                         this_year, this_year - 1L)
+    ## The latest start-year whose season has CLOSED before the interview.
+    ## Stepping back a single year from the interview year is not enough: a
+    ## season can reach more than a year past its own start, which FAO ASIS
+    ## encodes as a dekad above 36 and uses for about a fifth of its
+    ## divisions. `.wrap` does not catch those, because their end is
+    ## numerically above their start. So solve the closure condition rather
+    ## than guess the year:
+    ##     jan1(Y + .wrap) + (.end - 1) < .interview
+    ## which rearranges to Y <= year(.interview - .end) - .wrap.
+    keys$.last <- lubridate::year(keys$.interview - keys$.end) - keys$.wrap
     tidyr::expand_grid(keys, lag = window$years_back) |>
         dplyr::mutate(
             w_start = jan1(.data$.last - .data$lag) + (.data$.start - 1) - 1L,
