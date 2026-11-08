@@ -31,7 +31,8 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | G | Season support gate | ✔ done | #17 | 2026-11-08 | 2026-11-08 | merged into `main`; fixes a defect in chunk S |
 | L | Labels after spatial aggregation | ✔ done | | 2026-11-07 | 2026-11-07 | merged into `main` with #16 |
 | B | Percentile bound | ✔ done | | 2026-11-07 | 2026-11-07 | merged into `main`; `min_threshold`/`max_threshold` and `bound_threshold()` |
-| W | `window_dates()` | 🔄 in progress | | 2026-11-08 | | branch `window-dates`; exports the window resolution `summarise_by_interview()` already used |
+| W | `window_dates()` | ✔ done | #18 | 2026-11-08 | 2026-11-08 | merged into `main` |
+| C | Calendar closure for seasons past dekad 36 | 🔄 in progress | | 2026-11-08 | | branch `calendar-closure`; correctness fix found by using `window_dates()` on real ASIS bounds |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
@@ -294,6 +295,33 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-11-08 — calendar closure (laptop: FAO-Win, session: Claude)
+- Did: branch `calendar-closure`. `calendar_windows()` chose the season year
+  by testing whether the season ends before the interview and, if not,
+  stepping back exactly one year. That is not enough when a season reaches
+  more than a year past its own start. `.wrap` only flags `.end < .start`,
+  so a dekad above 36 -- how ASIS encodes a season running into the next
+  year -- was not flagged, and the chosen season was still open at interview
+  time. Replaced the guess with the closure condition solved directly:
+  `jan1(Y + .wrap) + (.end - 1) < .interview` rearranges to
+  `Y <= year(.interview - .end) - .wrap`, one line and no loop. Four
+  assertions added in `test-survey.R`, including the day the season closes
+  and the day before.
+- Found: the defect was invisible to the package's own tests because every
+  calendar fixture closes inside its start year; it surfaced only against
+  real ASIS bounds, where 851 of 4360 supported season-1 divisions (19.5%)
+  end past dekad 36. On the disaster report's 20-country sample it put
+  post-interview weather into 572 of 43762 windows (1.3%) across 11 of 26
+  country-levels, by up to 249 days in Mexico. After the fix: 0 of 43762,
+  with the window count unchanged, so no observation is lost -- the windows
+  move to the season that had actually closed.
+- Tests: 1356 passing, 0 failures, 0 errors, 0 skips (1351 before). All five
+  pre-existing calendar assertions pass unchanged, which is the check that
+  matters: seasons closing inside their start year must not move.
+- Next: PR into `main`; then the report's exposure module can use
+  `window_type = "season"` safely.
+- Commits on `calendar-closure`: the commit that adds this entry.
 
 ### 2026-11-08 — `window_dates()` (laptop: FAO-Win, session: Claude)
 - Did: branch `window-dates`. New `R/window_dates.R` exporting
