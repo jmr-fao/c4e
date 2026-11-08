@@ -28,6 +28,7 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | 17 | Release c4e 0.1.0 (GitHub first, r-universe after testing) | ☐ | | | | |
 | 18 | Paper (JOSS) | 🔄 in progress | #12 | 2026-10-21 | | draft merged into `main` (#12); placeholders wait for Jan's input |
 | S | Season bounds per division | 🔄 in progress | | 2026-11-07 | | branch `season-by-poly`; also the first tests `read_season()` has had |
+| G | Season support gate | 🔄 in progress | | 2026-11-08 | | branch `season-support`; fixes a defect in chunk S |
 | L | Labels after spatial aggregation | 🔄 in progress | | 2026-11-07 | | branch `agg-labels`; expect a conflict in this log with `percentile-bound` |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
@@ -278,6 +279,40 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-11-08 — season support gate (laptop: FAO-Win, session: Claude)
+- Did: branch `season-support`. `min_share` in `read_season_by_poly()` now
+  gates whichever cover supplies the bounds, via `use_fallback` and a shared
+  `clear_unsupported()` helper. Before, `use_primary <- primary$share >=
+  min_share` gated cropland while the fallback needed only `share > 0`, so a
+  division with no cropland took a pasture season from a single cell. Two
+  tests added, including that every surviving row's share clears the gate
+  whichever cover won; season tests 40, up from 32.
+- Found: the defect was found by running the thing, not by reading it. The
+  disaster report's module 5 printed `season_share` per division and ASIS's
+  second season came out at a median support of 0.001 across 23 divisions,
+  every one of them pasture. The diagnostics that revealed it were in the
+  module only because they had been argued for as necessary before use.
+- Found: ruled out the worse hypothesis before fixing the cheaper one. A GS1
+  crossing the year boundary, read without handling negative dekads or values
+  above 36, would present as a spurious second season -- a confident wrong
+  answer rather than a thin one. Compared GS1 and GS2 on the same cells over
+  Niger: 687,900 valid GS1 cells, 1,544 valid GS2, and 0 of the 1,544 shared
+  cells carry the same SOS. Distinct windows, so no sign-handling bug. Also
+  confirms the signed convention is in heavy use: 106,368 Niger cells have an
+  EOS past dekad 36, so anything wrapping dekads into 1-36 would corrupt real
+  data.
+- Validated on 26 country-levels rather than asserted. Median ungated support
+  for the second season separates by two to three orders of magnitude --
+  Benin 0.880, Côte d'Ivoire 0.731, Togo 0.690, Uganda 0.653, Sierra Leone
+  0.607, Nigeria 0.588, Guatemala 0.327 against Guinea-Bissau 0.0036, Georgia
+  0.0013, Malawi 0.0009, and 0.0000 for Mexico, Burkina Faso, Mozambique,
+  Mali, Niger and Senegal. The 0.10 gate falls in an empty region, so its
+  exact value barely matters. The composition is the decisive part: before the
+  gate every second-season row came from pasture, after it 1,282 come from
+  cropland and 59 from pasture.
+- Tests: see the figures in the status row; full suite run before pushing.
+- Next: push and PR. Nothing else pending from me on `main`.
 
 ### 2026-11-07 — season bounds per division (laptop: FAO-Win, session: Claude)
 - Did: branch `season-by-poly`. `read_season_by_poly()` in

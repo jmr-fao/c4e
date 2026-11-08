@@ -29,9 +29,11 @@ pasture where cropland is absent.}
 
 \item{stat}{\code{"mode"}, \code{"mean"} or both.}
 
-\item{min_share}{The share of a division's cells that must carry a cropland
-season before cropland governs it. Below this the division falls back to
-pasture, when pasture is offered.}
+\item{min_share}{The share of a division's cells that must carry a season
+before that season describes the division. It gates whichever land cover
+supplies the bounds, not only the first: a division where cropland falls
+short falls back to pasture, and if pasture falls short too the division
+gets no season rather than one resting on a handful of cells.}
 
 \item{id}{Name of the division column in \code{boundaries}; \code{ID_adm_div} by
 default.}
@@ -70,6 +72,15 @@ those divisions get no window and drop out of the analysis, which is
 selection on exactly the thing being studied. \code{season_source} records which
 cover each division ended up on, and \code{cropland_share} and \code{pasture_share}
 are both reported, so the choice can be audited or overridden.
+
+\code{min_share} gates the cover that is actually used, which matters more than
+it sounds. A modal dekad over whatever cells survive the flag mask will
+describe a division from a single cell if that is all there is, and the
+value will look perfectly ordinary — a confident wrong season is harder to
+notice than a missing one. ASIS's second season is rare outside bimodal
+regimes (0.2\% of Niger's cells carry one, against 29\% for the first), so
+without the gate \code{season = 2} returns a plausible-looking window for
+nearly every division in a unimodal country.
 
 ASIS defines the end of season with a different NDVI threshold on cropland
 than elsewhere, so \code{eos} from the two covers is not strictly the same

@@ -144,6 +144,52 @@ test_that("a division with no season under either cover gets none", {
     expect_true(all(out$season_share[is.na(out$season_source)] == 0))
 })
 
+test_that("min_share gates the fallback too, not only the primary cover", {
+    ## The defect this guards: gating only cropland let pasture describe a
+    ## division from a single cell. ASIS's second season covers 0.2% of
+    ## Niger's cells, so ungated it returned a plausible-looking window for
+    ## nearly every division in a country that has no second season.
+    root <- withr::local_tempdir()
+    make_asis_tree(root)
+
+    ## make_asis_tree() leaves the last three cells empty under BOTH covers
+    ## and holes cropland over the lower half, so some divisions have thin
+    ## pasture support and no cropland.
+    lenient <- read_season_by_poly(synthetic_adm_div(), season = 1,
+                                   min_share = 0, path = root)
+    strict  <- read_season_by_poly(synthetic_adm_div(), season = 1,
+                                   min_share = 1, path = root)
+
+    ## With a full-support demand, a division kept by the lenient gate on a
+    ## partial cover must be dropped, not silently moved to the other cover.
+    expect_gte(sum(is.na(strict$season_source)),
+               sum(is.na(lenient$season_source)))
+    expect_true(all(strict$season_share[!is.na(strict$season_source)] >= 1 - 1e-9))
+
+    ## Every surviving row's share clears the gate, whichever cover won.
+    for (m in c(0.25, 0.5)) {
+        out <- read_season_by_poly(synthetic_adm_div(), season = 1,
+                                   min_share = m, path = root)
+        kept <- !is.na(out$season_source)
+        expect_true(all(out$season_share[kept] >= m - 1e-9))
+    }
+})
+
+test_that("an unsupported division carries no bounds at all", {
+    root <- withr::local_tempdir()
+    make_asis_tree(root)
+
+    out <- read_season_by_poly(synthetic_adm_div(), season = 1,
+                               min_share = 1, path = root)
+    gone <- is.na(out$season_source)
+    ## Not a borrowed season, not a flag, and a share of zero.
+    expect_true(all(is.na(out$sos_mode[gone])))
+    expect_true(all(is.na(out$eos_mean[gone])))
+    expect_true(all(out$season_share[gone] == 0))
+    ## The underlying shares are still reported, so the drop is auditable.
+    expect_false(anyNA(out$cropland_share))
+})
+
 test_that("read_season_by_poly() refuses what it cannot deliver", {
     root <- withr::local_tempdir()
     make_asis_tree(root)
