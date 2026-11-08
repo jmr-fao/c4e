@@ -234,6 +234,81 @@ test_that("calendar windows take their bounds from the survey, row by row", {
                  "season sos to eos (doy), 0 season(s) back")
 })
 
+test_that("window_dates() resolves the same windows the summaries use", {
+    survey <- tibble::tibble(
+        division  = c("a", "b"),
+        interview = as.Date(c("2023-11-20", "2023-06-15")),
+        sos       = c(92, 92),
+        eos       = c(297, 297))
+
+    # the exported function and the internal resolution agree
+    keys <- tibble::tibble(.by_key = survey$division,
+                           .interview = survey$interview)
+    expect_equal(
+        window_dates(window_lag("1 year"), survey, interview, by = "division"),
+        window_frame(window_lag("1 year"), keys) |>
+            dplyr::select(division = ".by_key", interview = ".interview",
+                          "lag", "w_start", "w_end"))
+
+    # the key keeps its own name and interview is spelled out
+    w <- window_dates(window_lag("1 year"), survey, interview, by = "division")
+    expect_named(w, c("division", "interview", "lag", "w_start", "w_end"))
+
+    # b was interviewed inside the 2023 season, so it takes the 2022 one
+    cal <- window_dates(window_calendar(sos, eos), survey, interview,
+                        by = "division") |>
+        dplyr::arrange(division)
+    expect_equal(cal$w_start, as.Date(c("2023-04-01", "2022-04-01")))
+    expect_equal(cal$w_end, as.Date(c("2023-10-24", "2022-10-24")))
+})
+
+test_that("window_dates() handles the ASIS dekad conventions", {
+    survey <- tibble::tibble(division = "a",
+                             interview = as.Date("2023-11-20"),
+                             sos = -2, eos = 14)
+
+    # a season starting before 1 January reaches into the previous year
+    dek <- window_dates(window_calendar(sos, eos, unit = "dekad"), survey,
+                        interview, by = "division")
+    expect_equal(c(dek$w_start, dek$w_end), as.Date(c("2022-12-10", "2023-05-20")))
+
+    # a division with no season is dropped rather than carried with NA dates
+    none <- window_dates(window_calendar(sos, eos, unit = "dekad"),
+                         dplyr::mutate(survey, sos = NA_real_), interview,
+                         by = "division")
+    expect_equal(nrow(none), 0L)
+
+    # the result is distinct over the key and the interview date
+    twice <- window_dates(window_calendar(sos, eos, unit = "dekad"),
+                          dplyr::bind_rows(survey, survey), interview,
+                          by = "division")
+    expect_equal(nrow(twice), 1L)
+})
+
+test_that("window_dates() takes the interview column from the metadata", {
+    coord <- survey_coord()
+    w <- window_dates(window_lag("1 year"), coord, by = "hhid")
+    expect_true(all(c("interview", "lag", "w_start", "w_end") %in% names(w)))
+    expect_equal(w$w_end, w$interview - 1L)
+})
+
+test_that("window_dates() refuses what it cannot resolve", {
+    survey <- tibble::tibble(division = "a",
+                             interview = as.Date("2023-11-20"))
+
+    expect_error(window_dates("1 year", survey, interview, by = "division"),
+                 "must be a window object")
+    expect_error(window_dates(window_lag("1 year"), survey, interview),
+                 "Give `by`", fixed = TRUE)
+    expect_error(window_dates(window_lag("1 year"), survey, interview,
+                              by = "nope"),
+                 "no nope column", fixed = TRUE)
+    expect_error(window_dates(window_calendar(sos, eos), survey, interview,
+                              by = "division"),
+                 "needs", fixed = TRUE)
+})
+
+
 test_that("a calendar window summarises the days inside each row's own season", {
     coord <- survey_coord()
     indicators <- hot_days()

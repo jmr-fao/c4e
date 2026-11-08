@@ -7,6 +7,14 @@ tracked in `dev/LOG_v2.md`.
 
 ## Done so far
 
+* `window_dates()` resolves a window from `window_lag()`, `window_season()`,
+  `window_calendar()`, `window_fixed()` or `window_since()` into the dates it
+  covers, one row per key, interview and lag. `summarise_by_interview()` has
+  always done this internally; exporting it serves the cases that do not end
+  in a summary, such as cutting a daily series to each household's growing
+  season. The season bounds are not arguments, because the window object
+  already records which columns hold them.
+
 * `read_season_by_poly()`'s `min_share` now gates whichever land cover
   supplies a division's bounds, not only the first one tried. Gating only the
   primary cover let the fallback describe a division from a single cell, which
