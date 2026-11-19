@@ -56,7 +56,8 @@ column holding the survey year, instead of the interview date.}
 \item{buffer}{A radius in metres; 0 is the location's own cell.}
 
 \item{kind}{Optional named character vector of layer kinds:
-\code{"continuous"}, \code{"count"} or \code{"categorical"}.}
+\code{"continuous"}, \code{"count"} or \code{"categorical"}. Layers it does not name
+are read or guessed as described above.}
 
 \item{boundaries}{Optional administrative divisions: indicators are then
 computed per cell and averaged per division (area shares).}

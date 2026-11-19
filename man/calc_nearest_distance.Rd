@@ -15,7 +15,8 @@ calc_nearest_distance(x, y, return_geometry = FALSE, ...)
 If FALSE (default), returns a tibble with polygon attributes only.}
 
 \item{...}{Additional arguments passed to \code{terra::nearest()}
-(e.g., \code{method}, \code{centroids}, \code{distance}).}
+(e.g., \code{method}, \code{centroids}, \code{distance}); giving any uses
+\code{\link[terra:nearest]{terra::nearest()}} rather than sf.}
 }
 \value{
 Either a \link[terra:SpatVector]{terra::SpatVector} or a \link[tibble:tbl_df]{tibble::tbl_df} equal to \code{x} with an added column:
@@ -25,10 +26,18 @@ Either a \link[terra:SpatVector]{terra::SpatVector} or a \link[tibble:tbl_df]{ti
 }
 \description{
 Computes the minimum distance from each feature in \code{x} to the nearest
-feature in \code{y} using \code{\link[terra:nearest]{terra::nearest()}}. Returns \code{x} with an added
-column containing the nearest distance in kilometers.
+feature in \code{y}. Returns \code{x} with an added column containing the nearest
+distance in kilometers.
 }
 \details{
+When the sf package is installed and no arguments are passed in \code{...},
+the nearest feature is found with \code{\link[sf:st_nearest_feature]{sf::st_nearest_feature()}}, which uses a
+spatial index, and the distance to it is measured with
+\code{\link[terra:distance]{terra::distance()}}. This is much faster on many features and exact: on
+longitude and latitude, 500 points to 7,700 road lines take under a
+second instead of minutes, and \code{\link[terra:nearest]{terra::nearest()}} can be tens of
+per cent off on lines there. Otherwise \code{\link[terra:nearest]{terra::nearest()}} is used.
+
 If CRS differ, \code{y} is automatically reprojected to the CRS of \code{x}.
 \itemize{
 \item Distance is 0 if features intersect.

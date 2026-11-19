@@ -70,6 +70,16 @@ test_that("a window summary is written with labels Stata can read", {
     expect_equal(attr(back$hhid, "label"), NULL)
 })
 
+test_that("a label set on a logical column survives the 0/1 conversion", {
+    x <- tibble::tibble(hhid = 1:3, irrigated = c(TRUE, FALSE, NA))
+    attr(x$irrigated, "label") <- "plot is irrigated"
+    path <- withr::local_tempfile(fileext = ".dta")
+    suppressMessages(write_stata(x, path))
+    back <- haven::read_dta(path)
+    expect_equal(as.integer(back$irrigated), c(1L, 0L, NA))
+    expect_equal(attr(back$irrigated, "label"), "plot is irrigated")
+})
+
 test_that("long tables keep their dates and write flags as 0/1", {
     long <- hot_days(182:212)   # July: days above 30 C occur
     path <- withr::local_tempfile(fileext = ".dta")

@@ -60,7 +60,10 @@ write_stata <- function(x, path, labels = TRUE, codebook = FALSE, version = 14,
 
     for (col in names(data)) {
         if (is.logical(data[[col]])) {
+            ## as.integer() drops attributes: keep a label set beforehand
+            label <- attr(data[[col]], "label", exact = TRUE)
             data[[col]] <- as.integer(data[[col]])
+            attr(data[[col]], "label") <- label
         }
         if (!is.null(label_of[col]) && !is.na(label_of[col])) {
             attr(data[[col]], "label") <- label_of[[col]]
