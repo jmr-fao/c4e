@@ -38,7 +38,11 @@ georef_coord(df, geom = NULL, crs = NULL, id = NULL)
 
 A
 [SpatVector](https://rspatial.github.io/terra/reference/SpatVector-class.html)
-of points with one variable, the location identifier.
+of points with one variable, the location identifier. When an identifier
+comes with several pairs of coordinates, its first pair is kept: after
+[`prepare_coord()`](https://jmr-fao.github.io/c4e/reference/prepare_coord.md)
+these differ only beyond the decimals the identifier is rounded to; for
+any other identifier, a warning says how many.
 
 ## Details
 

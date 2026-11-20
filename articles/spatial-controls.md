@@ -128,9 +128,9 @@ calc_nearest_distance(points, border) |> head(3)
 #> # A tibble: 3 × 2
 #>   ID                dist_nearest_km
 #>   <chr>                       <dbl>
-#> 1 30.87620_-0.87860           13.4 
+#> 1 30.87620_-0.87860           13.5 
 #> 2 30.45000_-0.70280           16.7 
-#> 3 30.85840_-0.39050            1.05
+#> 3 30.85840_-0.39050            1.06
 ```
 
 ## In one call: static controls

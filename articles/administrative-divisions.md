@@ -138,7 +138,7 @@ survey$interview <- as.Date(survey$interview)
 heat <- weather_extremes(survey, system.file("extdata", "tmax_daily.tif", package = "c4e"),
                          id = hhid, interview = interview, preset = "heat",
                          boundaries = adm, control = extremes_control(verbose = FALSE))
-#> Loading one raster block of data per layer requires approximately 1095 MB but the GDAL block size cache is only 799 MB. This is likely to result in very slow performance. It is recommended to increase the cache size using terra::gdalCache(new_size), reduce the number of layers in the input raster, or rewrite the input raster using a smaller chunk size.
+#> Loading one raster block of data per layer requires approximately 1095 MB but the GDAL block size cache is only 785 MB. This is likely to result in very slow performance. It is recommended to increase the cache size using terra::gdalCache(new_size), reduce the number of layers in the input raster, or rewrite the input raster using a smaller chunk size.
 print(heat, n = 4)
 #> # A tibble: 20 × 16
 #> # Context:  tmax [C], day, summary; key hhid; 12 indicators

@@ -47,7 +47,8 @@ static_controls(
 - kind:
 
   Optional named character vector of layer kinds: `"continuous"`,
-  `"count"` or `"categorical"`.
+  `"count"` or `"categorical"`. Layers it does not name are read or
+  guessed as described above.
 
 - buffer:
 
@@ -130,7 +131,7 @@ static_controls(survey, list(elevation = dem), id = hhid,
 #>   radii: 0, 20 km
 #>   12 locations, 20 survey units
 #> ℹ Extracting 4 layers
-#> ✔ Extracting 4 layers [240ms]
+#> ✔ Extracting 4 layers [205ms]
 #> 
 #> # A tibble: 20 × 9
 #> # Context:  summary; key hhid; 8 indicators

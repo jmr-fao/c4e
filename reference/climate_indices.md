@@ -130,10 +130,10 @@ climate_indices(survey,
 #>   window: 1 month before the interview
 #>   12 locations, 20 survey units
 #> ℹ Extracting precipitation
-#> ✔ Extracting precipitation [33ms]
+#> ✔ Extracting precipitation [32ms]
 #> 
 #> ℹ Computing SPI
-#> ✔ Computing SPI [188ms]
+#> ✔ Computing SPI [161ms]
 #> 
 #> ℹ Summarising over the reference windows
 #> Warning: 1 of 20 household windows is `NA`: less than 80% of the days have data.

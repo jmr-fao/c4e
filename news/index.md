@@ -289,6 +289,37 @@ progress is tracked in `dev/LOG_v2.md`.
   totals with different GDAL versions (16 people on Windows, 15.5 on
   Ubuntu 26.04 for the same grids).
 
+- Found while extracting controls for 27,592 survey locations in
+  Afghanistan:
+
+  - [`georef_coord()`](https://jmr-fao.github.io/c4e/reference/georef_coord.md)
+    returns one point per location ID, as documented. Households whose
+    coordinates round to the same ID but differ in later decimals gave
+    one point each, so the ID repeated in every extracted table and
+    [`static_controls()`](https://jmr-fao.github.io/c4e/reference/static_controls.md)
+    multiplied rows through its joins (28,803 households came back as
+    442,026 rows). An ID not built from the coordinates that carries
+    several places warns.
+  - [`calc_nearest_distance()`](https://jmr-fao.github.io/c4e/reference/calc_nearest_distance.md)
+    finds the nearest feature with
+    [`sf::st_nearest_feature()`](https://r-spatial.github.io/sf/reference/st_nearest_feature.html)
+    when sf is installed, and measures the distance to it with
+    [`terra::distance()`](https://rspatial.github.io/terra/reference/distance.html):
+    500 points to 7,700 road lines in longitude and latitude take under
+    a second instead of one to two and a half minutes, and the distances
+    are exact, where
+    [`terra::nearest()`](https://rspatial.github.io/terra/reference/nearby.html)
+    was up to a third off on lines. A point inside a polygon is at
+    distance 0. Arguments in `...` still go to
+    [`terra::nearest()`](https://rspatial.github.io/terra/reference/nearby.html).
+  - `kind` in
+    [`static_controls()`](https://jmr-fao.github.io/c4e/reference/static_controls.md)
+    and
+    [`time_varying_controls()`](https://jmr-fao.github.io/c4e/reference/time_varying_controls.md)
+    may name only some layers; the others are guessed as before.
+  - [`write_stata()`](https://jmr-fao.github.io/c4e/reference/write_stata.md)
+    keeps a label set on a logical column when it writes it as 0/1.
+
 ### Planned
 
 - The first release, on GitHub for testing, then r-universe. Case

@@ -85,6 +85,17 @@
 <code><a href="../reference/summarise_by_interview.html">summarise_by_interview()</a></code> and <code><a href="../reference/summarise_by_period.html">summarise_by_period()</a></code> warn how many windows are <code>NA</code> because less than <code>min_coverage</code> of their days have data, and how many have no data at all.</li>
 </ul></li>
 <li><p><code><a href="../reference/align_count_rast.html">align_count_rast()</a></code> shares counts between grids that do not nest by the area of overlap, computed in c4e: <code>terra::resample(method = "sum")</code> gave different totals with different GDAL versions (16 people on Windows, 15.5 on Ubuntu 26.04 for the same grids).</p></li>
+<li>
+<p>Found while extracting controls for 27,592 survey locations in Afghanistan:</p>
+<ul><li>
+<code><a href="../reference/georef_coord.html">georef_coord()</a></code> returns one point per location ID, as documented. Households whose coordinates round to the same ID but differ in later decimals gave one point each, so the ID repeated in every extracted table and <code><a href="../reference/static_controls.html">static_controls()</a></code> multiplied rows through its joins (28,803 households came back as 442,026 rows). An ID not built from the coordinates that carries several places warns.</li>
+<li>
+<code><a href="../reference/calc_nearest_distance.html">calc_nearest_distance()</a></code> finds the nearest feature with <code><a href="https://r-spatial.github.io/sf/reference/st_nearest_feature.html" class="external-link">sf::st_nearest_feature()</a></code> when sf is installed, and measures the distance to it with <code><a href="https://rspatial.github.io/terra/reference/distance.html" class="external-link">terra::distance()</a></code>: 500 points to 7,700 road lines in longitude and latitude take under a second instead of one to two and a half minutes, and the distances are exact, where <code><a href="https://rspatial.github.io/terra/reference/nearby.html" class="external-link">terra::nearest()</a></code> was up to a third off on lines. A point inside a polygon is at distance 0. Arguments in <code>...</code> still go to <code><a href="https://rspatial.github.io/terra/reference/nearby.html" class="external-link">terra::nearest()</a></code>.</li>
+<li>
+<code>kind</code> in <code><a href="../reference/static_controls.html">static_controls()</a></code> and <code><a href="../reference/time_varying_controls.html">time_varying_controls()</a></code> may name only some layers; the others are guessed as before.</li>
+<li>
+<code><a href="../reference/write_stata.html">write_stata()</a></code> keeps a label set on a logical column when it writes it as 0/1.</li>
+</ul></li>
 </ul></div>
 <div class="section level3">
 <h3 id="planned-development-version">Planned<a class="anchor" aria-label="anchor" href="#planned-development-version"></a></h3>

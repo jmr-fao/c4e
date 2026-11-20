@@ -163,14 +163,14 @@ weather_extremes(survey,
 #>   12 locations, 20 survey units
 #> ℹ Extracting tmax
 #> Converting "K" to "C" to read the thresholds.
-#> ✔ Extracting tmax [85ms]
+#> ✔ Extracting tmax [67ms]
 #> 
 #> ℹ Computing indicators
 #> Using `unit = "C"` from upstream unit.
-#> ✔ Computing indicators [587ms]
+#> ✔ Computing indicators [100ms]
 #> 
 #> ℹ Summarising over the reference windows
-#> ✔ Summarising over the reference windows [94ms]
+#> ✔ Summarising over the reference windows [101ms]
 #> 
 #> # A tibble: 20 × 16
 #> # Context:  tmax [C], day, summary; key hhid; 12 indicators

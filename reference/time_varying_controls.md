@@ -90,7 +90,8 @@ time_varying_controls(
 - kind:
 
   Optional named character vector of layer kinds: `"continuous"`,
-  `"count"` or `"categorical"`.
+  `"count"` or `"categorical"`. Layers it does not name are read or
+  guessed as described above.
 
 - boundaries:
 
@@ -146,7 +147,7 @@ time_varying_controls(survey, list(pop = pop), id = hhid,
 #>   survey years: 2023
 #>   12 locations, 20 survey units
 #> ℹ Extracting 1 yearly layer
-#> ✔ Extracting 1 yearly layer [112ms]
+#> ✔ Extracting 1 yearly layer [75ms]
 #> 
 #> # A tibble: 20 × 5
 #> # Context:  summary; key hhid; 2 indicators
