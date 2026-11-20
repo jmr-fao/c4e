@@ -117,6 +117,20 @@ test_that("georef_coord builds a point SpatVector with one row per ID", {
     expect_equal(nrow(v), 2L)  # duplicate coordinates collapse
 })
 
+test_that("georef_coord keeps one point per ID when its coordinates differ", {
+    survey <- data.frame(hhid = 1:3, lon = c(10, 10 + 1e-7, 11), lat = c(45, 45, 46))
+    coord <- prepare_coord(survey, lat, lon, id = hhid)
+    v <- suppressMessages(georef_coord(coord))
+    expect_equal(nrow(v), 2L)  # the first two round to the same ID
+    expect_false(anyDuplicated(v$ID) > 0)
+
+    # an identifier that is not built from the coordinates warns
+    df <- data.frame(ID = c("1", "1"), lon = c(10, 12), lat = c(45, 45))
+    expect_warning(v <- georef_coord(df, geom = c("lon", "lat"), crs = "epsg:4326"),
+                   "1 location ID has more than one")
+    expect_equal(unname(terra::crds(v)[, "x"]), 10)
+})
+
 test_that("extract_cell_by_poly returns one row per covered cell", {
     r <- terra::rast(xmin = 0, xmax = 10, ymin = 0, ymax = 10,
                      res = 1, crs = "epsg:4326")

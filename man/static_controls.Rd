@@ -31,7 +31,8 @@ columns: coordinates (found by name when left out) and household
 identifier. Not needed after \code{\link[=prepare_coord]{prepare_coord()}}.}
 
 \item{kind}{Optional named character vector of layer kinds:
-\code{"continuous"}, \code{"count"} or \code{"categorical"}.}
+\code{"continuous"}, \code{"count"} or \code{"categorical"}. Layers it does not name
+are read or guessed as described above.}
 
 \item{buffer}{Radii in metres; 0 is the location's own cell.}
 

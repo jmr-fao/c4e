@@ -32,12 +32,17 @@ laptop; the design is in `dev/PLAN_v2.md` (section numbers below refer to it).
 | L | Labels after spatial aggregation | ✔ done | | 2026-11-07 | 2026-11-07 | merged into `main` with #16 |
 | B | Percentile bound | ✔ done | | 2026-11-07 | 2026-11-07 | merged into `main`; `min_threshold`/`max_threshold` and `bound_threshold()` |
 | W | `window_dates()` | ✔ done | #18 | 2026-11-08 | 2026-11-08 | merged into `main` |
-| C | Calendar closure for seasons past dekad 36 | 🔄 in progress | | 2026-11-08 | | branch `calendar-closure`; correctness fix found by using `window_dates()` on real ASIS bounds |
+| C | Calendar closure for seasons past dekad 36 | ✔ done | #19 | 2026-11-08 | 2026-11-08 | merged into `main`; correctness fix found by using `window_dates()` on real ASIS bounds |
+| D | Control fixes from the Afghanistan (DIEM) extraction | 🔄 in progress | | 2026-11-19 | | branch `controls-fixes`: one point per location ID, fast nearest distance, partial `kind`, labels on logicals |
 
 States: ☐ not started · 🔄 in progress · 👀 in review (PR open) · ✔ done · ⛔ blocked
 
-**Current chunk:** `window-dates`, on a branch off `main` (protected: no
-direct pushes). `window_frame()` resolved every window type into `lag`,
+**Current chunk:** `controls-fixes` (chunk D), on a branch off `main`
+(protected: no direct pushes), three problems reported from the
+extraction of controls for 27,592 locations in Afghanistan: see the
+2026-11-19 entry. Then a PR into `main`.
+
+Earlier, `window-dates` (#18, merged): `window_frame()` resolved every window type into `lag`,
 `w_start` and `w_end` but was `@noRd`, reachable only through
 `summarise_by_interview()`. A new `window_dates(window, data, interview, by)`
 exports that resolution, so a window can be built, inspected and joined on
@@ -61,8 +66,7 @@ The weather shock additions (#14) are merged: `window_calendar()` and
 two v1 fixes are on climatic4economist's `main`.
 
 **Next steps (in order):**
-1. Finish `window-dates`: code, tests, NEWS, docs and the pkgdown entry are
-   done (1351 tests, reference index checked). Then a PR into `main`.
+1. Open the PR for `controls-fixes` and merge it once its checks pass.
 2. Left from `percentile-bound`, now merged: `min_threshold` is not yet
    mentioned in the `weather_extremes()` wrapper or in a preset, so a preset
    still cannot say `p = 0.99, min_threshold = 30` and the two remain
@@ -295,6 +299,38 @@ To reproduce the GitHub check locally (same arguments as CI):
 ```
 
 ## Session entries
+
+### 2026-11-19 — control fixes from the Afghanistan extraction (laptop: FAO-Win, session: Claude)
+- Did: three problems reported while extracting controls for 27,592
+  locations (28,803 survey units) in Afghanistan, each reproduced on the
+  fixtures, fixed and tested.
+  1. `static_controls()` multiplied rows (28,803 → 442,026). Cause, one
+     step earlier than suspected: `georef_coord()` kept one point per
+     distinct pair of raw coordinates, not per location ID, so households
+     whose coordinates round to the same ID (5 decimals) but differ beyond
+     gave several points with one ID; every extracted table then repeated
+     the ID and each `full_join()` over the layers multiplied the rows (20
+     fixture households jittered by 1e-7 degrees gave 440 rows). It now
+     keeps the first point of each ID, as its documentation said; an ID
+     not built from the coordinates with several places warns. Fixing it
+     there also covers `weather_extremes()`, `climate_indices()` and
+     `time_varying_controls()`, which build their points the same way.
+     `layer_kind()` now accepts a `kind` vector naming only some layers.
+  2. `calc_nearest_distance()`: with sf installed and nothing in `...`,
+     `sf::st_nearest_feature()` picks the nearest feature and
+     `terra::distance(pairwise = TRUE)` measures to it. Checked against the
+     exact minimum of `terra::distance()` over all pairs: equal on lines,
+     polygons and points in lon/lat and UTM. `sf::st_distance()` alone was
+     up to 0.56% off in lon/lat (sphere against ellipsoid), and
+     `terra::nearest()` itself up to 33% off on lon/lat lines, and it
+     measures to a polygon's boundary from inside where sf and the docs say
+     0. Synthetic 500 points × 7,700 lines over Afghanistan: 45 s → 0.5 s;
+     27,967 points: 1.1 s.
+  3. `write_stata()` restores a label after `as.integer()` on logicals.
+- Tests: the four new tests fail on the old code and pass on the new; full
+  suite 1,375 expectations, 0 failures; `rcmdcheck` 0 errors, 0 warnings,
+  2 notes (new submission and site URL; pandoc).
+- Next: see Next steps above.
 
 ### 2026-11-08 — calendar closure (laptop: FAO-Win, session: Claude)
 - Did: branch `calendar-closure`. `calendar_windows()` chose the season year

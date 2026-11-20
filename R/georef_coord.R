@@ -18,7 +18,10 @@
 #'   units. When `NULL`, the recorded key, `ID`, or `ID_adm_div` is used.
 #'
 #' @returns A \link[terra]{SpatVector} of points with one variable, the
-#'   location identifier.
+#'   location identifier. When an identifier comes with several pairs of
+#'   coordinates, its first pair is kept: after [prepare_coord()] these
+#'   differ only beyond the decimals the identifier is rounded to; for any
+#'   other identifier, a warning says how many.
 #'
 #' @export
 #'
@@ -52,7 +55,19 @@ georef_coord <- function(df, geom = NULL, crs = NULL, id = NULL) {
         }
     }
 
-    tibble::as_tibble(df) |>
-        dplyr::distinct(dplyr::pick(dplyr::all_of(c(key, geom)))) |>
-        terra::vect(crs = crs, geom = geom)
+    ## one point per location ID: households whose coordinates round to the
+    ## same ID can differ in later decimals, and a second point with the same
+    ## ID would repeat that ID in every extracted table
+    points <- tibble::as_tibble(df)[c(key, geom)]
+    repeated <- duplicated(points[[key]])
+    if (any(repeated)) {
+        moved <- dplyr::n_distinct(points[[key]][repeated &
+                                                  !duplicated(points[c(key, geom)])])
+        if (moved > 0 && !identical(meta$id_rule, "coordinates")) {
+            cli::cli_warn("{moved} location ID{?s} {?has/have} more than one pair of
+                           coordinates; keeping the first of each.")
+        }
+        points <- points[!repeated, , drop = FALSE]
+    }
+    terra::vect(points, crs = crs, geom = geom)
 }

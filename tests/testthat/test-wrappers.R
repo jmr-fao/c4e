@@ -200,6 +200,29 @@ test_that("static controls summarise terrain, zones and distances per household"
     expect_equal(c4e_meta(out, "key"), "hhid")
 })
 
+test_that("static controls keep one row per household at a shared location", {
+    # coordinates that differ only beyond the 5 decimals of the location ID
+    survey <- survey_data()
+    survey$lon <- survey$lon + seq_len(nrow(survey)) * 1e-7
+    out <- quiet(static_controls(survey, static_layers(), id = hhid,
+                                 buffer = 5000, terrain = c("slope", "TRI"),
+                                 kind = c(aez = "categorical"),
+                                 distance_to = list(border = terra::as.lines(synthetic_adm_div())),
+                                 control = controls_control(fill_missing = FALSE)))
+    plain <- quiet(static_controls(survey_data(), static_layers(), id = hhid,
+                                   buffer = 5000, terrain = c("slope", "TRI"),
+                                   kind = c(aez = "categorical"),
+                                   distance_to = list(border = terra::as.lines(synthetic_adm_div())),
+                                   control = controls_control(fill_missing = FALSE)))
+    expect_equal(nrow(out), 20L)
+    expect_equal(anyDuplicated(out$hhid), 0L)
+    expect_equal(out$elevation_5km, plain$elevation_5km)
+    expect_equal(out$dist_border_km, plain$dist_border_km, tolerance = 1e-4)
+    # a kind vector naming only some layers: the rest are guessed
+    expect_equal(c4e_meta(out)$indicators$aez_5km$stat, "mode")
+    expect_equal(c4e_meta(out)$indicators$elevation_5km$stat, "mean")
+})
+
 # ==== time_varying_controls() ================================================
 
 test_that("time-varying controls take the layer of the right year", {

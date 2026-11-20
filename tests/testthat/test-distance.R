@@ -64,6 +64,25 @@ test_that("calc_nearest_distance can return geometries", {
     expect_s4_class(out, "SpatVector")
 })
 
+test_that("calc_nearest_distance with sf matches the exact nearest distance", {
+    skip_if_not_installed("sf")
+    set.seed(1)
+    points <- terra::vect(cbind(runif(15, -1, 6), runif(15, -1, 2)), crs = "epsg:4326")
+    lines <- terra::vect(lapply(1:12, \(i) cbind(runif(3, -2, 7), runif(3, -2, 3))),
+                         type = "lines", crs = "epsg:4326")
+    exact <- function(y) apply(terra::distance(points, y), 1, min) / 1000
+
+    for (y in list(lines, polys(), targets())) {
+        out <- calc_nearest_distance(points, y)
+        expect_equal(out$dist_nearest_km, exact(y), tolerance = 1e-6)
+    }
+    # a point inside a polygon is at distance 0
+    inside <- terra::vect(cbind(0.5, 0.5), crs = "epsg:4326")
+    expect_equal(calc_nearest_distance(inside, polys())$dist_nearest_km, 0)
+    # arguments for terra::nearest() take the terra route
+    expect_equal(nrow(calc_nearest_distance(points, targets(), method = "geo")), 15L)
+})
+
 test_that("calc_nearest_distance reprojects y when the CRS differ", {
     y <- terra::project(targets(), "epsg:3857")
     expect_message(calc_nearest_distance(polys(), y), "CRS do not match")

@@ -7,7 +7,8 @@
 #' The kind of each control layer: given, recorded, or guessed from its name
 #' @noRd
 layer_kind <- function(layer, name, kind) {
-    given <- if (!is.null(names(kind))) kind[[name]] else kind
+    ## a named vector may cover only some layers; the rest are guessed
+    given <- if (is.null(names(kind))) kind else if (name %in% names(kind)) kind[[name]]
     if (!is.null(given)) return(given)
     recorded <- stored_raster_meta(layer)$kind
     if (!is.null(recorded)) return(recorded)
@@ -146,7 +147,8 @@ control_output <- function(locations, values, entries, by, fn, args, started,
 #'   columns: coordinates (found by name when left out) and household
 #'   identifier. Not needed after [prepare_coord()].
 #' @param kind Optional named character vector of layer kinds:
-#'   `"continuous"`, `"count"` or `"categorical"`.
+#'   `"continuous"`, `"count"` or `"categorical"`. Layers it does not name
+#'   are read or guessed as described above.
 #' @param buffer Radii in metres; 0 is the location's own cell.
 #' @param terrain Terrain measures computed from an `elevation` layer; any of
 #'   `"slope"`, `"TRI"`, `"roughness"`, `"aspect"`, `"TPI"`, or `NULL`.

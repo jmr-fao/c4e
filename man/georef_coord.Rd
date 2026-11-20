@@ -21,7 +21,10 @@ units. When \code{NULL}, the recorded key, \code{ID}, or \code{ID_adm_div} is us
 }
 \value{
 A \link[terra]{SpatVector} of points with one variable, the
-location identifier.
+location identifier. When an identifier comes with several pairs of
+coordinates, its first pair is kept: after \code{\link[=prepare_coord]{prepare_coord()}} these
+differ only beyond the decimals the identifier is rounded to; for any
+other identifier, a warning says how many.
 }
 \description{
 Turns the distinct locations of a survey into a point
